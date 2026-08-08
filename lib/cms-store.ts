@@ -1,6 +1,7 @@
 import "server-only";
 import { promises as fs } from "fs";
 import path from "path";
+import { Pool } from "pg";
 import { articles as seedArticles, businesses as seedBusinesses, cities as seedCities } from "@/data/site";
 import { Article, City, DirectoryBusiness } from "@/lib/types";
 
@@ -11,6 +12,7 @@ export type CmsContent = {
 };
 
 const contentPath = path.join(process.cwd(), "data", "cms-content.json");
+const documentKey = "default";
 
 const seedContent: CmsContent = {
   articles: seedArticles,
@@ -19,6 +21,66 @@ const seedContent: CmsContent = {
 };
 
 const seedCityBySlug = new Map(seedCities.map((city) => [city.slug, city]));
+
+const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || "";
+
+declare global {
+  var vietThaiCmsPool: Pool | undefined;
+}
+
+function hasDatabase() {
+  return Boolean(databaseUrl);
+}
+
+function getPool() {
+  if (!databaseUrl) return null;
+  if (!globalThis.vietThaiCmsPool) {
+    globalThis.vietThaiCmsPool = new Pool({
+      connectionString: databaseUrl,
+      max: 3,
+      ssl: databaseUrl.includes("localhost") ? undefined : { rejectUnauthorized: false }
+    });
+  }
+  return globalThis.vietThaiCmsPool;
+}
+
+async function ensureDatabase() {
+  const pool = getPool();
+  if (!pool) return;
+  await pool.query(`
+    create table if not exists cms_documents (
+      key text primary key,
+      value jsonb not null,
+      updated_at timestamptz not null default now()
+    )
+  `);
+}
+
+async function readDatabaseContent() {
+  const pool = getPool();
+  if (!pool) return null;
+  await ensureDatabase();
+  const result = await pool.query<{ value: CmsContent }>("select value from cms_documents where key = $1", [documentKey]);
+  if (result.rows[0]?.value) return result.rows[0].value;
+  await writeDatabaseContent(seedContent);
+  return seedContent;
+}
+
+async function writeDatabaseContent(content: CmsContent) {
+  const pool = getPool();
+  if (!pool) return false;
+  await ensureDatabase();
+  await pool.query(
+    `
+      insert into cms_documents (key, value, updated_at)
+      values ($1, $2::jsonb, now())
+      on conflict (key)
+      do update set value = excluded.value, updated_at = now()
+    `,
+    [documentKey, JSON.stringify(content)]
+  );
+  return true;
+}
 
 async function ensureContentFile() {
   try {
@@ -29,11 +91,20 @@ async function ensureContentFile() {
   }
 }
 
-export async function readCmsContent(): Promise<CmsContent> {
+async function readFileContent(): Promise<CmsContent> {
   await ensureContentFile();
   const raw = await fs.readFile(contentPath, "utf8");
-  const content = JSON.parse(raw) as CmsContent;
+  return JSON.parse(raw) as CmsContent;
+}
 
+async function writeFileContent(content: CmsContent) {
+  if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+    throw new Error("正式環境尚未設定雲端資料庫，後台寫入已被阻擋，避免資料只暫存在 Vercel 檔案系統。請設定 DATABASE_URL 或 POSTGRES_URL。");
+  }
+  await fs.writeFile(contentPath, JSON.stringify(content, null, 2), "utf8");
+}
+
+function normalizeContent(content: CmsContent): CmsContent {
   return {
     articles: content.articles.map((article) => ({
       ...article,
@@ -68,8 +139,23 @@ export async function readCmsContent(): Promise<CmsContent> {
   };
 }
 
+export function getCmsStorageMode() {
+  if (hasDatabase()) return "cloud-database";
+  if (process.env.VERCEL || process.env.NODE_ENV === "production") return "readonly-seed";
+  return "local-json";
+}
+
+export async function readCmsContent(): Promise<CmsContent> {
+  const content = hasDatabase() ? await readDatabaseContent() : await readFileContent();
+  return normalizeContent(content || seedContent);
+}
+
 export async function writeCmsContent(content: CmsContent) {
-  await fs.writeFile(contentPath, JSON.stringify(content, null, 2), "utf8");
+  if (hasDatabase()) {
+    await writeDatabaseContent(content);
+    return;
+  }
+  await writeFileContent(content);
 }
 
 export async function getArticles() {
