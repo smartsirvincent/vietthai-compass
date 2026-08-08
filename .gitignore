@@ -1,4 +1,5 @@
 .next/
+.vercel/
 node_modules/
 dist-packages/
 data/cms-content.backup-*.json
@@ -12,3 +13,5 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 *.tsbuildinfo
+
+.vercel
