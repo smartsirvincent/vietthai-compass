@@ -19,18 +19,15 @@ export default async function HomePage() {
 
   return (
     <SiteShell>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd(settings)) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd(settings)) }} />
 
       <section className="home-hero">
         <div className="home-hero-media" style={{ "--home-hero-image": `url("${heroImage}")` } as CSSProperties} />
         <div className="home-hero-content">
-          <p className="eyebrow">VietThai Compass</p>
-          <h1>越南、泰國中文旅遊與在地生活指南</h1>
-          <p>
-            整理越南與泰國城市指南、餐廳美食、景點行程、在地生活與商家資訊，幫讀者快速找到可前往、
-            可收藏、可比較的實用內容。
-          </p>
+          <p className="eyebrow">{settings.homeEyebrow}</p>
+          <h1>{settings.homeTitle}</h1>
+          <p>{settings.homeIntro}</p>
           <form className="hero-search-card" action="/search">
             <Search size={21} />
             <input name="q" type="search" placeholder="搜尋胡志明市餐廳、曼谷景點、Thao Dien 商家" aria-label="站內搜尋" />
@@ -38,9 +35,9 @@ export default async function HomePage() {
           </form>
           <div className="hero-actions">
             <Link className="primary-button" href="/cities">
-              探索城市 <ArrowRight size={18} />
+              {settings.homePrimaryCtaLabel} <ArrowRight size={18} />
             </Link>
-            <Link className="secondary-button" href="/business">商務合作</Link>
+            <Link className="secondary-button" href="/business">{settings.homeSecondaryCtaLabel}</Link>
           </div>
         </div>
       </section>

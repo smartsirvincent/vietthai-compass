@@ -71,6 +71,14 @@ export type DirectoryBusiness = {
 };
 
 export type SiteSettings = {
+  siteName?: string;
+  siteNameEn?: string;
+  siteDescription?: string;
+  homeEyebrow?: string;
+  homeTitle?: string;
+  homeIntro?: string;
+  homePrimaryCtaLabel?: string;
+  homeSecondaryCtaLabel?: string;
   ga4Id?: string;
   gtmId?: string;
   heroImage?: string;

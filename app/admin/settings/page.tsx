@@ -21,6 +21,14 @@ async function saveSettingsAction(formData: FormData) {
   const gtmId = extractTrackingId(textValue(formData, "gtmId"), "GTM-");
 
   await saveSiteSettings({
+    siteName: textValue(formData, "siteName", "越泰指南"),
+    siteNameEn: textValue(formData, "siteNameEn", "VietThai Compass"),
+    siteDescription: textValue(formData, "siteDescription"),
+    homeEyebrow: textValue(formData, "homeEyebrow"),
+    homeTitle: textValue(formData, "homeTitle"),
+    homeIntro: textValue(formData, "homeIntro"),
+    homePrimaryCtaLabel: textValue(formData, "homePrimaryCtaLabel"),
+    homeSecondaryCtaLabel: textValue(formData, "homeSecondaryCtaLabel"),
     ga4Id,
     gtmId,
     heroImage: textValue(formData, "heroImage", "/brand-assets/home-hero-vietthai-commerce.png"),
@@ -46,8 +54,22 @@ export default async function AdminSettingsPage({
 
       <section className="admin-editor-grid">
         <form action={saveSettingsAction} className="panel admin-form">
-          <h2>流量追蹤設定</h2>
+          <h2>品牌與首頁文字</h2>
           {params.saved ? <div className="settings-saved">設定已儲存並套用到前台。</div> : null}
+          <div className="grid two">
+            <label>網站中文名稱<input name="siteName" required defaultValue={settings.siteName || "越泰指南"} /></label>
+            <label>網站英文名稱<input name="siteNameEn" defaultValue={settings.siteNameEn || "VietThai Compass"} /></label>
+          </div>
+          <label>網站 SEO 描述<textarea name="siteDescription" rows={3} defaultValue={settings.siteDescription || ""} /></label>
+          <label>首頁小標<input name="homeEyebrow" defaultValue={settings.homeEyebrow || ""} /></label>
+          <label>首頁主標題<input name="homeTitle" required defaultValue={settings.homeTitle || ""} /></label>
+          <label>首頁說明文字<textarea name="homeIntro" required rows={4} defaultValue={settings.homeIntro || ""} /></label>
+          <div className="grid two">
+            <label>首頁主要按鈕文字<input name="homePrimaryCtaLabel" defaultValue={settings.homePrimaryCtaLabel || ""} /></label>
+            <label>首頁次要按鈕文字<input name="homeSecondaryCtaLabel" defaultValue={settings.homeSecondaryCtaLabel || ""} /></label>
+          </div>
+
+          <h2>流量追蹤設定</h2>
           <label>
             GA4 Measurement ID
             <input name="ga4Id" defaultValue={settings.ga4Id || ""} placeholder="G-XXXXXXXXXX，或貼上 GA4 官方安裝碼" />
@@ -76,6 +98,14 @@ export default async function AdminSettingsPage({
         <div className="panel">
           <h2>目前狀態</h2>
           <div className="settings-status">
+            <div>
+              <span>網站名稱</span>
+              <strong>{settings.siteName || "越泰指南"}</strong>
+            </div>
+            <div>
+              <span>首頁主標</span>
+              <strong>{settings.homeTitle || "尚未設定"}</strong>
+            </div>
             <div>
               <span>GA4</span>
               <strong>{settings.ga4Id || "尚未設定"}</strong>

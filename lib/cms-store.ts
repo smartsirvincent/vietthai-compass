@@ -15,16 +15,27 @@ export type CmsContent = {
 const contentPath = path.join(process.cwd(), "data", "cms-content.json");
 const documentKey = "default";
 
+export const defaultSiteSettings: Required<SiteSettings> = {
+  siteName: "越泰指南",
+  siteNameEn: "VietThai Compass",
+  siteDescription:
+    "越泰指南整理越南、泰國旅遊攻略、餐廳景點、在地生活與台商商務資訊，協助讀者快速規劃行程，也協助當地商家取得中文 SEO 曝光。",
+  homeEyebrow: "VietThai Compass",
+  homeTitle: "越南、泰國中文旅遊與在地生活指南",
+  homeIntro: "整理越南與泰國城市指南、餐廳美食、景點行程、在地生活與商家資訊，幫讀者快速找到可前往、可收藏、可比較的實用內容。",
+  homePrimaryCtaLabel: "探索城市",
+  homeSecondaryCtaLabel: "商務合作",
+  ga4Id: "",
+  gtmId: "",
+  heroImage: "/brand-assets/home-hero-vietthai-commerce.png",
+  logoImage: ""
+};
+
 const seedContent: CmsContent = {
   articles: seedArticles,
   cities: seedCities,
   businesses: seedBusinesses,
-  settings: {
-    ga4Id: "",
-    gtmId: "",
-    heroImage: "/brand-assets/home-hero-vietthai-commerce.png",
-    logoImage: ""
-  }
+  settings: defaultSiteSettings
 };
 
 const seedCityBySlug = new Map(seedCities.map((city) => [city.slug, city]));
@@ -114,6 +125,14 @@ async function writeFileContent(content: CmsContent) {
 function normalizeContent(content: CmsContent): CmsContent {
   return {
     settings: {
+      siteName: content.settings?.siteName || defaultSiteSettings.siteName,
+      siteNameEn: content.settings?.siteNameEn || defaultSiteSettings.siteNameEn,
+      siteDescription: content.settings?.siteDescription || defaultSiteSettings.siteDescription,
+      homeEyebrow: content.settings?.homeEyebrow || defaultSiteSettings.homeEyebrow,
+      homeTitle: content.settings?.homeTitle || defaultSiteSettings.homeTitle,
+      homeIntro: content.settings?.homeIntro || defaultSiteSettings.homeIntro,
+      homePrimaryCtaLabel: content.settings?.homePrimaryCtaLabel || defaultSiteSettings.homePrimaryCtaLabel,
+      homeSecondaryCtaLabel: content.settings?.homeSecondaryCtaLabel || defaultSiteSettings.homeSecondaryCtaLabel,
       ga4Id: content.settings?.ga4Id || "",
       gtmId: content.settings?.gtmId || "",
       heroImage: content.settings?.heroImage || "/brand-assets/home-hero-vietthai-commerce.png",

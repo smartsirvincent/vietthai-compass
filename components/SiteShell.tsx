@@ -22,13 +22,13 @@ export async function SiteHeader() {
     <header className="site-header">
       <Link className="brand" href="/" aria-label="越泰指南首頁">
         {settings.logoImage ? (
-          <img className="brand-logo-image" src={settings.logoImage} alt="越泰指南 Logo" />
+          <img className="brand-logo-image" src={settings.logoImage} alt={`${settings.siteName} Logo`} />
         ) : (
           <span className="brand-mark" aria-hidden="true">VT</span>
         )}
         <span>
-          <strong>越泰指南</strong>
-          <small>VietThai Compass</small>
+          <strong>{settings.siteName}</strong>
+          <small>{settings.siteNameEn}</small>
         </span>
       </Link>
       <nav className="main-nav" aria-label="主要導覽">

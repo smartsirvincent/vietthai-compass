@@ -1,4 +1,4 @@
-import { Article, City, DirectoryBusiness } from "@/lib/types";
+import { Article, City, DirectoryBusiness, SiteSettings } from "@/lib/types";
 
 export const siteUrl = "https://vietthaicompass.com";
 export const siteName = "越泰指南";
@@ -9,14 +9,16 @@ export function absoluteUrl(path = "") {
   return `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-export function organizationJsonLd() {
+export function organizationJsonLd(settings: SiteSettings = {}) {
+  const currentSiteName = settings.siteName || siteName;
+  const currentAlternateName = settings.siteNameEn || siteAlternateName;
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: siteName,
-    alternateName: siteAlternateName,
+    name: currentSiteName,
+    alternateName: currentAlternateName,
     url: siteUrl,
-    logo: absoluteUrl("/brand-assets/vietthai-compass-square-icon.png"),
+    logo: absoluteUrl(settings.logoImage || "/brand-assets/vietthai-compass-square-icon.png"),
     sameAs: [
       "https://facebook.com/vietthaicompass",
       "https://instagram.com/vietthaicompass",
@@ -34,14 +36,16 @@ export function organizationJsonLd() {
   };
 }
 
-export function websiteJsonLd() {
+export function websiteJsonLd(settings: SiteSettings = {}) {
+  const currentSiteName = settings.siteName || siteName;
+  const currentAlternateName = settings.siteNameEn || siteAlternateName;
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: siteName,
-    alternateName: siteAlternateName,
+    name: currentSiteName,
+    alternateName: currentAlternateName,
     url: siteUrl,
-    publisher: organizationJsonLd(),
+    publisher: organizationJsonLd(settings),
     inLanguage: "zh-Hant-TW",
     potentialAction: {
       "@type": "SearchAction",
