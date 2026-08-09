@@ -995,6 +995,66 @@ p {
   padding: 34px;
 }
 
+.admin-user {
+  margin: -6px 0 18px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+}
+
+.admin-logout-form {
+  margin-top: 18px;
+}
+
+.admin-logout-form button {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 8px;
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.08);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background:
+    linear-gradient(90deg, rgba(16, 25, 43, 0.94), rgba(16, 25, 43, 0.72)),
+    url("/brand-assets/vietthai-compass-admin-login-bg.png") center/cover;
+}
+
+.login-card {
+  width: min(460px, 100%);
+  padding: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow);
+}
+
+.login-card h1 {
+  color: var(--ink);
+  font-size: 38px;
+}
+
+.login-card p:not(.eyebrow) {
+  color: var(--muted);
+}
+
+.login-error {
+  margin: 16px 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(201, 58, 50, 0.22);
+  border-radius: 8px;
+  color: var(--red);
+  background: #fff2f1;
+  font-weight: 800;
+}
+
 .table-like {
   display: grid;
   gap: 10px;
