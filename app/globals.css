@@ -1418,7 +1418,8 @@ p {
   gap: 8px;
 }
 
-.editor-toolbar button {
+.editor-toolbar button,
+.editor-toolbar select {
   min-height: 34px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1429,15 +1430,60 @@ p {
   cursor: pointer;
 }
 
-.article-editor textarea {
+.rich-editor-surface {
   width: 100%;
   min-height: 360px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 12px;
-  font: inherit;
+  padding: 18px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 17px;
   line-height: 1.65;
-  resize: vertical;
+  outline: none;
+}
+
+.rich-editor-surface:focus {
+  border-color: rgba(15, 91, 107, 0.52);
+  box-shadow: 0 0 0 3px rgba(15, 91, 107, 0.08);
+}
+
+.rich-editor-surface h1,
+.article-body h1 {
+  font-size: 34px;
+  line-height: 1.22;
+}
+
+.rich-editor-surface h2,
+.article-body h2 {
+  font-size: 27px;
+  line-height: 1.28;
+}
+
+.rich-editor-surface h3,
+.article-body h3 {
+  font-size: 21px;
+  line-height: 1.35;
+}
+
+.rich-editor-surface img,
+.article-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.rich-editor-surface figure,
+.article-body figure {
+  margin: 20px 0;
+}
+
+.rich-editor-surface figcaption,
+.article-body figcaption {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
 }
 
 @media (max-width: 1080px) {

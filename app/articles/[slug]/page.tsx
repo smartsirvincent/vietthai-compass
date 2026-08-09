@@ -15,6 +15,10 @@ function renderInlineLinks(text: string) {
 }
 
 function renderArticleContent(content: string) {
+  if (/<(h1|h2|h3|p|img|strong|em|span|figure|figcaption|ul|ol|li|br)\b/i.test(content)) {
+    return <div dangerouslySetInnerHTML={{ __html: content }} />;
+  }
+
   return content
     .split(/\n+/)
     .map((line, index) => {
