@@ -1,12 +1,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { requireAdminRole } from "@/lib/admin-auth";
 import { deleteBusiness, getBusinesses, getCities, listFromTextarea, saveBusiness, textValue } from "@/lib/cms-store";
 import { siteSocials } from "@/data/site";
 import { DirectoryBusiness } from "@/lib/types";
 
 async function saveBusinessAction(formData: FormData) {
   "use server";
+  await requireAdminRole();
   const originalSlug = textValue(formData, "originalSlug");
   const business: DirectoryBusiness = {
     slug: textValue(formData, "slug"),
@@ -42,6 +44,7 @@ async function saveBusinessAction(formData: FormData) {
 
 async function deleteBusinessAction(formData: FormData) {
   "use server";
+  await requireAdminRole();
   await deleteBusiness(textValue(formData, "slug"));
   revalidatePath("/");
   revalidatePath("/directory");
@@ -49,6 +52,7 @@ async function deleteBusinessAction(formData: FormData) {
 }
 
 export default async function AdminBusinessesPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
+  await requireAdminRole();
   const { edit } = await searchParams;
   const [businesses, cities] = await Promise.all([getBusinesses(), getCities()]);
   const editing = businesses.find((item) => item.slug === edit);

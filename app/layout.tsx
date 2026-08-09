@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Script from "next/script";
+import { getSiteSettings } from "@/lib/cms-store";
 import "./globals.css";
 
 const siteName = "越泰指南";
@@ -71,10 +73,57 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+function cleanTrackingId(value = "", prefix: "G-" | "GTM-") {
+  const pattern = prefix === "G-" ? /^G-[A-Z0-9_-]+$/ : /^GTM-[A-Z0-9_-]+$/;
+  const normalized = value.trim().toUpperCase();
+  return pattern.test(normalized) ? normalized : "";
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getSiteSettings();
+  const ga4Id = cleanTrackingId(settings.ga4Id, "G-");
+  const gtmId = cleanTrackingId(settings.gtmId, "GTM-");
+
   return (
     <html lang="zh-Hant-TW">
-      <body>{children}</body>
+      <body>
+        {gtmId ? (
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+              title="Google Tag Manager"
+            />
+          </noscript>
+        ) : null}
+        {children}
+        {ga4Id ? (
+          <>
+            <Script src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`} strategy="afterInteractive" />
+            <Script id="ga4-tracking" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${ga4Id}');
+              `}
+            </Script>
+          </>
+        ) : null}
+        {gtmId ? (
+          <Script id="gtm-tracking" strategy="afterInteractive">
+            {`
+              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer','${gtmId}');
+            `}
+          </Script>
+        ) : null}
+      </body>
     </html>
   );
 }

@@ -1,5 +1,6 @@
 import { CheckCircle2 } from "lucide-react";
 import { researchBriefs } from "@/data/site";
+import { requireAdminRole } from "@/lib/admin-auth";
 
 export const metadata = {
   title: "SEO 內容工作台"
@@ -16,7 +17,9 @@ const seoChecklist = [
   "是否保留來源清單，方便日後更新"
 ];
 
-export default function ContentEnginePage() {
+export default async function ContentEnginePage() {
+  await requireAdminRole();
+
   return (
     <>
       <p className="eyebrow">Codex SEO Engine</p>

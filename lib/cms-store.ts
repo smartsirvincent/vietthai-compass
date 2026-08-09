@@ -3,12 +3,13 @@ import { promises as fs } from "fs";
 import path from "path";
 import { Pool } from "pg";
 import { articles as seedArticles, businesses as seedBusinesses, cities as seedCities } from "@/data/site";
-import { Article, City, DirectoryBusiness } from "@/lib/types";
+import { Article, City, DirectoryBusiness, SiteSettings } from "@/lib/types";
 
 export type CmsContent = {
   articles: Article[];
   cities: City[];
   businesses: DirectoryBusiness[];
+  settings: SiteSettings;
 };
 
 const contentPath = path.join(process.cwd(), "data", "cms-content.json");
@@ -17,7 +18,11 @@ const documentKey = "default";
 const seedContent: CmsContent = {
   articles: seedArticles,
   cities: seedCities,
-  businesses: seedBusinesses
+  businesses: seedBusinesses,
+  settings: {
+    ga4Id: "",
+    gtmId: ""
+  }
 };
 
 const seedCityBySlug = new Map(seedCities.map((city) => [city.slug, city]));
@@ -106,6 +111,10 @@ async function writeFileContent(content: CmsContent) {
 
 function normalizeContent(content: CmsContent): CmsContent {
   return {
+    settings: {
+      ga4Id: content.settings?.ga4Id || "",
+      gtmId: content.settings?.gtmId || ""
+    },
     articles: content.articles.map((article) => ({
       ...article,
       content:
@@ -168,6 +177,16 @@ export async function getCities() {
 
 export async function getBusinesses() {
   return (await readCmsContent()).businesses;
+}
+
+export async function getSiteSettings() {
+  return (await readCmsContent()).settings;
+}
+
+export async function saveSiteSettings(settings: SiteSettings) {
+  const content = await readCmsContent();
+  content.settings = settings;
+  await writeCmsContent(content);
 }
 
 export async function saveArticle(article: Article, originalSlug?: string) {

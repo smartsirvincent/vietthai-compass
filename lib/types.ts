@@ -69,6 +69,11 @@ export type DirectoryBusiness = {
   plan: "free" | "basic" | "featured" | "premium";
 };
 
+export type SiteSettings = {
+  ga4Id?: string;
+  gtmId?: string;
+};
+
 export type ResearchBrief = {
   id: string;
   title: string;

@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { createHmac, timingSafeEqual } from "crypto";
 
 export type AdminRole = "admin" | "user";
@@ -46,6 +47,18 @@ export function verifyAdminSession(raw?: string) {
 export async function getAdminSession() {
   const cookieStore = await cookies();
   return verifyAdminSession(cookieStore.get(cookieName)?.value);
+}
+
+export async function requireAdminSession() {
+  const session = await getAdminSession();
+  if (!session) redirect("/admin/login");
+  return session;
+}
+
+export async function requireAdminRole() {
+  const session = await requireAdminSession();
+  if (session.role !== "admin") redirect("/admin/articles");
+  return session;
 }
 
 export async function setAdminSession(username: string, role: AdminRole) {

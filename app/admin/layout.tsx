@@ -28,11 +28,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <span className="brand-mark admin-brand-mark" aria-hidden="true">VT</span>
         <h2>越泰指南後台</h2>
         <p className="admin-user">登入：{session.username} / {session.role}</p>
-        <Link href="/admin">儀表板</Link>
+        {session.role === "admin" ? <Link href="/admin">儀表板</Link> : null}
         <Link href="/admin/articles">文章管理</Link>
-        <Link href="/admin/cities">城市管理</Link>
-        <Link href="/admin/businesses">商家管理</Link>
-        <Link href="/admin/content-engine">SEO 內容引擎</Link>
+        {session.role === "admin" ? <Link href="/admin/cities">城市管理</Link> : null}
+        {session.role === "admin" ? <Link href="/admin/businesses">商家管理</Link> : null}
+        {session.role === "admin" ? <Link href="/admin/content-engine">SEO 內容引擎</Link> : null}
+        {session.role === "admin" ? <Link href="/admin/settings">網站設定</Link> : null}
         <Link href="/">返回前台</Link>
         <form action={logoutAction} className="admin-logout-form">
           <button type="submit">登出</button>

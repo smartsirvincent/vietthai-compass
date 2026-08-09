@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { requireAdminRole } from "@/lib/admin-auth";
 import { deleteCity, getCities, listFromTextarea, saveCity, textValue } from "@/lib/cms-store";
 import { City, District } from "@/lib/types";
 
@@ -27,6 +28,7 @@ function districtsToTextarea(districts: District[] = []) {
 
 async function saveCityAction(formData: FormData) {
   "use server";
+  await requireAdminRole();
   const originalSlug = textValue(formData, "originalSlug");
   const city: City = {
     slug: textValue(formData, "slug"),
@@ -50,6 +52,7 @@ async function saveCityAction(formData: FormData) {
 
 async function deleteCityAction(formData: FormData) {
   "use server";
+  await requireAdminRole();
   await deleteCity(textValue(formData, "slug"));
   revalidatePath("/");
   revalidatePath("/cities");
@@ -57,6 +60,7 @@ async function deleteCityAction(formData: FormData) {
 }
 
 export default async function AdminCitiesPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
+  await requireAdminRole();
   const { edit } = await searchParams;
   const cities = await getCities();
   const editing = cities.find((item) => item.slug === edit);

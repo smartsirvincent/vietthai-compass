@@ -26,8 +26,8 @@ async function verifyAdminSession(raw?: string) {
   if (!payload || !signature || signature.toLowerCase() !== (await sign(payload)).toLowerCase()) return null;
 
   try {
-    const session = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/"))) as { exp?: number };
-    if (!session.exp || Date.now() > session.exp) return null;
+    const session = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/"))) as { exp?: number; role?: string };
+    if (!session.exp || !session.role || Date.now() > session.exp) return null;
     return session;
   } catch {
     return null;
@@ -41,7 +41,15 @@ export async function middleware(request: NextRequest) {
   }
 
   const session = await verifyAdminSession(request.cookies.get(cookieName)?.value);
-  if (session) return NextResponse.next();
+  if (session) {
+    if (session.role === "user" && !pathname.startsWith("/admin/articles")) {
+      const articlesUrl = request.nextUrl.clone();
+      articlesUrl.pathname = "/admin/articles";
+      articlesUrl.search = "";
+      return NextResponse.redirect(articlesUrl);
+    }
+    return NextResponse.next();
+  }
 
   const loginUrl = request.nextUrl.clone();
   loginUrl.pathname = "/admin/login";

@@ -22,6 +22,7 @@ async function loginAction(formData: FormData) {
   }
 
   await setAdminSession(username, role);
+  if (role === "user") redirect("/admin/articles");
   redirect(nextPath.startsWith("/admin") ? nextPath : "/admin");
 }
 

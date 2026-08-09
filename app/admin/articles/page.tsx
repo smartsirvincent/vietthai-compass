@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArticleEditor } from "@/components/ArticleEditor";
+import { requireAdminSession } from "@/lib/admin-auth";
 import { deleteArticle, getArticles, getBusinesses, getCities, listFromTextarea, saveArticle, textValue } from "@/lib/cms-store";
 import { Article, ArticleCategory } from "@/lib/types";
 
@@ -9,6 +10,7 @@ const categories: ArticleCategory[] = ["旅遊攻略", "餐廳美食", "景點�
 
 async function saveArticleAction(formData: FormData) {
   "use server";
+  await requireAdminSession();
   const originalSlug = textValue(formData, "originalSlug");
   const article: Article = {
     slug: textValue(formData, "slug"),
@@ -40,6 +42,7 @@ async function saveArticleAction(formData: FormData) {
 
 async function deleteArticleAction(formData: FormData) {
   "use server";
+  await requireAdminSession();
   await deleteArticle(textValue(formData, "slug"));
   revalidatePath("/");
   revalidatePath("/articles");
@@ -47,6 +50,7 @@ async function deleteArticleAction(formData: FormData) {
 }
 
 export default async function AdminArticlesPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
+  await requireAdminSession();
   const { edit } = await searchParams;
   const [articles, cities, businesses] = await Promise.all([getArticles(), getCities(), getBusinesses()]);
   const editing = articles.find((item) => item.slug === edit);
