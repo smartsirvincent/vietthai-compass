@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { ArrowRight, Search, Sparkles } from "lucide-react";
 import { ArticleCard, BusinessCard, CategoryVisualCard, CityCard, SectionHeader } from "@/components/Cards";
 import { SiteShell } from "@/components/SiteShell";
 import { sectionCategoryAssets } from "@/data/category-assets";
-import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
+import { getArticles, getBusinesses, getCities, getSiteSettings } from "@/lib/cms-store";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -12,8 +13,9 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [articles, businesses, cities] = await Promise.all([getArticles(), getBusinesses(), getCities()]);
+  const [articles, businesses, cities, settings] = await Promise.all([getArticles(), getBusinesses(), getCities(), getSiteSettings()]);
   const blogArticles = articles.slice(0, 3);
+  const heroImage = settings.heroImage || "/brand-assets/home-hero-vietthai-commerce.png";
 
   return (
     <SiteShell>
@@ -21,7 +23,7 @@ export default async function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }} />
 
       <section className="home-hero">
-        <div className="home-hero-media" />
+        <div className="home-hero-media" style={{ "--home-hero-image": `url("${heroImage}")` } as CSSProperties} />
         <div className="home-hero-content">
           <p className="eyebrow">VietThai Compass</p>
           <h1>越南、泰國中文旅遊與在地生活指南</h1>

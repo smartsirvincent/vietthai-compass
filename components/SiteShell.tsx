@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Facebook, Hash, Instagram, Mail, MessageCircle, Search } from "lucide-react";
 import { siteSocials } from "@/data/site";
+import { getSiteSettings } from "@/lib/cms-store";
 
 const navItems = [
   ["越南", "/vietnam"],
@@ -14,11 +15,17 @@ const navItems = [
   ["商務合作", "/business"]
 ];
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const settings = await getSiteSettings();
+
   return (
     <header className="site-header">
       <Link className="brand" href="/" aria-label="越泰指南首頁">
-        <span className="brand-mark" aria-hidden="true">VT</span>
+        {settings.logoImage ? (
+          <img className="brand-logo-image" src={settings.logoImage} alt="越泰指南 Logo" />
+        ) : (
+          <span className="brand-mark" aria-hidden="true">VT</span>
+        )}
         <span>
           <strong>越泰指南</strong>
           <small>VietThai Compass</small>
@@ -82,7 +89,7 @@ export function SiteFooter() {
   );
 }
 
-export function SiteShell({ children }: { children: React.ReactNode }) {
+export async function SiteShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <SiteHeader />

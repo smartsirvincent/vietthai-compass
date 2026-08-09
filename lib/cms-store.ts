@@ -21,7 +21,9 @@ const seedContent: CmsContent = {
   businesses: seedBusinesses,
   settings: {
     ga4Id: "",
-    gtmId: ""
+    gtmId: "",
+    heroImage: "/brand-assets/home-hero-vietthai-commerce.png",
+    logoImage: ""
   }
 };
 
@@ -113,7 +115,9 @@ function normalizeContent(content: CmsContent): CmsContent {
   return {
     settings: {
       ga4Id: content.settings?.ga4Id || "",
-      gtmId: content.settings?.gtmId || ""
+      gtmId: content.settings?.gtmId || "",
+      heroImage: content.settings?.heroImage || "/brand-assets/home-hero-vietthai-commerce.png",
+      logoImage: content.settings?.logoImage || ""
     },
     articles: content.articles.map((article) => ({
       ...article,
@@ -136,6 +140,7 @@ function normalizeContent(content: CmsContent): CmsContent {
     })),
     businesses: content.businesses.map((business) => ({
       ...business,
+      image: business.image || "/brand-assets/home-business-local-life.png",
       districtSlug: business.districtSlug || "",
       googleMapUrl: business.googleMapUrl || "",
       badges: business.badges || [],

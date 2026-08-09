@@ -61,6 +61,11 @@ img {
   border-radius: 8px;
 }
 
+.brand img {
+  object-fit: contain;
+  background: #fff;
+}
+
 .brand-mark {
   display: grid;
   place-items: center;
@@ -278,7 +283,7 @@ p {
   inset: 0;
   background:
     linear-gradient(90deg, rgba(14, 24, 42, 0.96) 0%, rgba(20, 31, 53, 0.82) 40%, rgba(20, 31, 53, 0.22) 100%),
-    url("/brand-assets/home-hero-vietthai-commerce.png") center/cover;
+    var(--home-hero-image, url("/brand-assets/home-hero-vietthai-commerce.png")) center/cover;
 }
 
 .home-hero-content {
@@ -476,6 +481,14 @@ p {
 .city-card.has-image img {
   width: 100%;
   aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.business-card.has-image > img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 10px;
+  border-radius: 8px;
   object-fit: cover;
 }
 
@@ -1088,6 +1101,79 @@ p {
 .settings-status strong {
   color: var(--ink);
   overflow-wrap: anywhere;
+}
+
+.image-upload-field {
+  display: grid;
+  gap: 10px;
+}
+
+.image-upload-field > img {
+  width: min(320px, 100%);
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  object-fit: cover;
+  background: #fff;
+}
+
+.image-upload-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.image-upload-controls input {
+  flex: 1 1 210px;
+}
+
+.image-upload-controls button {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.image-upload-controls button:disabled {
+  cursor: wait;
+  opacity: 0.64;
+}
+
+.image-upload-field small {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.editor-upload-bar {
+  display: grid;
+  grid-template-columns: minmax(160px, 1.2fr) minmax(140px, 1fr) auto;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.editor-upload-bar input {
+  min-width: 0;
+}
+
+.editor-upload-bar button {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.editor-upload-bar button:disabled {
+  cursor: wait;
+  opacity: 0.64;
 }
 
 .table-like {

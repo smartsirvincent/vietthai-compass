@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { ImageUploadField } from "@/components/ImageUploadField";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { deleteBusiness, getBusinesses, getCities, listFromTextarea, saveBusiness, textValue } from "@/lib/cms-store";
 import { siteSocials } from "@/data/site";
@@ -14,6 +15,7 @@ async function saveBusinessAction(formData: FormData) {
     slug: textValue(formData, "slug"),
     name: textValue(formData, "name"),
     category: textValue(formData, "category"),
+    image: textValue(formData, "image", "/brand-assets/home-business-local-life.png"),
     citySlug: textValue(formData, "citySlug"),
     districtSlug: textValue(formData, "districtSlug") || undefined,
     country: textValue(formData, "country", "vietnam") as DirectoryBusiness["country"],
@@ -77,6 +79,12 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
             <label>方案<select name="plan" defaultValue={editing?.plan || "free"}><option value="free">free</option><option value="basic">basic</option><option value="featured">featured</option><option value="premium">premium</option></select></label>
           </div>
           <label>Google Map 網址<input name="googleMapUrl" defaultValue={editing?.googleMapUrl || ""} placeholder="https://maps.google.com/..." /></label>
+          <ImageUploadField
+            label="商家照片"
+            name="image"
+            defaultValue={editing?.image || "/brand-assets/home-business-local-life.png"}
+            folder="vietthai-compass/businesses"
+          />
           <label>商家描述<textarea name="description" required rows={3} defaultValue={editing?.description || ""} /></label>
           <label>特色標籤<textarea name="badges" rows={3} defaultValue={editing?.badges.join("\n") || ""} /></label>
           <div className="grid two">

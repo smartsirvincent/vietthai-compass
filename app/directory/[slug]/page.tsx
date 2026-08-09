@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     openGraph: {
       title: business.name,
       description: business.description,
-      images: ["/brand-assets/home-business-local-life.png"]
+      images: [business.image || "/brand-assets/home-business-local-life.png"]
     }
   };
 }
@@ -54,6 +54,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
       </section>
       <section className="content-layout">
         <article className="panel">
+          {business.image ? <img className="article-cover" src={business.image} alt={`${business.name}商家照片`} /> : null}
           <h2>商家介紹</h2>
           <p>{business.description}</p>
           <h2>適合情境</h2>

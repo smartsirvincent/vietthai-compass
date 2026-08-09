@@ -59,6 +59,7 @@ export type DirectoryBusiness = {
   slug: string;
   name: string;
   category: string;
+  image?: string;
   citySlug: string;
   districtSlug?: string;
   country: CountryCode;
@@ -72,6 +73,8 @@ export type DirectoryBusiness = {
 export type SiteSettings = {
   ga4Id?: string;
   gtmId?: string;
+  heroImage?: string;
+  logoImage?: string;
 };
 
 export type ResearchBrief = {

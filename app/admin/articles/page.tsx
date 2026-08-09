@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArticleEditor } from "@/components/ArticleEditor";
+import { ImageUploadField } from "@/components/ImageUploadField";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { deleteArticle, getArticles, getBusinesses, getCities, listFromTextarea, saveArticle, textValue } from "@/lib/cms-store";
 import { Article, ArticleCategory } from "@/lib/types";
@@ -83,7 +84,12 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
           <label>商家特色<textarea name="businessFeatures" rows={5} defaultValue={editing?.businessFeatures?.join("\n") || ""} placeholder="一行一個特色，例如：室內外座位彈性、適合早午餐、英文溝通方便。" /></label>
 
           <label>關鍵字<textarea name="keywords" rows={3} defaultValue={editing?.keywords.join("\n") || ""} placeholder="一行一個關鍵字" /></label>
-          <label>封面圖片網址<input name="coverImage" defaultValue={editing?.coverImage || "/brand-assets/home-hero-vietthai-commerce.png"} /></label>
+          <ImageUploadField
+            label="封面圖片"
+            name="coverImage"
+            defaultValue={editing?.coverImage || "/brand-assets/home-hero-vietthai-commerce.png"}
+            folder="vietthai-compass/articles"
+          />
           <label>封面圖片替代文字<input name="photoAlt" defaultValue={editing?.photoAlt || ""} /></label>
           <label>最後更新日期<input type="date" name="updatedAt" defaultValue={editing?.updatedAt || new Date().toISOString().slice(0, 10)} /></label>
           <label>文章內容<ArticleEditor defaultValue={editing?.content || ""} /></label>

@@ -97,10 +97,14 @@ export function ArticleCard({ article }: { article: Article }) {
 
 export function BusinessCard({ business }: { business: DirectoryBusiness }) {
   return (
-    <Link className="card business-card" href={`/directory/${business.slug}`} aria-label={`查看${business.name}`}>
-      <div className="card-icon">
-        <BriefcaseBusiness size={20} />
-      </div>
+    <Link className={`card business-card ${business.image ? "has-image" : ""}`} href={`/directory/${business.slug}`} aria-label={`查看${business.name}`}>
+      {business.image ? (
+        <img src={business.image} alt={`${business.name}商家照片`} />
+      ) : (
+        <div className="card-icon">
+          <BriefcaseBusiness size={20} />
+        </div>
+      )}
       <span className="pill">{business.category}</span>
       <h3>{business.name}</h3>
       <p>{business.description}</p>

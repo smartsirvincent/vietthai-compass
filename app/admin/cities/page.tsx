@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { ImageUploadField } from "@/components/ImageUploadField";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { deleteCity, getCities, listFromTextarea, saveCity, textValue } from "@/lib/cms-store";
 import { City, District } from "@/lib/types";
@@ -85,7 +86,12 @@ export default async function AdminCitiesPage({ searchParams }: { searchParams: 
           <label>城市摘要<textarea name="summary" required rows={3} defaultValue={editing?.summary || ""} /></label>
           <label>適合族群<textarea name="audience" rows={3} defaultValue={editing?.audience.join("\n") || ""} /></label>
           <label>商務備註<textarea name="businessAngle" rows={3} defaultValue={editing?.businessAngle || ""} /></label>
-          <label>圖片網址<input name="image" defaultValue={editing?.image || "/brand-assets/home-hero-vietthai-commerce.png"} /></label>
+          <ImageUploadField
+            label="城市圖片"
+            name="image"
+            defaultValue={editing?.image || "/brand-assets/home-hero-vietthai-commerce.png"}
+            folder="vietthai-compass/cities"
+          />
           <label>
             分區清單
             <textarea name="districts" rows={6} defaultValue={districtsToTextarea(editing?.districts)} placeholder="sukhumvit | Sukhumvit | Sukhumvit | 商務、餐廳與外籍生活集中區" />
