@@ -179,7 +179,13 @@ export function getCmsStorageMode() {
 }
 
 export async function readCmsContent(): Promise<CmsContent> {
-  const content = hasDatabase() ? await readDatabaseContent() : await readFileContent();
+  let content: CmsContent | null;
+  try {
+    content = hasDatabase() ? await readDatabaseContent() : await readFileContent();
+  } catch (error) {
+    console.error("CMS content read failed, falling back to seed content.", error);
+    content = seedContent;
+  }
   return normalizeContent(content || seedContent);
 }
 
