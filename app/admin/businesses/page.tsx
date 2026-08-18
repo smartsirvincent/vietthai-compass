@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { CityDistrictFields } from "@/components/CityDistrictFields";
 import { ImageUploadField } from "@/components/ImageUploadField";
+import { TagInputField } from "@/components/TagInputField";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { deleteBusiness, getBusinesses, getCities, listFromTextarea, saveBusiness, textValue } from "@/lib/cms-store";
 import { siteSocials } from "@/data/site";
@@ -12,19 +13,21 @@ async function saveBusinessAction(formData: FormData) {
   "use server";
   await requireAdminRole();
   const originalSlug = textValue(formData, "originalSlug");
+  const country = textValue(formData, "country", "vietnam") as DirectoryBusiness["country"];
   const citySlug = textValue(formData, "citySlug");
   const districtSlug = textValue(formData, "districtSlug");
-  const cities = await getCities();
-  const selectedCity = cities.find((city) => city.slug === citySlug);
+  const [cities, businesses] = await Promise.all([getCities(), getBusinesses()]);
+  const existingBusiness = businesses.find((business) => business.slug === (originalSlug || textValue(formData, "slug")));
+  const selectedCity = cities.find((city) => city.slug === citySlug && city.country === country);
   const validDistrictSlug = selectedCity?.districts.some((district) => district.slug === districtSlug) ? districtSlug : "";
   const business: DirectoryBusiness = {
     slug: textValue(formData, "slug"),
     name: textValue(formData, "name"),
     category: textValue(formData, "category"),
     image: textValue(formData, "image", "/brand-assets/home-business-local-life.png"),
-    citySlug,
+    citySlug: selectedCity?.slug || citySlug,
     districtSlug: validDistrictSlug || undefined,
-    country: textValue(formData, "country", "vietnam") as DirectoryBusiness["country"],
+    country,
     description: textValue(formData, "description"),
     googleMapUrl: textValue(formData, "googleMapUrl"),
     badges: listFromTextarea(formData.get("badges")),
@@ -38,7 +41,7 @@ async function saveBusinessAction(formData: FormData) {
       website: textValue(formData, "website"),
       email: textValue(formData, "email")
     },
-    plan: textValue(formData, "plan", "free") as DirectoryBusiness["plan"]
+    plan: existingBusiness?.plan || "free"
   };
 
   await saveBusiness(business, originalSlug || undefined);
@@ -80,13 +83,14 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
             <label>分類<input name="category" required defaultValue={editing?.category || ""} /></label>
             <CityDistrictFields
               cities={cities}
+              showCountry
+              requiredCountry
               defaultCitySlug={editing?.citySlug || ""}
               defaultDistrictSlug={editing?.districtSlug || ""}
+              defaultCountry={editing?.country || "vietnam"}
               cityPlaceholder="請選擇城市"
               requiredCity
             />
-            <label>國家<select name="country" defaultValue={editing?.country || "vietnam"}><option value="vietnam">越南</option><option value="thailand">泰國</option></select></label>
-            <label>方案<select name="plan" defaultValue={editing?.plan || "free"}><option value="free">free</option><option value="basic">basic</option><option value="featured">featured</option><option value="premium">premium</option></select></label>
           </div>
           <label>Google Map 網址<input name="googleMapUrl" defaultValue={editing?.googleMapUrl || ""} placeholder="https://maps.google.com/..." /></label>
           <ImageUploadField
@@ -96,7 +100,7 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
             folder="vietthai-compass/businesses"
           />
           <label>商家描述<textarea name="description" required rows={3} defaultValue={editing?.description || ""} /></label>
-          <label>特色標籤<textarea name="badges" rows={3} defaultValue={editing?.badges.join("\n") || ""} /></label>
+          <TagInputField label="特色標籤" name="badges" defaultTags={editing?.badges || []} />
           <div className="grid two">
             <label>LINE<input name="line" defaultValue={editing?.socials.line || ""} /></label>
             <label>Facebook<input name="facebook" defaultValue={editing?.socials.facebook || ""} /></label>
@@ -115,7 +119,7 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
             {businesses.map((business) => (
               <div key={business.slug}>
                 <strong>{business.name}</strong>
-                <span>{business.category} / {business.citySlug} / {business.districtSlug || "不限分區"} / {business.plan}</span>
+                <span>{business.category} / {business.country === "vietnam" ? "越南" : "泰國"} / {business.citySlug} / {business.districtSlug || "不限分區"}</span>
                 <div className="admin-row-actions">
                   <Link href={`/admin/businesses?edit=${business.slug}`}>編輯</Link>
                   <form action={deleteBusinessAction}><input type="hidden" name="slug" value={business.slug} /><button type="submit">刪除</button></form>

@@ -1297,6 +1297,37 @@ p {
   resize: vertical;
 }
 
+.tag-input-field {
+  display: grid;
+  gap: 8px;
+}
+
+.tag-input-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 12px;
+}
+
+.tag-input-list button {
+  min-height: 32px;
+  border: 1px solid rgba(15, 91, 107, 0.18);
+  border-radius: 8px;
+  padding: 5px 10px;
+  color: var(--blue);
+  background: #eef7f5;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tag-input-field small {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .admin-list {
   display: grid;
   gap: 12px;

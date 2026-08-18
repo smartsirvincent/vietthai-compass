@@ -50,7 +50,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
         <p>{business.description}</p>
       </section>
       <section className="band light">
-        <InfoStrip items={[["城市", city?.name || business.citySlug], ["分區", district?.name || "不限分區"], ["方案", business.plan], ["特色", business.badges.join(" / ") || "待補"]]} />
+        <InfoStrip items={[["城市", city?.name || business.citySlug], ["分區", district?.name || "不限分區"], ["特色", business.badges.join(" / ") || "待補"]]} />
       </section>
       <section className="content-layout">
         <article className="panel">
