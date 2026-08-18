@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { getSiteSettings } from "@/lib/cms-store";
+import { defaultSiteSettings, getSiteSettings } from "@/lib/cms-store";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSiteSettings();
+  const settings = await getSiteSettings().catch(() => defaultSiteSettings);
   const siteName = settings.siteName || "越泰指南";
   const siteDescription = settings.siteDescription || settings.homeIntro || "";
   const ogImage = settings.heroImage || "/brand-assets/vietthai-compass-article-cover-hero.png";
