@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArticleEditor } from "@/components/ArticleEditor";
+import { CityDistrictFields } from "@/components/CityDistrictFields";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { deleteArticle, getArticles, getBusinesses, getCities, listFromTextarea, saveArticle, textValue } from "@/lib/cms-store";
@@ -13,6 +14,11 @@ async function saveArticleAction(formData: FormData) {
   "use server";
   await requireAdminSession();
   const originalSlug = textValue(formData, "originalSlug");
+  const citySlug = textValue(formData, "citySlug");
+  const districtSlug = textValue(formData, "districtSlug");
+  const cities = await getCities();
+  const selectedCity = cities.find((city) => city.slug === citySlug);
+  const validDistrictSlug = selectedCity?.districts.some((district) => district.slug === districtSlug) ? districtSlug : "";
   const article: Article = {
     slug: textValue(formData, "slug"),
     title: textValue(formData, "title"),
@@ -20,8 +26,8 @@ async function saveArticleAction(formData: FormData) {
     content: textValue(formData, "content"),
     category: textValue(formData, "category") as ArticleCategory,
     country: (textValue(formData, "country") || undefined) as Article["country"],
-    citySlug: textValue(formData, "citySlug") || undefined,
-    districtSlug: textValue(formData, "districtSlug") || undefined,
+    citySlug: citySlug || undefined,
+    districtSlug: validDistrictSlug || undefined,
     relatedBusinessSlug: textValue(formData, "relatedBusinessSlug") || undefined,
     businessIntro: textValue(formData, "businessIntro"),
     businessFeatures: listFromTextarea(formData.get("businessFeatures")),
@@ -55,7 +61,6 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
   const { edit } = await searchParams;
   const [articles, cities, businesses] = await Promise.all([getArticles(), getCities(), getBusinesses()]);
   const editing = articles.find((item) => item.slug === edit);
-  const districtOptions = cities.flatMap((city) => city.districts.map((district) => ({ city, district })));
 
   return (
     <>
@@ -75,8 +80,11 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
             <label>分類<select name="category" defaultValue={editing?.category || "旅遊攻略"}>{categories.map((item) => <option key={item}>{item}</option>)}</select></label>
             <label>內容目的<select name="intent" defaultValue={editing?.intent || "traffic"}><option value="traffic">搜尋流量</option><option value="commercial">商務轉換</option><option value="authority">權威建立</option></select></label>
             <label>國家<select name="country" defaultValue={editing?.country || ""}><option value="">不限國家</option><option value="vietnam">越南</option><option value="thailand">泰國</option></select></label>
-            <label>城市<select name="citySlug" defaultValue={editing?.citySlug || ""}><option value="">不限城市</option>{cities.map((city) => <option key={city.slug} value={city.slug}>{city.name} ({city.slug})</option>)}</select></label>
-            <label>分區<select name="districtSlug" defaultValue={editing?.districtSlug || ""}><option value="">不限分區</option>{districtOptions.map(({ city, district }) => <option key={`${city.slug}-${district.slug}`} value={district.slug}>{city.name} / {district.name} ({district.slug})</option>)}</select></label>
+            <CityDistrictFields
+              cities={cities}
+              defaultCitySlug={editing?.citySlug || ""}
+              defaultDistrictSlug={editing?.districtSlug || ""}
+            />
             <label>關聯商家<select name="relatedBusinessSlug" defaultValue={editing?.relatedBusinessSlug || ""}><option value="">不指定商家</option>{businesses.map((business) => <option key={business.slug} value={business.slug}>{business.name} ({business.slug})</option>)}</select></label>
           </div>
 

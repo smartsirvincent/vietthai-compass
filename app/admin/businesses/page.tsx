@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { CityDistrictFields } from "@/components/CityDistrictFields";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { deleteBusiness, getBusinesses, getCities, listFromTextarea, saveBusiness, textValue } from "@/lib/cms-store";
@@ -11,13 +12,18 @@ async function saveBusinessAction(formData: FormData) {
   "use server";
   await requireAdminRole();
   const originalSlug = textValue(formData, "originalSlug");
+  const citySlug = textValue(formData, "citySlug");
+  const districtSlug = textValue(formData, "districtSlug");
+  const cities = await getCities();
+  const selectedCity = cities.find((city) => city.slug === citySlug);
+  const validDistrictSlug = selectedCity?.districts.some((district) => district.slug === districtSlug) ? districtSlug : "";
   const business: DirectoryBusiness = {
     slug: textValue(formData, "slug"),
     name: textValue(formData, "name"),
     category: textValue(formData, "category"),
     image: textValue(formData, "image", "/brand-assets/home-business-local-life.png"),
-    citySlug: textValue(formData, "citySlug"),
-    districtSlug: textValue(formData, "districtSlug") || undefined,
+    citySlug,
+    districtSlug: validDistrictSlug || undefined,
     country: textValue(formData, "country", "vietnam") as DirectoryBusiness["country"],
     description: textValue(formData, "description"),
     googleMapUrl: textValue(formData, "googleMapUrl"),
@@ -58,7 +64,6 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
   const { edit } = await searchParams;
   const [businesses, cities] = await Promise.all([getBusinesses(), getCities()]);
   const editing = businesses.find((item) => item.slug === edit);
-  const districtOptions = cities.flatMap((city) => city.districts.map((district) => ({ city, district })));
 
   return (
     <>
@@ -73,8 +78,13 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
             <label>商家名稱<input name="name" required defaultValue={editing?.name || ""} /></label>
             <label>網址 Slug<input name="slug" required defaultValue={editing?.slug || ""} /></label>
             <label>分類<input name="category" required defaultValue={editing?.category || ""} /></label>
-            <label>城市<select name="citySlug" required defaultValue={editing?.citySlug || ""}><option value="">請選擇城市</option>{cities.map((city) => <option key={city.slug} value={city.slug}>{city.name} ({city.slug})</option>)}</select></label>
-            <label>分區<select name="districtSlug" defaultValue={editing?.districtSlug || ""}><option value="">不限分區</option>{districtOptions.map(({ city, district }) => <option key={`${city.slug}-${district.slug}`} value={district.slug}>{city.name} / {district.name} ({district.slug})</option>)}</select></label>
+            <CityDistrictFields
+              cities={cities}
+              defaultCitySlug={editing?.citySlug || ""}
+              defaultDistrictSlug={editing?.districtSlug || ""}
+              cityPlaceholder="請選擇城市"
+              requiredCity
+            />
             <label>國家<select name="country" defaultValue={editing?.country || "vietnam"}><option value="vietnam">越南</option><option value="thailand">泰國</option></select></label>
             <label>方案<select name="plan" defaultValue={editing?.plan || "free"}><option value="free">free</option><option value="basic">basic</option><option value="featured">featured</option><option value="premium">premium</option></select></label>
           </div>
