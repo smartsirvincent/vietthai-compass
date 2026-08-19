@@ -8,7 +8,29 @@ function googleMapEmbedUrl(query: string) {
   return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
 }
 
-function contactRows(business: Awaited<ReturnType<typeof getBusinesses>>[number]) {
+function externalUrl(value: string) {
+  return value.startsWith("http://") || value.startsWith("https://") ? value : `https://${value}`;
+}
+
+function phoneDigits(value: string) {
+  return value.replace(/[^\d+]/g, "");
+}
+
+function contactHref(label: string, value: string) {
+  if (label === "電話") return `tel:${phoneDigits(value)}`;
+  if (label === "Email") return `mailto:${value}`;
+  if (label === "WhatsApp") {
+    if (value.startsWith("http://") || value.startsWith("https://")) return value;
+    return `https://wa.me/${phoneDigits(value).replace(/^\+/, "")}`;
+  }
+  if (label === "Zalo") {
+    if (value.startsWith("http://") || value.startsWith("https://")) return value;
+    return `https://zalo.me/${phoneDigits(value).replace(/^\+/, "")}`;
+  }
+  return externalUrl(value);
+}
+
+function contactRows(business: Awaited<ReturnType<typeof getBusinesses>>[number]): Array<[string, string]> {
   return [
     ["電話", business.socials.phone],
     ["WhatsApp", business.socials.whatsapp],
@@ -21,7 +43,7 @@ function contactRows(business: Awaited<ReturnType<typeof getBusinesses>>[number]
     ["Telegram", business.socials.telegram],
     ["官方網站", business.socials.website],
     ["Email", business.socials.email]
-  ].filter(([, value]) => Boolean(value));
+  ].filter((entry): entry is [string, string] => Boolean(entry[1]));
 }
 
 export async function generateStaticParams() {
@@ -91,11 +113,18 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
         <aside className="panel">
           <h3>聯絡方式</h3>
           <div className="contact-list">
-            {business.googleMapUrl ? <a href={business.googleMapUrl}>Google Map</a> : null}
+            {business.googleMapUrl ? <a href={business.googleMapUrl} target="_blank" rel="noreferrer">Google Map</a> : null}
             {contacts.map(([label, value]) => (
               <div key={label}>
                 <span>{label}</span>
-                <strong>{value}</strong>
+                <a
+                  className="contact-value-link"
+                  href={contactHref(label, value)}
+                  target={label === "電話" ? undefined : "_blank"}
+                  rel={label === "電話" ? undefined : "noreferrer"}
+                >
+                  {value}
+                </a>
               </div>
             ))}
             {!business.googleMapUrl && !contacts.length ? <p className="muted-text">尚未提供聯絡方式。</p> : null}

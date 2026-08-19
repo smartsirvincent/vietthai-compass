@@ -1465,7 +1465,7 @@ p {
   gap: 10px;
 }
 
-.contact-list a {
+.contact-list > a {
   display: inline-flex;
   width: fit-content;
   min-height: 36px;
@@ -1494,6 +1494,16 @@ p {
   color: var(--ink);
   font-size: 14px;
   overflow-wrap: anywhere;
+}
+
+.contact-value-link {
+  width: fit-content;
+  color: var(--red);
+  font-size: 14px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .muted-text {
