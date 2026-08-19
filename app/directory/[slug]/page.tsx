@@ -8,6 +8,21 @@ function googleMapEmbedUrl(query: string) {
   return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
 }
 
+function contactRows(business: Awaited<ReturnType<typeof getBusinesses>>[number]) {
+  return [
+    ["電話", business.socials.phone],
+    ["Zalo", business.socials.zalo],
+    ["LINE", business.socials.line],
+    ["Facebook", business.socials.facebook],
+    ["Instagram", business.socials.instagram],
+    ["Threads", business.socials.threads],
+    ["TikTok", business.socials.tiktok],
+    ["Telegram", business.socials.telegram],
+    ["官方網站", business.socials.website],
+    ["Email", business.socials.email]
+  ].filter(([, value]) => Boolean(value));
+}
+
 export async function generateStaticParams() {
   const businesses = await getBusinesses();
   return businesses.map((business) => ({ slug: business.slug }));
@@ -39,6 +54,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
   if (!business) notFound();
   const city = cities.find((item) => item.slug === business.citySlug);
   const district = city?.districts.find((item) => item.slug === business.districtSlug);
+  const contacts = contactRows(business);
 
   return (
     <SiteShell>
@@ -73,18 +89,15 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
         </article>
         <aside className="panel">
           <h3>聯絡方式</h3>
-          <div className="link-list">
+          <div className="contact-list">
             {business.googleMapUrl ? <a href={business.googleMapUrl}>Google Map</a> : null}
-            {business.socials.phone ? <a href={`tel:${business.socials.phone}`}>電話</a> : null}
-            {business.socials.zalo ? <a href={business.socials.zalo.startsWith("http") ? business.socials.zalo : `https://zalo.me/${business.socials.zalo}`}>Zalo</a> : null}
-            {business.socials.line ? <a href={business.socials.line}>LINE</a> : null}
-            {business.socials.facebook ? <a href={business.socials.facebook}>Facebook</a> : null}
-            {business.socials.instagram ? <a href={business.socials.instagram}>Instagram</a> : null}
-            {business.socials.threads ? <a href={business.socials.threads}>Threads</a> : null}
-            {business.socials.tiktok ? <a href={business.socials.tiktok}>TikTok</a> : null}
-            {business.socials.telegram ? <a href={business.socials.telegram}>Telegram</a> : null}
-            {business.socials.website ? <a href={business.socials.website}>官方網站</a> : null}
-            {business.socials.email ? <a href={`mailto:${business.socials.email}`}>Email</a> : null}
+            {contacts.map(([label, value]) => (
+              <div key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
+            ))}
+            {!business.googleMapUrl && !contacts.length ? <p className="muted-text">尚未提供聯絡方式。</p> : null}
           </div>
         </aside>
       </section>

@@ -1391,6 +1391,46 @@ p {
   font-weight: 700;
 }
 
+.contact-list {
+  display: grid;
+  gap: 10px;
+}
+
+.contact-list a {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 36px;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: var(--white);
+  background: var(--red);
+  font-weight: 800;
+}
+
+.contact-list div {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.contact-list span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.contact-list strong {
+  color: var(--ink);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.muted-text {
+  color: var(--muted);
+}
+
 .article-body a,
 .link-list a {
   text-decoration: underline;

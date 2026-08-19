@@ -6,8 +6,9 @@ import { ImageUploadField } from "@/components/ImageUploadField";
 import { TagInputField } from "@/components/TagInputField";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { deleteBusiness, getBusinesses, getCities, listFromTextarea, saveBusiness, textValue } from "@/lib/cms-store";
-import { siteSocials } from "@/data/site";
 import { DirectoryBusiness } from "@/lib/types";
+
+const businessCategories = ["餐廳美食", "咖啡甜點", "景點行程", "住宿飯店", "在地生活", "商務服務", "購物選品", "交通移動"];
 
 async function saveBusinessAction(formData: FormData) {
   "use server";
@@ -33,7 +34,7 @@ async function saveBusinessAction(formData: FormData) {
     badges: listFromTextarea(formData.get("badges")),
     socials: {
       phone: textValue(formData, "phone"),
-      line: textValue(formData, "line") || siteSocials.line,
+      line: textValue(formData, "line"),
       zalo: textValue(formData, "zalo"),
       facebook: textValue(formData, "facebook"),
       instagram: textValue(formData, "instagram"),
@@ -91,7 +92,19 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
           <div className="grid two">
             <label>商家名稱<input name="name" required defaultValue={editing?.name || ""} /></label>
             <label>網址 Slug<input name="slug" required defaultValue={editing?.slug || ""} /></label>
-            <label>分類<input name="category" required defaultValue={editing?.category || ""} /></label>
+            <label>
+              商家分類
+              <input
+                name="category"
+                required
+                defaultValue={editing?.category || ""}
+                list="business-category-options"
+                placeholder="例：餐廳美食、商務服務"
+              />
+              <datalist id="business-category-options">
+                {businessCategories.map((category) => <option key={category} value={category} />)}
+              </datalist>
+            </label>
             <CityDistrictFields
               cities={cities}
               showCountry
