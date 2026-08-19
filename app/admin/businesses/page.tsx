@@ -5,7 +5,7 @@ import { CityDistrictFields } from "@/components/CityDistrictFields";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import { TagInputField } from "@/components/TagInputField";
 import { requireAdminRole } from "@/lib/admin-auth";
-import { deleteBusiness, getBusinesses, getCities, listFromTextarea, saveBusiness, textValue } from "@/lib/cms-store";
+import { deleteBusiness, getArticles, getBusinesses, getCities, listFromTextarea, saveBusiness, textValue } from "@/lib/cms-store";
 import { DirectoryBusiness } from "@/lib/types";
 
 const businessCategories = ["在地生活", "餐廳美食", "景點行程"];
@@ -19,6 +19,12 @@ function formatBusinessDate(value?: string) {
     hour: "2-digit",
     minute: "2-digit"
   }).format(new Date(value));
+}
+
+function categoryOptions(currentCategory?: string) {
+  return currentCategory && !businessCategories.includes(currentCategory)
+    ? [currentCategory, ...businessCategories]
+    : businessCategories;
 }
 
 async function saveBusinessAction(formData: FormData) {
@@ -41,6 +47,7 @@ async function saveBusinessAction(formData: FormData) {
     districtSlug: validDistrictSlug || undefined,
     country,
     description: textValue(formData, "description"),
+    review: textValue(formData, "review"),
     googleMapUrl: textValue(formData, "googleMapUrl"),
     badges: listFromTextarea(formData.get("badges")),
     socials: {
@@ -86,8 +93,9 @@ async function deleteBusinessAction(formData: FormData) {
 export default async function AdminBusinessesPage({ searchParams }: { searchParams: Promise<{ edit?: string; error?: string; country?: string; city?: string }> }) {
   await requireAdminRole();
   const { edit, error, country, city } = await searchParams;
-  const [businesses, cities] = await Promise.all([getBusinesses(), getCities()]);
+  const [businesses, cities, articles] = await Promise.all([getBusinesses(), getCities(), getArticles()]);
   const editing = businesses.find((item) => item.slug === edit);
+  const relatedArticles = editing ? articles.filter((article) => article.relatedBusinessSlug === editing.slug) : [];
   const selectedFilterCountry = country === "vietnam" || country === "thailand" ? country : "";
   const selectedFilterCity = city || "";
   const filterCities = selectedFilterCountry ? cities.filter((item) => item.country === selectedFilterCountry) : cities;
@@ -125,7 +133,7 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
                 defaultValue={editing?.category || ""}
               >
                 <option value="">請選擇分類</option>
-                {businessCategories.map((category) => <option key={category} value={category} />)}
+                {categoryOptions(editing?.category).map((category) => <option key={category} value={category}>{category}</option>)}
               </select>
             </label>
             <label className="checkbox-field">
@@ -150,7 +158,8 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
             defaultValue={editing?.image || "/brand-assets/home-business-local-life.png"}
             folder="vietthai-compass/businesses"
           />
-          <label>商家描述<textarea name="description" required rows={3} defaultValue={editing?.description || ""} /></label>
+          <label>商家介紹<textarea name="description" required rows={3} defaultValue={editing?.description || ""} /></label>
+          <label>商家評價<textarea name="review" rows={4} defaultValue={editing?.review || ""} placeholder="整理讀者會在意的評價重點、適合族群、注意事項。" /></label>
           <TagInputField label="特色標籤" name="badges" defaultTags={editing?.badges || []} />
           <div className="grid two">
             <label>電話<input name="phone" defaultValue={editing?.socials.phone || ""} placeholder="+84..." /></label>
@@ -167,6 +176,27 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
           </div>
           <button className="primary-button" type="submit">{editing ? "更新商家" : "新增商家"}</button>
         </form>
+        {editing ? (
+          <div className="panel related-admin-panel">
+            <h2>相關文章</h2>
+            {relatedArticles.length ? (
+              <div className="admin-list">
+                {relatedArticles.map((article) => (
+                  <div key={article.slug}>
+                    <strong>{article.title}</strong>
+                    <span>{article.category} / {article.citySlug || "不限城市"} / {article.updatedAt}</span>
+                    <div className="admin-row-actions">
+                      <Link href={`/admin/articles?edit=${article.slug}`}>編輯文章</Link>
+                      <Link href={`/articles/${article.slug}`} target="_blank">查看前台</Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="muted-text">目前沒有文章關聯到這個商家。可在文章管理的「關聯商家」欄位選擇此商家。</p>
+            )}
+          </div>
+        ) : null}
         <div className="panel">
           <h2>近期編輯商家</h2>
           <form className="admin-filter-form" action="/admin/businesses">

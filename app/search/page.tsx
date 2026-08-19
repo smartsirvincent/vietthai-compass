@@ -67,6 +67,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         business.name,
         business.category,
         business.description,
+        business.review,
         business.isTaiwanBusiness ? "台商專區" : "",
         business.citySlug,
         business.districtSlug,

@@ -160,6 +160,8 @@ function normalizeContent(content: CmsContent): CmsContent {
     businesses: content.businesses.map((business) => ({
       ...business,
       image: business.image || "/brand-assets/home-business-local-life.png",
+      category: business.category || "在地生活",
+      review: business.review || "",
       districtSlug: business.districtSlug || "",
       googleMapUrl: business.googleMapUrl || "",
       badges: business.badges || [],

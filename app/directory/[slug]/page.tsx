@@ -89,15 +89,15 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
         <p>{business.description}</p>
       </section>
       <section className="band light">
-        <InfoStrip items={[["城市", city?.name || business.citySlug], ["分區", district?.name || "不限分區"], ["特色", business.badges.join(" / ") || "待補"]]} />
+        <InfoStrip items={[["分類", business.category || "待補"], ["城市", city?.name || business.citySlug], ["分區", district?.name || "不限分區"], ["特色", business.badges.join(" / ") || "待補"]]} />
       </section>
       <section className="content-layout">
         <article className="panel">
           {business.image ? <img className="article-cover" src={business.image} alt={`${business.name}商家照片`} /> : null}
           <h2>商家介紹</h2>
           <p>{business.description}</p>
-          <h2>適合情境</h2>
-          <p>這個商家頁可作為讀者查找地點、評估是否前往，以及未來導入合作曝光的入口。若搭配文章介紹、城市頁與分區頁，能讓搜尋流量更自然地連到商家資訊。</p>
+          <h2>商家評價</h2>
+          <p>{business.review || "目前尚未整理完整評價。建議出發前先查看 Google Map 最新評論、營業時間與實際交通狀況，再依自己的用餐或拜訪情境安排。"}</p>
           {business.googleMapUrl ? (
             <div className="map-preview map-preview-wide">
               <h2>Google Map 預覽</h2>

@@ -67,6 +67,7 @@ export type DirectoryBusiness = {
   districtSlug?: string;
   country: CountryCode;
   description: string;
+  review?: string;
   googleMapUrl?: string;
   badges: string[];
   socials: SocialLinks;

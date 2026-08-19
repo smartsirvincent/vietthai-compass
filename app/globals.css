@@ -1366,6 +1366,10 @@ p {
   background: #fff;
 }
 
+.related-admin-panel {
+  grid-column: 1;
+}
+
 .admin-error {
   margin: 18px 0 0;
   padding: 12px 14px;
