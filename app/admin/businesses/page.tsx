@@ -8,7 +8,18 @@ import { requireAdminRole } from "@/lib/admin-auth";
 import { deleteBusiness, getBusinesses, getCities, listFromTextarea, saveBusiness, textValue } from "@/lib/cms-store";
 import { DirectoryBusiness } from "@/lib/types";
 
-const businessCategories = ["餐廳美食", "咖啡甜點", "景點行程", "住宿飯店", "在地生活", "商務服務", "購物選品", "交通移動"];
+const businessCategories = ["在地生活", "餐廳美食", "景點行程"];
+
+function formatBusinessDate(value?: string) {
+  if (!value) return "尚未記錄";
+  return new Intl.DateTimeFormat("zh-TW", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(new Date(value));
+}
 
 async function saveBusinessAction(formData: FormData) {
   "use server";
@@ -34,6 +45,7 @@ async function saveBusinessAction(formData: FormData) {
     badges: listFromTextarea(formData.get("badges")),
     socials: {
       phone: textValue(formData, "phone"),
+      whatsapp: textValue(formData, "whatsapp"),
       line: textValue(formData, "line"),
       zalo: textValue(formData, "zalo"),
       facebook: textValue(formData, "facebook"),
@@ -44,6 +56,8 @@ async function saveBusinessAction(formData: FormData) {
       website: textValue(formData, "website"),
       email: textValue(formData, "email")
     },
+    isTaiwanBusiness: formData.get("isTaiwanBusiness") === "on",
+    updatedAt: new Date().toISOString(),
     plan: existingBusiness?.plan || "free"
   };
 
@@ -69,11 +83,22 @@ async function deleteBusinessAction(formData: FormData) {
   redirect("/admin/businesses");
 }
 
-export default async function AdminBusinessesPage({ searchParams }: { searchParams: Promise<{ edit?: string; error?: string }> }) {
+export default async function AdminBusinessesPage({ searchParams }: { searchParams: Promise<{ edit?: string; error?: string; country?: string; city?: string }> }) {
   await requireAdminRole();
-  const { edit, error } = await searchParams;
+  const { edit, error, country, city } = await searchParams;
   const [businesses, cities] = await Promise.all([getBusinesses(), getCities()]);
   const editing = businesses.find((item) => item.slug === edit);
+  const selectedFilterCountry = country === "vietnam" || country === "thailand" ? country : "";
+  const selectedFilterCity = city || "";
+  const filterCities = selectedFilterCountry ? cities.filter((item) => item.country === selectedFilterCountry) : cities;
+  const filteredBusinesses = businesses
+    .filter((business) => !selectedFilterCountry || business.country === selectedFilterCountry)
+    .filter((business) => !selectedFilterCity || business.citySlug === selectedFilterCity)
+    .sort((a, b) => {
+      const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+      const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+      return dateB - dateA;
+    });
 
   return (
     <>
@@ -94,16 +119,18 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
             <label>網址 Slug<input name="slug" required defaultValue={editing?.slug || ""} /></label>
             <label>
               商家分類
-              <input
+              <select
                 name="category"
                 required
                 defaultValue={editing?.category || ""}
-                list="business-category-options"
-                placeholder="例：餐廳美食、商務服務"
-              />
-              <datalist id="business-category-options">
+              >
+                <option value="">請選擇分類</option>
                 {businessCategories.map((category) => <option key={category} value={category} />)}
-              </datalist>
+              </select>
+            </label>
+            <label className="checkbox-field">
+              <input name="isTaiwanBusiness" type="checkbox" defaultChecked={Boolean(editing?.isTaiwanBusiness)} />
+              <span>同時列入台商專區</span>
             </label>
             <CityDistrictFields
               cities={cities}
@@ -127,6 +154,7 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
           <TagInputField label="特色標籤" name="badges" defaultTags={editing?.badges || []} />
           <div className="grid two">
             <label>電話<input name="phone" defaultValue={editing?.socials.phone || ""} placeholder="+84..." /></label>
+            <label>WhatsApp<input name="whatsapp" defaultValue={editing?.socials.whatsapp || ""} placeholder="WhatsApp 電話或網址" /></label>
             <label>Zalo<input name="zalo" defaultValue={editing?.socials.zalo || ""} placeholder="Zalo 網址或電話" /></label>
             <label>LINE<input name="line" defaultValue={editing?.socials.line || ""} /></label>
             <label>Facebook<input name="facebook" defaultValue={editing?.socials.facebook || ""} /></label>
@@ -140,12 +168,34 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
           <button className="primary-button" type="submit">{editing ? "更新商家" : "新增商家"}</button>
         </form>
         <div className="panel">
-          <h2>商家列表</h2>
+          <h2>近期編輯商家</h2>
+          <form className="admin-filter-form" action="/admin/businesses">
+            <label>
+              國家
+              <select name="country" defaultValue={selectedFilterCountry}>
+                <option value="">全部國家</option>
+                <option value="vietnam">越南</option>
+                <option value="thailand">泰國</option>
+              </select>
+            </label>
+            <label>
+              城市
+              <select name="city" defaultValue={selectedFilterCity}>
+                <option value="">全部城市</option>
+                {filterCities.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}
+              </select>
+            </label>
+            <button type="submit">篩選</button>
+            <Link href="/admin/businesses">清除</Link>
+          </form>
           <div className="admin-list">
-            {businesses.map((business) => (
+            {filteredBusinesses.map((business) => (
               <div key={business.slug}>
                 <strong>{business.name}</strong>
-                <span>{business.category} / {business.country === "vietnam" ? "越南" : "泰國"} / {business.citySlug} / {business.districtSlug || "不限分區"}</span>
+                <span>
+                  {business.category}{business.isTaiwanBusiness ? " + 台商專區" : ""} / {business.country === "vietnam" ? "越南" : "泰國"} / {business.citySlug} / {business.districtSlug || "不限分區"}
+                </span>
+                <span>最近編輯：{formatBusinessDate(business.updatedAt)}</span>
                 <div className="admin-row-actions">
                   <Link href={`/admin/businesses?edit=${business.slug}`}>編輯</Link>
                   <form action={deleteBusinessAction}><input type="hidden" name="slug" value={business.slug} /><button type="submit">刪除</button></form>

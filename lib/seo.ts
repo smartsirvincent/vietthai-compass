@@ -102,6 +102,7 @@ export function businessJsonLd(business: DirectoryBusiness) {
     business.socials.tiktok,
     business.socials.telegram,
     business.socials.line,
+    business.socials.whatsapp,
     business.socials.zalo
   ].filter(Boolean);
 

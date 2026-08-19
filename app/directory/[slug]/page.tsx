@@ -11,6 +11,7 @@ function googleMapEmbedUrl(query: string) {
 function contactRows(business: Awaited<ReturnType<typeof getBusinesses>>[number]) {
   return [
     ["電話", business.socials.phone],
+    ["WhatsApp", business.socials.whatsapp],
     ["Zalo", business.socials.zalo],
     ["LINE", business.socials.line],
     ["Facebook", business.socials.facebook],

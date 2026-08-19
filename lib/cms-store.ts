@@ -166,10 +166,13 @@ function normalizeContent(content: CmsContent): CmsContent {
       socials: {
         ...(business.socials || {}),
         phone: business.socials?.phone || "",
+        whatsapp: business.socials?.whatsapp || "",
         zalo: business.socials?.zalo || "",
         tiktok: business.socials?.tiktok || "",
         telegram: business.socials?.telegram || ""
-      }
+      },
+      isTaiwanBusiness: Boolean(business.isTaiwanBusiness),
+      updatedAt: business.updatedAt || ""
     }))
   };
 }

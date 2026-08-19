@@ -109,6 +109,11 @@ export function BusinessCard({ business }: { business: DirectoryBusiness }) {
       <h3>{business.name}</h3>
       <p>{business.description}</p>
       <div className="badge-row">
+        {business.isTaiwanBusiness ? (
+          <span>
+            <BadgeCheck size={14} /> 台商專區
+          </span>
+        ) : null}
         {business.badges.map((badge) => (
           <span key={badge}>
             <BadgeCheck size={14} /> {badge}

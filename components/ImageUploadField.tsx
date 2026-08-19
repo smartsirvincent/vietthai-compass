@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type ImageUploadFieldProps = {
   label: string;
@@ -23,6 +23,11 @@ export function ImageUploadField({
   const [url, setUrl] = useState(defaultValue);
   const [status, setStatus] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    setUrl(defaultValue);
+    setStatus("");
+  }, [defaultValue]);
 
   const upload = async () => {
     const file = inputRef.current?.files?.[0];

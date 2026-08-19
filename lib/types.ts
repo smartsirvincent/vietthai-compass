@@ -4,6 +4,7 @@ export type ContentStatus = "draft" | "pending" | "published" | "scheduled" | "a
 
 export type SocialLinks = {
   phone?: string;
+  whatsapp?: string;
   line?: string;
   zalo?: string;
   facebook?: string;
@@ -69,6 +70,8 @@ export type DirectoryBusiness = {
   googleMapUrl?: string;
   badges: string[];
   socials: SocialLinks;
+  isTaiwanBusiness?: boolean;
+  updatedAt?: string;
   plan: "free" | "basic" | "featured" | "premium";
 };
 
