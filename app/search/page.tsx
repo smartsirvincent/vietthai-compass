@@ -72,6 +72,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         business.country,
         ...business.badges,
         business.socials.website,
+        business.socials.phone,
+        business.socials.zalo,
         business.socials.facebook,
         business.socials.instagram,
         business.socials.tiktok,

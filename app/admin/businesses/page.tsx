@@ -32,7 +32,9 @@ async function saveBusinessAction(formData: FormData) {
     googleMapUrl: textValue(formData, "googleMapUrl"),
     badges: listFromTextarea(formData.get("badges")),
     socials: {
+      phone: textValue(formData, "phone"),
       line: textValue(formData, "line") || siteSocials.line,
+      zalo: textValue(formData, "zalo"),
       facebook: textValue(formData, "facebook"),
       instagram: textValue(formData, "instagram"),
       threads: textValue(formData, "threads"),
@@ -44,7 +46,11 @@ async function saveBusinessAction(formData: FormData) {
     plan: existingBusiness?.plan || "free"
   };
 
-  await saveBusiness(business, originalSlug || undefined);
+  try {
+    await saveBusiness(business, originalSlug || undefined);
+  } catch {
+    redirect("/admin/businesses?error=database");
+  }
   revalidatePath("/");
   revalidatePath("/directory");
   revalidatePath(`/directory/${business.slug}`);
@@ -62,9 +68,9 @@ async function deleteBusinessAction(formData: FormData) {
   redirect("/admin/businesses");
 }
 
-export default async function AdminBusinessesPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
+export default async function AdminBusinessesPage({ searchParams }: { searchParams: Promise<{ edit?: string; error?: string }> }) {
   await requireAdminRole();
-  const { edit } = await searchParams;
+  const { edit, error } = await searchParams;
   const [businesses, cities] = await Promise.all([getBusinesses(), getCities()]);
   const editing = businesses.find((item) => item.slug === edit);
 
@@ -73,6 +79,11 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
       <p className="eyebrow">Directory</p>
       <h1>商家管理</h1>
       <p>商家可指定城市與分區，適合建立「曼谷 Sukhumvit 餐廳」或「胡志明市第一郡服務商」等分區 SEO 頁。</p>
+      {error === "database" ? (
+        <div className="admin-error">
+          商家資料無法儲存：目前雲端資料庫連線異常，請先修正 Vercel 的 DATABASE_URL 後再新增或更新商家。
+        </div>
+      ) : null}
       <section className="admin-editor-grid">
         <form action={saveBusinessAction} className="panel admin-form">
           <h2>{editing ? "編輯商家" : "新增商家"}</h2>
@@ -102,6 +113,8 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
           <label>商家描述<textarea name="description" required rows={3} defaultValue={editing?.description || ""} /></label>
           <TagInputField label="特色標籤" name="badges" defaultTags={editing?.badges || []} />
           <div className="grid two">
+            <label>電話<input name="phone" defaultValue={editing?.socials.phone || ""} placeholder="+84..." /></label>
+            <label>Zalo<input name="zalo" defaultValue={editing?.socials.zalo || ""} placeholder="Zalo 網址或電話" /></label>
             <label>LINE<input name="line" defaultValue={editing?.socials.line || ""} /></label>
             <label>Facebook<input name="facebook" defaultValue={editing?.socials.facebook || ""} /></label>
             <label>Instagram<input name="instagram" defaultValue={editing?.socials.instagram || ""} /></label>

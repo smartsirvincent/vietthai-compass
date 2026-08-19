@@ -101,7 +101,8 @@ export function businessJsonLd(business: DirectoryBusiness) {
     business.socials.threads,
     business.socials.tiktok,
     business.socials.telegram,
-    business.socials.line
+    business.socials.line,
+    business.socials.zalo
   ].filter(Boolean);
 
   return {
@@ -112,8 +113,9 @@ export function businessJsonLd(business: DirectoryBusiness) {
     url: absoluteUrl(`/directory/${business.slug}`),
     sameAs,
     areaServed: business.country === "vietnam" ? "Vietnam" : "Thailand",
+    telephone: business.socials.phone,
     email: business.socials.email,
-    image: absoluteUrl("/brand-assets/home-business-local-life.png")
+    image: absoluteUrl(business.image || "/brand-assets/home-business-local-life.png")
   };
 }
 

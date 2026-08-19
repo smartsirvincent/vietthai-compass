@@ -1297,6 +1297,16 @@ p {
   resize: vertical;
 }
 
+.admin-error {
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(201, 58, 50, 0.2);
+  border-radius: 8px;
+  color: var(--red);
+  background: #fff2f1;
+  font-weight: 800;
+}
+
 .tag-input-field {
   display: grid;
   gap: 8px;

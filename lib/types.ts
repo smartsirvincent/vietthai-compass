@@ -3,7 +3,9 @@ export type CountryCode = "vietnam" | "thailand";
 export type ContentStatus = "draft" | "pending" | "published" | "scheduled" | "archived";
 
 export type SocialLinks = {
+  phone?: string;
   line?: string;
+  zalo?: string;
   facebook?: string;
   instagram?: string;
   threads?: string;

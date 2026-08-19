@@ -165,6 +165,8 @@ function normalizeContent(content: CmsContent): CmsContent {
       badges: business.badges || [],
       socials: {
         ...(business.socials || {}),
+        phone: business.socials?.phone || "",
+        zalo: business.socials?.zalo || "",
         tiktok: business.socials?.tiktok || "",
         telegram: business.socials?.telegram || ""
       }

@@ -75,6 +75,8 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
           <h3>聯絡方式</h3>
           <div className="link-list">
             {business.googleMapUrl ? <a href={business.googleMapUrl}>Google Map</a> : null}
+            {business.socials.phone ? <a href={`tel:${business.socials.phone}`}>電話</a> : null}
+            {business.socials.zalo ? <a href={business.socials.zalo.startsWith("http") ? business.socials.zalo : `https://zalo.me/${business.socials.zalo}`}>Zalo</a> : null}
             {business.socials.line ? <a href={business.socials.line}>LINE</a> : null}
             {business.socials.facebook ? <a href={business.socials.facebook}>Facebook</a> : null}
             {business.socials.instagram ? <a href={business.socials.instagram}>Instagram</a> : null}
