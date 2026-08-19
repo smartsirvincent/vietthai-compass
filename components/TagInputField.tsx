@@ -1,6 +1,6 @@
 "use client";
 
-import { KeyboardEvent, useState } from "react";
+import { KeyboardEvent, useEffect, useState } from "react";
 
 type TagInputFieldProps = {
   label: string;
@@ -17,6 +17,11 @@ export function TagInputField({
 }: TagInputFieldProps) {
   const [tags, setTags] = useState(defaultTags.filter(Boolean));
   const [draft, setDraft] = useState("");
+
+  useEffect(() => {
+    setTags(defaultTags.filter(Boolean));
+    setDraft("");
+  }, [defaultTags]);
 
   const addTag = () => {
     const nextTag = draft.trim();

@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { AdminSubmitButton } from "@/components/AdminSubmitButton";
 import { CityDistrictFields } from "@/components/CityDistrictFields";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import { TagInputField } from "@/components/TagInputField";
@@ -78,7 +79,7 @@ async function saveBusinessAction(formData: FormData) {
   revalidatePath(`/directory/${business.slug}`);
   revalidatePath(`/cities/${business.citySlug}`);
   if (business.districtSlug) revalidatePath(`/cities/${business.citySlug}/districts/${business.districtSlug}`);
-  redirect("/admin/businesses");
+  redirect("/admin/businesses?saved=business");
 }
 
 async function deleteBusinessAction(formData: FormData) {
@@ -90,9 +91,9 @@ async function deleteBusinessAction(formData: FormData) {
   redirect("/admin/businesses");
 }
 
-export default async function AdminBusinessesPage({ searchParams }: { searchParams: Promise<{ edit?: string; error?: string; country?: string; city?: string }> }) {
+export default async function AdminBusinessesPage({ searchParams }: { searchParams: Promise<{ edit?: string; error?: string; country?: string; city?: string; saved?: string }> }) {
   await requireAdminRole();
-  const { edit, error, country, city } = await searchParams;
+  const { edit, error, country, city, saved } = await searchParams;
   const [businesses, cities, articles] = await Promise.all([getBusinesses(), getCities(), getArticles()]);
   const editing = businesses.find((item) => item.slug === edit);
   const relatedArticles = editing ? articles.filter((article) => article.relatedBusinessSlug === editing.slug) : [];
@@ -118,6 +119,7 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
           商家資料無法儲存：目前雲端資料庫連線異常，請先修正 Vercel 的 DATABASE_URL 後再新增或更新商家。
         </div>
       ) : null}
+      {saved === "business" ? <div className="settings-saved">已完成</div> : null}
       <section className="admin-editor-grid">
         <form action={saveBusinessAction} className="panel admin-form">
           <h2>{editing ? "編輯商家" : "新增商家"}</h2>
@@ -174,7 +176,7 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
             <label>網站<input name="website" defaultValue={editing?.socials.website || ""} /></label>
             <label>Email<input name="email" defaultValue={editing?.socials.email || ""} /></label>
           </div>
-          <button className="primary-button" type="submit">{editing ? "更新商家" : "新增商家"}</button>
+          <AdminSubmitButton idleLabel={editing ? "更新商家" : "新增商家"} />
         </form>
         {editing ? (
           <div className="panel related-admin-panel">

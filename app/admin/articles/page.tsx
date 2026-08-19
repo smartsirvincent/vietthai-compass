@@ -1,9 +1,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { AdminSubmitButton } from "@/components/AdminSubmitButton";
 import { ArticleEditor } from "@/components/ArticleEditor";
 import { CityDistrictFields } from "@/components/CityDistrictFields";
 import { ImageUploadField } from "@/components/ImageUploadField";
+import { TagInputField } from "@/components/TagInputField";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { deleteArticle, getArticles, getBusinesses, getCities, listFromTextarea, saveArticle, textValue } from "@/lib/cms-store";
 import { Article, ArticleCategory } from "@/lib/types";
@@ -44,7 +46,7 @@ async function saveArticleAction(formData: FormData) {
   revalidatePath(`/articles/${article.slug}`);
   if (article.citySlug) revalidatePath(`/cities/${article.citySlug}`);
   if (article.citySlug && article.districtSlug) revalidatePath(`/cities/${article.citySlug}/districts/${article.districtSlug}`);
-  redirect("/admin/articles");
+  redirect("/admin/articles?saved=article");
 }
 
 async function deleteArticleAction(formData: FormData) {
@@ -56,9 +58,9 @@ async function deleteArticleAction(formData: FormData) {
   redirect("/admin/articles");
 }
 
-export default async function AdminArticlesPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
+export default async function AdminArticlesPage({ searchParams }: { searchParams: Promise<{ edit?: string; saved?: string }> }) {
   await requireAdminSession();
-  const { edit } = await searchParams;
+  const { edit, saved } = await searchParams;
   const [articles, cities, businesses] = await Promise.all([getArticles(), getCities(), getBusinesses()]);
   const editing = articles.find((item) => item.slug === edit);
 
@@ -67,6 +69,7 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
       <p className="eyebrow">Content</p>
       <h1>文章管理</h1>
       <p>文章可用填表方式設定商家介紹、商家特色與關聯商家。只要選了關聯商家，前台會預設顯示 Google Map 預覽。</p>
+      {saved === "article" ? <div className="settings-saved">已完成</div> : null}
 
       <section className="admin-editor-grid">
         <form action={saveArticleAction} className="panel admin-form">
@@ -89,9 +92,19 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
           </div>
 
           <label>商家介紹<textarea name="businessIntro" rows={4} defaultValue={editing?.businessIntro || ""} placeholder="用讀者角度介紹這間店，例如適合什麼情境、位在哪個生活圈、為什麼值得放入口袋名單。" /></label>
-          <label>商家特色<textarea name="businessFeatures" rows={5} defaultValue={editing?.businessFeatures?.join("\n") || ""} placeholder="一行一個特色，例如：室內外座位彈性、適合早午餐、英文溝通方便。" /></label>
+          <TagInputField
+            label="商家特色"
+            name="businessFeatures"
+            defaultTags={editing?.businessFeatures || []}
+            placeholder="輸入特色後按 Enter，例如：適合早午餐"
+          />
 
-          <label>關鍵字<textarea name="keywords" rows={3} defaultValue={editing?.keywords.join("\n") || ""} placeholder="一行一個關鍵字" /></label>
+          <TagInputField
+            label="關鍵字標籤"
+            name="keywords"
+            defaultTags={editing?.keywords || []}
+            placeholder="輸入關鍵字後按 Enter"
+          />
           <ImageUploadField
             label="封面圖片"
             name="coverImage"
@@ -101,7 +114,7 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
           <label>封面圖片替代文字<input name="photoAlt" defaultValue={editing?.photoAlt || ""} /></label>
           <label>最後更新日期<input type="date" name="updatedAt" defaultValue={editing?.updatedAt || new Date().toISOString().slice(0, 10)} /></label>
           <label>文章內容<ArticleEditor defaultValue={editing?.content || ""} /></label>
-          <button className="primary-button" type="submit">{editing ? "更新文章" : "新增文章"}</button>
+          <AdminSubmitButton idleLabel={editing ? "更新文章" : "新增文章"} />
         </form>
 
         <div className="panel">

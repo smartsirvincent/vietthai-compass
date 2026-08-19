@@ -243,6 +243,15 @@ p {
   background: var(--red);
 }
 
+.primary-button:disabled {
+  cursor: wait;
+  opacity: 0.78;
+}
+
+.admin-submit-button.is-pending {
+  background: var(--blue);
+}
+
 .secondary-button {
   color: var(--ink);
   background: var(--gold);
@@ -868,6 +877,10 @@ p {
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 24px;
+}
+
+.preserve-lines {
+  white-space: pre-line;
 }
 
 .article-main h2 {

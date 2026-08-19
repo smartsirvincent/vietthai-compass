@@ -95,9 +95,9 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
         <article className="panel">
           {business.image ? <img className="article-cover" src={business.image} alt={`${business.name}商家照片`} /> : null}
           <h2>商家介紹</h2>
-          <p>{business.description}</p>
+          <p className="preserve-lines">{business.description}</p>
           <h2>商家評價</h2>
-          <p>{business.review || "目前尚未整理完整評價。建議出發前先查看 Google Map 最新評論、營業時間與實際交通狀況，再依自己的用餐或拜訪情境安排。"}</p>
+          <p className="preserve-lines">{business.review || "目前尚未整理完整評價。建議出發前先查看 Google Map 最新評論、營業時間與實際交通狀況，再依自己的用餐或拜訪情境安排。"}</p>
           {business.googleMapUrl ? (
             <div className="map-preview map-preview-wide">
               <h2>Google Map 預覽</h2>
