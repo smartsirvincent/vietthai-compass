@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { ArrowRight, Search, Sparkles } from "lucide-react";
+import { ArrowRight, Compass, MapPinned, Newspaper, Search, Sparkles, Store, Utensils } from "lucide-react";
 import { ArticleCard, BusinessCard, CategoryVisualCard, CityCard, SectionHeader } from "@/components/Cards";
 import { SiteShell } from "@/components/SiteShell";
 import { sectionCategoryAssets } from "@/data/category-assets";
@@ -16,6 +16,9 @@ export default async function HomePage() {
   const [articles, businesses, cities, settings] = await Promise.all([getArticles(), getBusinesses(), getCities(), getSiteSettings()]);
   const blogArticles = articles.slice(0, 3);
   const heroImage = settings.heroImage || "/brand-assets/home-hero-vietthai-commerce.png";
+  const cityCount = cities.length;
+  const businessCount = businesses.length;
+  const articleCount = articles.length;
 
   return (
     <SiteShell>
@@ -39,6 +42,66 @@ export default async function HomePage() {
             </Link>
             <Link className="secondary-button" href="/business">{settings.homeSecondaryCtaLabel}</Link>
           </div>
+        </div>
+        <div className="hero-proof">
+          <div>
+            <strong>{cityCount} 城市</strong>
+            <span>用城市與分區進入越南、泰國內容</span>
+          </div>
+          <div>
+            <strong>{articleCount} 篇文章</strong>
+            <span>餐廳、景點、在地生活持續擴充</span>
+          </div>
+          <div>
+            <strong>{businessCount} 商家</strong>
+            <span>連到地圖、社群與相關專題</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="route-board-section">
+        <div className="route-board-copy">
+          <p className="eyebrow">Compass Routes</p>
+          <h2>從目的地找到能行動的資訊</h2>
+          <p>
+            越泰指南不是只把文章排成清單，而是把城市、分區、商家與內容串成路徑。
+            讀者可以先選城市，再看餐廳景點與在地生活；商家也能自然出現在相關搜尋情境裡。
+          </p>
+          <Link className="text-link" href="/search">
+            用關鍵字探索 <ArrowRight size={16} />
+          </Link>
+        </div>
+        <div className="route-board" aria-label="越泰指南內容路徑">
+          <Link href="/cities" className="route-node route-primary">
+            <Compass size={24} />
+            <span>第一步</span>
+            <strong>城市與分區</strong>
+            <small>胡志明市、曼谷、峴港、清邁</small>
+          </Link>
+          <Link href="/restaurants" className="route-node">
+            <Utensils size={22} />
+            <span>吃什麼</span>
+            <strong>餐廳美食</strong>
+            <small>依城市、分區與情境整理</small>
+          </Link>
+          <Link href="/attractions" className="route-node">
+            <MapPinned size={22} />
+            <span>去哪裡</span>
+            <strong>景點行程</strong>
+            <small>半日、一日與順遊安排</small>
+          </Link>
+          <Link href="/local-life" className="route-node">
+            <Newspaper size={22} />
+            <span>怎麼生活</span>
+            <strong>在地生活</strong>
+            <small>交通、社群、長住與日常</small>
+          </Link>
+          <Link href="/directory" className="route-node route-commerce">
+            <Store size={22} />
+            <span>可以聯絡</span>
+            <strong>精選商家</strong>
+            <small>地圖、社群、文章曝光入口</small>
+          </Link>
         </div>
       </section>
 

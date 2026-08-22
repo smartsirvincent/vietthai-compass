@@ -28,6 +28,15 @@ a {
   text-decoration: none;
 }
 
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(45, 125, 120, 0.36);
+  outline-offset: 3px;
+}
+
 img {
   max-width: 100%;
   display: block;
@@ -379,6 +388,138 @@ p {
   margin-top: 5px;
   color: rgba(255, 255, 255, 0.82);
   font-size: 14px;
+}
+
+.route-board-section {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.82fr) minmax(0, 1.18fr);
+  gap: clamp(24px, 5vw, 64px);
+  align-items: center;
+  padding: 84px clamp(18px, 5vw, 72px);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.74)),
+    repeating-linear-gradient(135deg, rgba(214, 168, 79, 0.16) 0 1px, transparent 1px 18px),
+    #f6f1e8;
+}
+
+.route-board-copy p:not(.eyebrow) {
+  color: var(--muted);
+}
+
+.route-board {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.02fr 0.9fr 0.9fr;
+  grid-template-areas:
+    "primary food place"
+    "primary life commerce";
+  gap: 12px;
+}
+
+.route-board::before {
+  content: "";
+  position: absolute;
+  inset: 44px 34px;
+  border: 1px dashed rgba(45, 125, 120, 0.38);
+  transform: rotate(-2deg);
+  pointer-events: none;
+}
+
+.route-node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 178px;
+  padding: 20px;
+  border: 1px solid rgba(21, 34, 58, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 16px 34px rgba(21, 34, 58, 0.08);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.route-node:nth-child(2) {
+  grid-area: food;
+}
+
+.route-node:nth-child(3) {
+  grid-area: place;
+}
+
+.route-node:nth-child(4) {
+  grid-area: life;
+}
+
+.route-node:nth-child(5) {
+  grid-area: commerce;
+}
+
+.route-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 42px rgba(21, 34, 58, 0.13);
+}
+
+.route-node svg {
+  color: var(--teal);
+}
+
+.route-node span {
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 8px;
+  color: var(--blue);
+  background: #eef7f5;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.route-node strong {
+  font-size: 22px;
+  line-height: 1.18;
+}
+
+.route-node small {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.route-primary {
+  grid-area: primary;
+  min-height: 368px;
+  color: var(--white);
+  background:
+    linear-gradient(160deg, rgba(21, 34, 58, 0.96), rgba(45, 125, 120, 0.88)),
+    url("/brand-assets/home-hero-vietthai-commerce.png") center/cover;
+}
+
+.route-primary svg,
+.route-primary small {
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.route-primary span {
+  color: var(--ink);
+  background: var(--gold);
+}
+
+.route-commerce {
+  color: var(--white);
+  background:
+    linear-gradient(145deg, rgba(201, 58, 50, 0.94), rgba(30, 42, 68, 0.88)),
+    url("/brand-assets/home-business-local-life.png") center/cover;
+}
+
+.route-commerce svg,
+.route-commerce small {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.route-commerce span {
+  color: var(--ink);
+  background: #fff;
 }
 
 .strategy-strip {
@@ -811,10 +952,18 @@ p {
   color: rgba(255, 255, 255, 0.7);
 }
 
+.site-footer > * {
+  min-width: 0;
+}
+
 .footer-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 14px 22px;
+}
+
+.site-footer .social-row {
+  flex-wrap: wrap;
 }
 
 .social-row a {
@@ -1671,6 +1820,7 @@ p {
   .grid.four,
   .grid.three,
   .grid.two,
+  .route-board-section,
   .split-band,
   .content-layout,
   .article-layout,
@@ -1710,6 +1860,7 @@ p {
   .grid.four,
   .grid.three,
   .grid.two,
+  .route-board-section,
   .split-band,
   .content-layout,
   .featured-city-layout,
@@ -1727,11 +1878,33 @@ p {
   }
 
   .home-hero {
-    min-height: 760px;
+    min-height: 980px;
   }
 
   .home-hero-content {
-    margin: 0 auto 72px;
+    margin: 0 auto 300px;
+  }
+
+  .route-board {
+    grid-template-columns: 1fr;
+    grid-template-areas: none;
+  }
+
+  .route-board::before {
+    inset: 20px;
+  }
+
+  .route-node,
+  .route-primary {
+    grid-area: auto;
+    min-height: 170px;
+  }
+
+  .route-node:nth-child(2),
+  .route-node:nth-child(3),
+  .route-node:nth-child(4),
+  .route-node:nth-child(5) {
+    grid-area: auto;
   }
 
   .hero-proof {
