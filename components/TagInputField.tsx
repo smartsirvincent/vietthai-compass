@@ -17,11 +17,12 @@ export function TagInputField({
 }: TagInputFieldProps) {
   const [tags, setTags] = useState(defaultTags.filter(Boolean));
   const [draft, setDraft] = useState("");
+  const defaultsKey = JSON.stringify(defaultTags.filter(Boolean));
 
   useEffect(() => {
-    setTags(defaultTags.filter(Boolean));
+    setTags(JSON.parse(defaultsKey) as string[]);
     setDraft("");
-  }, [defaultTags]);
+  }, [defaultsKey]);
 
   const addTag = () => {
     const nextTag = draft.trim();
@@ -42,7 +43,7 @@ export function TagInputField({
   return (
     <label className="tag-input-field">
       {label}
-      <input type="hidden" name={name} value={tags.join("\n")} />
+      <input type="hidden" name={name} value={[...new Set([...tags, draft.trim()].filter(Boolean))].join("\n")} />
       <div className="tag-input-list">
         {tags.map((tag) => (
           <button
@@ -59,7 +60,6 @@ export function TagInputField({
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
         onKeyDown={onKeyDown}
-        onBlur={addTag}
         placeholder={placeholder}
       />
       <small>按 Enter 新增標籤；點選已建立的標籤可移除。</small>

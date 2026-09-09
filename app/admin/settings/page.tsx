@@ -1,5 +1,7 @@
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { AdminEditorForm } from "@/components/AdminEditorForm";
+import { AdminSubmitButton } from "@/components/AdminSubmitButton";
+import { finishCmsEdit } from "@/lib/cms-actions";
+import { contentRevision } from "@/lib/cms-store";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { getSiteSettings, saveSiteSettings, textValue } from "@/lib/cms-store";
@@ -16,26 +18,27 @@ function extractTrackingId(value: string, prefix: "G-" | "GTM-") {
 async function saveSettingsAction(formData: FormData) {
   "use server";
   await requireAdminRole();
+  return finishCmsEdit(async () => {
 
-  const ga4Id = extractTrackingId(textValue(formData, "ga4Id"), "G-");
-  const gtmId = extractTrackingId(textValue(formData, "gtmId"), "GTM-");
+    const ga4Id = extractTrackingId(textValue(formData, "ga4Id"), "G-");
+    const gtmId = extractTrackingId(textValue(formData, "gtmId"), "GTM-");
 
-  await saveSiteSettings({
-    siteName: textValue(formData, "siteName", "越泰指南"),
-    siteNameEn: textValue(formData, "siteNameEn", "VietThai Compass"),
-    siteDescription: textValue(formData, "siteDescription"),
-    homeEyebrow: textValue(formData, "homeEyebrow"),
-    homeTitle: textValue(formData, "homeTitle"),
-    homeIntro: textValue(formData, "homeIntro"),
-    homePrimaryCtaLabel: textValue(formData, "homePrimaryCtaLabel"),
-    homeSecondaryCtaLabel: textValue(formData, "homeSecondaryCtaLabel"),
-    ga4Id,
-    gtmId,
-    heroImage: textValue(formData, "heroImage", "/brand-assets/home-hero-vietthai-commerce.png"),
-    logoImage: textValue(formData, "logoImage")
+    await saveSiteSettings({
+      siteName: textValue(formData, "siteName", "越泰指南"),
+      siteNameEn: textValue(formData, "siteNameEn", "VietThai Compass"),
+      siteDescription: textValue(formData, "siteDescription"),
+      homeEyebrow: textValue(formData, "homeEyebrow"),
+      homeTitle: textValue(formData, "homeTitle"),
+      homeIntro: textValue(formData, "homeIntro"),
+      homePrimaryCtaLabel: textValue(formData, "homePrimaryCtaLabel"),
+      homeSecondaryCtaLabel: textValue(formData, "homeSecondaryCtaLabel"),
+      ga4Id,
+      gtmId,
+      heroImage: textValue(formData, "heroImage", "/brand-assets/home-hero-vietthai-commerce.png"),
+      logoImage: textValue(formData, "logoImage")
+    }, textValue(formData, "revision"));
+    return `/admin/settings?saved=${Date.now()}`;
   });
-  revalidatePath("/", "layout");
-  redirect("/admin/settings?saved=1");
 }
 
 export default async function AdminSettingsPage({
@@ -53,7 +56,8 @@ export default async function AdminSettingsPage({
       <p>填入 GA4 或 GTM 代碼後，前台會自動完成埋設。若同時使用 GTM 與 GA4，請確認 GTM 內沒有重複安裝同一組 GA4。</p>
 
       <section className="admin-editor-grid">
-        <form action={saveSettingsAction} className="panel admin-form">
+        <AdminEditorForm key={params.saved || "edit"} action={saveSettingsAction} className="panel admin-form">
+          <input type="hidden" name="revision" value={contentRevision(settings)} />
           <h2>品牌與首頁文字</h2>
           {params.saved ? <div className="settings-saved">設定已儲存並套用到前台。</div> : null}
           <div className="grid two">
@@ -92,10 +96,13 @@ export default async function AdminSettingsPage({
             folder="vietthai-compass/site"
             note="可上傳透明 PNG 或正方形 Logo。未設定時會使用 VT 預設標誌。"
           />
-          <button className="primary-button" type="submit">儲存設定</button>
-        </form>
+          <AdminSubmitButton idleLabel="儲存設定" />
+        </AdminEditorForm>
 
         <div className="panel">
+          <h2>內容備份</h2>
+          <p>每次成功更新前，系統會在雲端資料庫保留上一版內容。您也可以下載目前的文章、商家、城市及網站設定。</p>
+          <a href="/admin/api/backup">下載目前內容備份</a>
           <h2>目前狀態</h2>
           <div className="settings-status">
             <div>

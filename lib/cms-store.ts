@@ -1,6 +1,8 @@
 import "server-only";
 import { promises as fs } from "fs";
 import path from "path";
+import { cache } from "react";
+import { createHash, randomUUID } from "crypto";
 import { Pool } from "pg";
 import { articles as seedArticles, businesses as seedBusinesses, cities as seedCities } from "@/data/site";
 import { Article, City, DirectoryBusiness, SiteSettings } from "@/lib/types";
@@ -40,6 +42,34 @@ const seedContent: CmsContent = {
 
 const seedCityBySlug = new Map(seedCities.map((city) => [city.slug, city]));
 
+export class CmsEditError extends Error {}
+
+export function cmsErrorMessage(error: unknown) {
+  if (error instanceof CmsEditError) return error.message;
+  console.error("CMS operation failed", error instanceof Error ? error.name : "Unknown error");
+  return "資料尚未儲存，請稍後再試。您填寫的內容仍保留在表單中；若持續失敗，請檢查雲端資料庫連線。";
+}
+
+// JSONB can change object key order, so revision hashes use canonical keys.
+export function contentRevision(value: unknown): string {
+  if (value === undefined) return "new";
+  const canonical = (item: unknown): unknown => {
+    if (Array.isArray(item)) return item.map(canonical);
+    if (item && typeof item === "object") {
+      return Object.fromEntries(Object.entries(item).filter(([, entry]) => entry !== undefined)
+        .sort(([a], [b]) => a.localeCompare(b)).map(([key, entry]) => [key, canonical(entry)]));
+    }
+    return item;
+  };
+  return createHash("sha256").update(JSON.stringify(canonical(value))).digest("hex");
+}
+
+function assertRevision(current: unknown, expectedRevision?: string) {
+  if (!expectedRevision || contentRevision(current) !== expectedRevision) {
+    throw new CmsEditError("這筆資料已變更，或表單版本過舊。請先保留您的修改，再重新開啟編輯頁確認最新內容，避免覆蓋其他更新。");
+  }
+}
+
 const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || "";
 
 declare global {
@@ -56,13 +86,18 @@ function getPool() {
     globalThis.vietThaiCmsPool = new Pool({
       connectionString: databaseUrl,
       max: 3,
+      connectionTimeoutMillis: 10000,
+      idleTimeoutMillis: 30000,
+      statement_timeout: 15000,
       ssl: databaseUrl.includes("localhost") ? undefined : { rejectUnauthorized: false }
     });
   }
   return globalThis.vietThaiCmsPool;
 }
 
-async function ensureDatabase() {
+let databaseReady: Promise<void> | undefined;
+
+async function initializeDatabase() {
   const pool = getPool();
   if (!pool) return;
   await pool.query(`
@@ -72,32 +107,31 @@ async function ensureDatabase() {
       updated_at timestamptz not null default now()
     )
   `);
+  await pool.query(`
+    create table if not exists cms_document_revisions (
+      id uuid primary key,
+      document_key text not null,
+      value jsonb not null,
+      created_at timestamptz not null default now()
+    )
+  `);
+  await pool.query("alter table cms_document_revisions enable row level security");
+}
+
+function ensureDatabase() {
+  databaseReady ??= initializeDatabase().catch((error) => {
+    databaseReady = undefined;
+    throw error;
+  });
+  return databaseReady;
 }
 
 async function readDatabaseContent() {
   const pool = getPool();
   if (!pool) return null;
-  await ensureDatabase();
   const result = await pool.query<{ value: CmsContent }>("select value from cms_documents where key = $1", [documentKey]);
   if (result.rows[0]?.value) return result.rows[0].value;
-  await writeDatabaseContent(seedContent);
-  return seedContent;
-}
-
-async function writeDatabaseContent(content: CmsContent) {
-  const pool = getPool();
-  if (!pool) return false;
-  await ensureDatabase();
-  await pool.query(
-    `
-      insert into cms_documents (key, value, updated_at)
-      values ($1, $2::jsonb, now())
-      on conflict (key)
-      do update set value = excluded.value, updated_at = now()
-    `,
-    [documentKey, JSON.stringify(content)]
-  );
-  return true;
+  throw new Error("CMS document is missing; refusing to replace cloud content with seed data.");
 }
 
 async function ensureContentFile() {
@@ -115,24 +149,19 @@ async function readFileContent(): Promise<CmsContent> {
   return JSON.parse(raw) as CmsContent;
 }
 
-async function writeFileContent(content: CmsContent) {
-  if (process.env.VERCEL || process.env.NODE_ENV === "production") {
-    throw new Error("正式環境尚未設定雲端資料庫，後台寫入已被阻擋，避免資料只暫存在 Vercel 檔案系統。請設定 DATABASE_URL 或 POSTGRES_URL。");
-  }
-  await fs.writeFile(contentPath, JSON.stringify(content, null, 2), "utf8");
-}
-
 function normalizeContent(content: CmsContent): CmsContent {
   return {
+    ...content,
     settings: {
+      ...content.settings,
       siteName: content.settings?.siteName || defaultSiteSettings.siteName,
       siteNameEn: content.settings?.siteNameEn || defaultSiteSettings.siteNameEn,
       siteDescription: content.settings?.siteDescription || defaultSiteSettings.siteDescription,
-      homeEyebrow: content.settings?.homeEyebrow || defaultSiteSettings.homeEyebrow,
+      homeEyebrow: content.settings?.homeEyebrow ?? defaultSiteSettings.homeEyebrow,
       homeTitle: content.settings?.homeTitle || defaultSiteSettings.homeTitle,
       homeIntro: content.settings?.homeIntro || defaultSiteSettings.homeIntro,
-      homePrimaryCtaLabel: content.settings?.homePrimaryCtaLabel || defaultSiteSettings.homePrimaryCtaLabel,
-      homeSecondaryCtaLabel: content.settings?.homeSecondaryCtaLabel || defaultSiteSettings.homeSecondaryCtaLabel,
+      homePrimaryCtaLabel: content.settings?.homePrimaryCtaLabel ?? defaultSiteSettings.homePrimaryCtaLabel,
+      homeSecondaryCtaLabel: content.settings?.homeSecondaryCtaLabel ?? defaultSiteSettings.homeSecondaryCtaLabel,
       ga4Id: content.settings?.ga4Id || "",
       gtmId: content.settings?.gtmId || "",
       heroImage: content.settings?.heroImage || "/brand-assets/home-hero-vietthai-commerce.png",
@@ -141,7 +170,7 @@ function normalizeContent(content: CmsContent): CmsContent {
     articles: content.articles.map((article) => ({
       ...article,
       content:
-        article.content ||
+        article.content ??
         `# ${article.title}\n\n${article.excerpt}\n\n## 重點資訊\n\n請在後台補上完整內容。\n`,
       keywords: article.keywords || [],
       businessFeatures: article.businessFeatures || [],
@@ -155,7 +184,7 @@ function normalizeContent(content: CmsContent): CmsContent {
       audience: city.audience || [],
       businessAngle: city.businessAngle || "",
       image: city.image || "/brand-assets/home-hero-vietthai-commerce.png",
-      districts: city.districts?.length ? city.districts : seedCityBySlug.get(city.slug)?.districts || []
+      districts: city.districts ?? seedCityBySlug.get(city.slug)?.districts ?? []
     })),
     businesses: content.businesses.map((business) => ({
       ...business,
@@ -185,23 +214,57 @@ export function getCmsStorageMode() {
   return "local-json";
 }
 
-export async function readCmsContent(): Promise<CmsContent> {
-  let content: CmsContent | null;
-  try {
-    content = hasDatabase() ? await readDatabaseContent() : await readFileContent();
-  } catch (error) {
-    console.error("CMS content read failed, falling back to seed content.", error);
-    content = seedContent;
-  }
-  return normalizeContent(content || seedContent);
-}
+export const readCmsContent = cache(async (): Promise<CmsContent> => {
+  if (!hasDatabase() && process.env.VERCEL) throw new Error("Cloud database is not configured.");
+  const content = hasDatabase() ? await readDatabaseContent() : await readFileContent();
+  if (!content) throw new Error("CMS content unavailable.");
+  return normalizeContent(content);
+});
 
-export async function writeCmsContent(content: CmsContent) {
+let fileMutationQueue: Promise<void> = Promise.resolve();
+
+async function mutateCmsContent(mutate: (content: CmsContent) => void) {
   if (hasDatabase()) {
-    await writeDatabaseContent(content);
+    await ensureDatabase();
+    const client = await getPool()!.connect();
+    try {
+      await client.query("begin");
+      // Lock before reading: concurrent saves must merge into the latest document.
+      const result = await client.query<{ value: CmsContent }>(
+        "select value from cms_documents where key = $1 for update", [documentKey]
+      );
+      const previous = result.rows[0]?.value;
+      if (!previous) throw new Error("CMS document is missing.");
+      const content = normalizeContent(previous);
+      mutate(content);
+      await client.query(
+        "insert into cms_document_revisions (id, document_key, value) values ($1, $2, $3::jsonb)",
+        [randomUUID(), documentKey, JSON.stringify(previous)]
+      );
+      await client.query("update cms_documents set value = $2::jsonb, updated_at = now() where key = $1", [documentKey, JSON.stringify(content)]);
+      await client.query("commit");
+    } catch (error) {
+      await client.query("rollback");
+      throw error;
+    } finally {
+      client.release();
+    }
     return;
   }
-  await writeFileContent(content);
+  const operation = fileMutationQueue.then(async () => {
+    const previous = await readFileContent();
+    const content = normalizeContent(previous);
+    mutate(content);
+    if (process.env.NODE_ENV === "production" || process.env.VERCEL) {
+      throw new Error("Cloud database is required for production writes.");
+    }
+    await fs.writeFile(path.join(path.dirname(contentPath), `cms-content.backup-${randomUUID()}.json`), JSON.stringify(previous), "utf8");
+    const temporaryPath = `${contentPath}.${randomUUID()}.tmp`;
+    await fs.writeFile(temporaryPath, JSON.stringify(content, null, 2), "utf8");
+    await fs.rename(temporaryPath, contentPath);
+  });
+  fileMutationQueue = operation.catch(() => undefined);
+  await operation;
 }
 
 export async function getArticles() {
@@ -220,55 +283,88 @@ export async function getSiteSettings() {
   return (await readCmsContent()).settings;
 }
 
-export async function saveSiteSettings(settings: SiteSettings) {
-  const content = await readCmsContent();
-  content.settings = settings;
-  await writeCmsContent(content);
+export async function saveSiteSettings(settings: SiteSettings, expectedRevision?: string) {
+  await mutateCmsContent((content) => {
+    assertRevision(content.settings, expectedRevision);
+    content.settings = { ...content.settings, ...settings };
+  });
 }
 
-export async function saveArticle(article: Article, originalSlug?: string) {
-  const content = await readCmsContent();
-  const key = originalSlug || article.slug;
-  const index = content.articles.findIndex((item) => item.slug === key);
-  if (index >= 0) content.articles[index] = article;
-  else content.articles.unshift(article);
-  await writeCmsContent(content);
+function upsert<T extends { slug: string }>(items: T[], value: T, originalSlug?: string, expectedRevision?: string) {
+  if (value.slug !== originalSlug && !/^[\p{L}\p{N}]+(?:[-_][\p{L}\p{N}]+)*$/u.test(value.slug)) throw new CmsEditError("新的網址 Slug 請使用文字、數字與連字號，不要包含空白或網址符號。");
+  const index = originalSlug ? items.findIndex((item) => item.slug === originalSlug) : -1;
+  if (originalSlug && index < 0) throw new CmsEditError("這筆資料已刪除或更改網址，請重新開啟列表確認。");
+  assertRevision(index >= 0 ? items[index] : undefined, expectedRevision);
+  if (items.some((item, position) => item.slug === value.slug && position !== index)) throw new CmsEditError("此網址 Slug 已被使用，請換一個網址，以免覆蓋現有資料。");
+  if (index >= 0) items[index] = { ...items[index], ...value };
+  else items.unshift(value);
 }
 
-export async function saveCity(city: City, originalSlug?: string) {
-  const content = await readCmsContent();
-  const key = originalSlug || city.slug;
-  const index = content.cities.findIndex((item) => item.slug === key);
-  if (index >= 0) content.cities[index] = city;
-  else content.cities.unshift(city);
-  await writeCmsContent(content);
+function validateLocation(content: CmsContent, value: { country?: string; citySlug?: string; districtSlug?: string }) {
+  if (!value.citySlug) {
+    if (value.districtSlug) throw new CmsEditError("請先選擇城市，再選擇分區。");
+    return;
+  }
+  const city = content.cities.find((item) => item.slug === value.citySlug);
+  if (!city || city.country !== value.country) throw new CmsEditError("城市與國家不一致，請重新選擇。");
+  if (value.districtSlug && !city.districts.some((item) => item.slug === value.districtSlug)) throw new CmsEditError("此分區不屬於選擇的城市，請重新選擇。");
 }
 
-export async function saveBusiness(business: DirectoryBusiness, originalSlug?: string) {
-  const content = await readCmsContent();
-  const key = originalSlug || business.slug;
-  const index = content.businesses.findIndex((item) => item.slug === key);
-  if (index >= 0) content.businesses[index] = business;
-  else content.businesses.unshift(business);
-  await writeCmsContent(content);
+export async function saveArticle(article: Article, originalSlug?: string, expectedRevision?: string) {
+  await mutateCmsContent((content) => {
+    validateLocation(content, article);
+    if (article.relatedBusinessSlug && !content.businesses.some((item) => item.slug === article.relatedBusinessSlug)) throw new CmsEditError("關聯商家已變更，請重新選擇。");
+    upsert(content.articles, article, originalSlug, expectedRevision);
+  });
 }
 
-export async function deleteArticle(slug: string) {
-  const content = await readCmsContent();
-  content.articles = content.articles.filter((item) => item.slug !== slug);
-  await writeCmsContent(content);
+export async function saveCity(city: City, originalSlug?: string, expectedRevision?: string) {
+  await mutateCmsContent((content) => {
+    const key = originalSlug || city.slug;
+    const related = [...content.articles, ...content.businesses].filter((item) => item.citySlug === key);
+    if (related.some((item) => item.districtSlug && !city.districts.some((district) => district.slug === item.districtSlug))) {
+      throw new CmsEditError("欲移除的分區仍有文章或商家使用，請先調整這些資料的分區。");
+    }
+    upsert(content.cities, city, originalSlug, expectedRevision);
+    related.forEach((item) => { item.citySlug = city.slug; item.country = city.country; });
+  });
 }
 
-export async function deleteCity(slug: string) {
-  const content = await readCmsContent();
-  content.cities = content.cities.filter((item) => item.slug !== slug);
-  await writeCmsContent(content);
+export async function saveBusiness(business: DirectoryBusiness, originalSlug?: string, expectedRevision?: string) {
+  await mutateCmsContent((content) => {
+    validateLocation(content, business);
+    upsert(content.businesses, business, originalSlug, expectedRevision);
+    if (originalSlug && originalSlug !== business.slug) {
+      content.articles.forEach((article) => {
+        if (article.relatedBusinessSlug === originalSlug) article.relatedBusinessSlug = business.slug;
+      });
+    }
+  });
 }
 
-export async function deleteBusiness(slug: string) {
-  const content = await readCmsContent();
-  content.businesses = content.businesses.filter((item) => item.slug !== slug);
-  await writeCmsContent(content);
+export async function deleteArticle(slug: string, expectedRevision?: string) {
+  await mutateCmsContent((content) => {
+    assertRevision(content.articles.find((item) => item.slug === slug), expectedRevision);
+    content.articles = content.articles.filter((item) => item.slug !== slug);
+  });
+}
+
+export async function deleteCity(slug: string, expectedRevision?: string) {
+  await mutateCmsContent((content) => {
+    assertRevision(content.cities.find((item) => item.slug === slug), expectedRevision);
+    if ([...content.articles, ...content.businesses].some((item) => item.citySlug === slug)) throw new CmsEditError("此城市仍有文章或商家，請先調整所屬城市後再刪除。");
+    content.cities = content.cities.filter((item) => item.slug !== slug);
+  });
+}
+
+export async function deleteBusiness(slug: string, expectedRevision?: string) {
+  await mutateCmsContent((content) => {
+    assertRevision(content.businesses.find((item) => item.slug === slug), expectedRevision);
+    content.businesses = content.businesses.filter((item) => item.slug !== slug);
+    content.articles.forEach((article) => {
+      if (article.relatedBusinessSlug === slug) article.relatedBusinessSlug = "";
+    });
+  });
 }
 
 export function listFromTextarea(value: FormDataEntryValue | null) {

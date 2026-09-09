@@ -47,7 +47,8 @@ export function ImageUploadField({
       const result = (await response.json()) as { url?: string; error?: string };
       if (!response.ok || !result.url) throw new Error(result.error || "圖片上傳失敗。");
       setUrl(result.url);
-      setStatus("圖片已上傳。");
+      if (inputRef.current) inputRef.current.value = "";
+      setStatus("圖片已上傳，請儲存表單以套用到前台。");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "圖片上傳失敗。");
     } finally {
@@ -56,12 +57,12 @@ export function ImageUploadField({
   };
 
   return (
-    <label className="image-upload-field">
+    <label className="image-upload-field" data-upload-pending={isUploading || Boolean(inputRef.current?.files?.length)}>
       {label}
       <input name={name} value={url} onChange={(event) => setUrl(event.target.value)} placeholder={placeholder} />
       {url ? <img src={url} alt={`${label}預覽`} /> : null}
       <span className="image-upload-controls">
-        <input ref={inputRef} type="file" accept="image/*" />
+        <input ref={inputRef} type="file" accept="image/*" disabled={isUploading} onChange={() => setStatus(inputRef.current?.files?.length ? "照片已選取，請按上傳照片。" : "")} />
         <button type="button" onClick={upload} disabled={isUploading}>
           {isUploading ? "上傳中" : "上傳照片"}
         </button>

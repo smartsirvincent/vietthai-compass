@@ -3,6 +3,8 @@ import Script from "next/script";
 import { defaultSiteSettings, getSiteSettings } from "@/lib/cms-store";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings().catch(() => defaultSiteSettings);
   const siteName = settings.siteName || "越泰指南";

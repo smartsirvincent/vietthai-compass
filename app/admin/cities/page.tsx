@@ -1,6 +1,8 @@
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { AdminEditorForm } from "@/components/AdminEditorForm";
+import { AdminSubmitButton } from "@/components/AdminSubmitButton";
+import { finishCmsEdit } from "@/lib/cms-actions";
+import { contentRevision } from "@/lib/cms-store";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { deleteCity, getCities, listFromTextarea, saveCity, textValue } from "@/lib/cms-store";
@@ -30,39 +32,38 @@ function districtsToTextarea(districts: District[] = []) {
 async function saveCityAction(formData: FormData) {
   "use server";
   await requireAdminRole();
-  const originalSlug = textValue(formData, "originalSlug");
-  const city: City = {
-    slug: textValue(formData, "slug"),
-    country: textValue(formData, "country", "vietnam") as City["country"],
-    name: textValue(formData, "name"),
-    nameEn: textValue(formData, "nameEn"),
-    summary: textValue(formData, "summary"),
-    bestSeason: textValue(formData, "bestSeason"),
-    recommendedDays: textValue(formData, "recommendedDays"),
-    audience: listFromTextarea(formData.get("audience")),
-    businessAngle: textValue(formData, "businessAngle"),
-    image: textValue(formData, "image", "/brand-assets/home-hero-vietthai-commerce.png"),
-    districts: districtsFromTextarea(formData.get("districts"))
-  };
-  await saveCity(city, originalSlug || undefined);
-  revalidatePath("/");
-  revalidatePath("/cities");
-  revalidatePath(`/cities/${city.slug}`);
-  redirect("/admin/cities");
+  return finishCmsEdit(async () => {
+    const originalSlug = textValue(formData, "originalSlug");
+    const city: City = {
+      slug: textValue(formData, "slug"),
+      country: textValue(formData, "country", "vietnam") as City["country"],
+      name: textValue(formData, "name"),
+      nameEn: textValue(formData, "nameEn"),
+      summary: textValue(formData, "summary"),
+      bestSeason: textValue(formData, "bestSeason"),
+      recommendedDays: textValue(formData, "recommendedDays"),
+      audience: listFromTextarea(formData.get("audience")),
+      businessAngle: textValue(formData, "businessAngle"),
+      image: textValue(formData, "image", "/brand-assets/home-hero-vietthai-commerce.png"),
+      districts: districtsFromTextarea(formData.get("districts"))
+    };
+    await saveCity(city, originalSlug || undefined, textValue(formData, "revision"));
+    return `/admin/cities?edit=${encodeURIComponent(city.slug)}&saved=city&savedAt=${Date.now()}`;
+  });
 }
 
 async function deleteCityAction(formData: FormData) {
   "use server";
   await requireAdminRole();
-  await deleteCity(textValue(formData, "slug"));
-  revalidatePath("/");
-  revalidatePath("/cities");
-  redirect("/admin/cities");
+  return finishCmsEdit(async () => {
+    await deleteCity(textValue(formData, "slug"), textValue(formData, "revision"));
+    return "/admin/cities";
+  });
 }
 
-export default async function AdminCitiesPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
+export default async function AdminCitiesPage({ searchParams }: { searchParams: Promise<{ edit?: string; saved?: string; savedAt?: string }> }) {
   await requireAdminRole();
-  const { edit } = await searchParams;
+  const { edit, saved, savedAt } = await searchParams;
   const cities = await getCities();
   const editing = cities.find((item) => item.slug === edit);
 
@@ -70,9 +71,11 @@ export default async function AdminCitiesPage({ searchParams }: { searchParams: 
     <>
       <p className="eyebrow">Places</p>
       <h1>城市管理</h1>
+      {saved === "city" ? <div className="settings-saved">已完成</div> : null}
       <p>城市可設定分區，讓餐廳美食、景點行程、在地生活與商家內容能依城市與大城市分區做 SEO。</p>
       <section className="admin-editor-grid">
-        <form action={saveCityAction} className="panel admin-form">
+        <AdminEditorForm key={`${edit || "new"}:${savedAt || ""}`} action={saveCityAction} className="panel admin-form">
+          <input type="hidden" name="revision" value={contentRevision(editing)} />
           <h2>{editing ? "編輯城市" : "新增城市"}</h2>
           <input type="hidden" name="originalSlug" defaultValue={editing?.slug || ""} />
           <div className="grid two">
@@ -97,8 +100,8 @@ export default async function AdminCitiesPage({ searchParams }: { searchParams: 
             <textarea name="districts" rows={6} defaultValue={districtsToTextarea(editing?.districts)} placeholder="sukhumvit | Sukhumvit | Sukhumvit | 商務、餐廳與外籍生活集中區" />
           </label>
           <p className="form-note">每行一個分區，格式：slug | 中文名稱 | 英文名稱 | 摘要。大城市建議 3-6 個分區，小城市可留空。</p>
-          <button className="primary-button" type="submit">{editing ? "更新城市" : "新增城市"}</button>
-        </form>
+          <AdminSubmitButton idleLabel={editing ? "更新城市" : "新增城市"} />
+        </AdminEditorForm>
         <div className="panel">
           <h2>城市列表</h2>
           <div className="admin-list">
@@ -108,7 +111,7 @@ export default async function AdminCitiesPage({ searchParams }: { searchParams: 
                 <span>{city.country === "vietnam" ? "越南" : "泰國"} / {city.slug} / {city.districts.length} 個分區</span>
                 <div className="admin-row-actions">
                   <Link href={`/admin/cities?edit=${city.slug}`}>編輯</Link>
-                  <form action={deleteCityAction}><input type="hidden" name="slug" value={city.slug} /><button type="submit">刪除</button></form>
+                  <AdminEditorForm action={deleteCityAction}><input type="hidden" name="slug" value={city.slug} /><input type="hidden" name="revision" value={contentRevision(city)} /><AdminSubmitButton idleLabel="刪除" /></AdminEditorForm>
                 </div>
               </div>
             ))}

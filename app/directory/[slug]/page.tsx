@@ -46,11 +46,6 @@ function contactRows(business: Awaited<ReturnType<typeof getBusinesses>>[number]
   ].filter((entry): entry is [string, string] => Boolean(entry[1]));
 }
 
-export async function generateStaticParams() {
-  const businesses = await getBusinesses();
-  return businesses.map((business) => ({ slug: business.slug }));
-}
-
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const businesses = await getBusinesses();

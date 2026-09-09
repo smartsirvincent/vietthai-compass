@@ -5,11 +5,6 @@ import { SiteShell } from "@/components/SiteShell";
 import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
 import { breadcrumbJsonLd } from "@/lib/seo";
 
-export async function generateStaticParams() {
-  const cities = await getCities();
-  return cities.flatMap((city) => city.districts.map((district) => ({ slug: city.slug, districtSlug: district.slug })));
-}
-
 export async function generateMetadata({ params }: { params: Promise<{ slug: string; districtSlug: string }> }): Promise<Metadata> {
   const { slug, districtSlug } = await params;
   const cities = await getCities();

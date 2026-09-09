@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
 import { siteUrl } from "@/lib/seo";
 
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [articles, businesses, cities] = await Promise.all([getArticles(), getBusinesses(), getCities()]);
   const staticRoutes: Array<{ path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }> = [

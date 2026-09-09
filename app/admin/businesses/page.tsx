@@ -1,7 +1,8 @@
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AdminSubmitButton } from "@/components/AdminSubmitButton";
+import { AdminEditorForm } from "@/components/AdminEditorForm";
+import { finishCmsEdit } from "@/lib/cms-actions";
+import { contentRevision } from "@/lib/cms-store";
 import { CityDistrictFields } from "@/components/CityDistrictFields";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import { TagInputField } from "@/components/TagInputField";
@@ -31,69 +32,61 @@ function categoryOptions(currentCategory?: string) {
 async function saveBusinessAction(formData: FormData) {
   "use server";
   await requireAdminRole();
-  const originalSlug = textValue(formData, "originalSlug");
-  const country = textValue(formData, "country", "vietnam") as DirectoryBusiness["country"];
-  const citySlug = textValue(formData, "citySlug");
-  const districtSlug = textValue(formData, "districtSlug");
-  const [cities, businesses] = await Promise.all([getCities(), getBusinesses()]);
-  const existingBusiness = businesses.find((business) => business.slug === (originalSlug || textValue(formData, "slug")));
-  const selectedCity = cities.find((city) => city.slug === citySlug && city.country === country);
-  const validDistrictSlug = selectedCity?.districts.some((district) => district.slug === districtSlug) ? districtSlug : "";
-  const business: DirectoryBusiness = {
-    slug: textValue(formData, "slug"),
-    name: textValue(formData, "name"),
-    category: textValue(formData, "category"),
-    image: textValue(formData, "image", "/brand-assets/home-business-local-life.png"),
-    citySlug: selectedCity?.slug || citySlug,
-    districtSlug: validDistrictSlug || undefined,
-    country,
-    description: textValue(formData, "description"),
-    review: textValue(formData, "review"),
-    googleMapUrl: textValue(formData, "googleMapUrl"),
-    badges: listFromTextarea(formData.get("badges")),
-    socials: {
-      phone: textValue(formData, "phone"),
-      whatsapp: textValue(formData, "whatsapp"),
-      line: textValue(formData, "line"),
-      zalo: textValue(formData, "zalo"),
-      facebook: textValue(formData, "facebook"),
-      instagram: textValue(formData, "instagram"),
-      threads: textValue(formData, "threads"),
-      tiktok: textValue(formData, "tiktok"),
-      telegram: textValue(formData, "telegram"),
-      website: textValue(formData, "website"),
-      email: textValue(formData, "email")
-    },
-    isTaiwanBusiness: formData.get("isTaiwanBusiness") === "on",
-    updatedAt: new Date().toISOString(),
-    plan: existingBusiness?.plan || "free"
-  };
+  return finishCmsEdit(async () => {
+    const originalSlug = textValue(formData, "originalSlug");
+    const country = textValue(formData, "country", "vietnam") as DirectoryBusiness["country"];
+    const citySlug = textValue(formData, "citySlug");
+    const districtSlug = textValue(formData, "districtSlug");
+    const [cities, businesses] = await Promise.all([getCities(), getBusinesses()]);
+    const existingBusiness = businesses.find((business) => business.slug === (originalSlug || textValue(formData, "slug")));
+    const selectedCity = cities.find((city) => city.slug === citySlug && city.country === country);
+    const business: DirectoryBusiness = {
+      slug: textValue(formData, "slug"),
+      name: textValue(formData, "name"),
+      category: textValue(formData, "category"),
+      image: textValue(formData, "image", "/brand-assets/home-business-local-life.png"),
+      citySlug: selectedCity?.slug || citySlug,
+      districtSlug: districtSlug || undefined,
+      country,
+      description: textValue(formData, "description"),
+      review: textValue(formData, "review"),
+      googleMapUrl: textValue(formData, "googleMapUrl"),
+      badges: listFromTextarea(formData.get("badges")),
+      socials: {
+        phone: textValue(formData, "phone"),
+        whatsapp: textValue(formData, "whatsapp"),
+        line: textValue(formData, "line"),
+        zalo: textValue(formData, "zalo"),
+        facebook: textValue(formData, "facebook"),
+        instagram: textValue(formData, "instagram"),
+        threads: textValue(formData, "threads"),
+        tiktok: textValue(formData, "tiktok"),
+        telegram: textValue(formData, "telegram"),
+        website: textValue(formData, "website"),
+        email: textValue(formData, "email")
+      },
+      isTaiwanBusiness: formData.get("isTaiwanBusiness") === "on",
+      updatedAt: new Date().toISOString(),
+      plan: existingBusiness?.plan || "free"
+    };
 
-  try {
-    await saveBusiness(business, originalSlug || undefined);
-  } catch {
-    redirect("/admin/businesses?error=database");
-  }
-  revalidatePath("/");
-  revalidatePath("/directory");
-  revalidatePath(`/directory/${business.slug}`);
-  revalidatePath(`/cities/${business.citySlug}`);
-  if (business.districtSlug) revalidatePath(`/cities/${business.citySlug}/districts/${business.districtSlug}`);
-  redirect("/admin/businesses?saved=business");
+    await saveBusiness(business, originalSlug || undefined, textValue(formData, "revision"));
+    return `/admin/businesses?edit=${encodeURIComponent(business.slug)}&saved=business&savedAt=${Date.now()}`;
+  });
 }
 
 async function deleteBusinessAction(formData: FormData) {
   "use server";
   await requireAdminRole();
-  await deleteBusiness(textValue(formData, "slug"));
-  revalidatePath("/");
-  revalidatePath("/directory");
-  redirect("/admin/businesses");
+  return finishCmsEdit(async () => {
+    await deleteBusiness(textValue(formData, "slug"), textValue(formData, "revision"));
+    return "/admin/businesses";
+  });
 }
 
-export default async function AdminBusinessesPage({ searchParams }: { searchParams: Promise<{ edit?: string; error?: string; country?: string; city?: string; saved?: string }> }) {
+export default async function AdminBusinessesPage({ searchParams }: { searchParams: Promise<{ edit?: string; error?: string; country?: string; city?: string; saved?: string; savedAt?: string }> }) {
   await requireAdminRole();
-  const { edit, error, country, city, saved } = await searchParams;
+  const { edit, error, country, city, saved, savedAt } = await searchParams;
   const [businesses, cities, articles] = await Promise.all([getBusinesses(), getCities(), getArticles()]);
   const editing = businesses.find((item) => item.slug === edit);
   const relatedArticles = editing ? articles.filter((article) => article.relatedBusinessSlug === editing.slug) : [];
@@ -121,7 +114,8 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
       ) : null}
       {saved === "business" ? <div className="settings-saved">已完成</div> : null}
       <section className="admin-editor-grid">
-        <form action={saveBusinessAction} className="panel admin-form">
+        <AdminEditorForm key={`${edit || "new"}:${savedAt || ""}`} action={saveBusinessAction} className="panel admin-form">
+          <input type="hidden" name="revision" value={contentRevision(editing)} />
           <h2>{editing ? "編輯商家" : "新增商家"}</h2>
           <input type="hidden" name="originalSlug" defaultValue={editing?.slug || ""} />
           <div className="grid two">
@@ -177,7 +171,7 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
             <label>Email<input name="email" defaultValue={editing?.socials.email || ""} /></label>
           </div>
           <AdminSubmitButton idleLabel={editing ? "更新商家" : "新增商家"} />
-        </form>
+        </AdminEditorForm>
         {editing ? (
           <div className="panel related-admin-panel">
             <h2>相關文章</h2>
@@ -230,7 +224,7 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
                 <span>最近編輯：{formatBusinessDate(business.updatedAt)}</span>
                 <div className="admin-row-actions">
                   <Link href={`/admin/businesses?edit=${business.slug}`}>編輯</Link>
-                  <form action={deleteBusinessAction}><input type="hidden" name="slug" value={business.slug} /><button type="submit">刪除</button></form>
+                  <AdminEditorForm action={deleteBusinessAction}><input type="hidden" name="slug" value={business.slug} /><input type="hidden" name="revision" value={contentRevision(business)} /><AdminSubmitButton idleLabel="刪除" /></AdminEditorForm>
                 </div>
               </div>
             ))}

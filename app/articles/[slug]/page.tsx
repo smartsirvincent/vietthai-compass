@@ -15,7 +15,7 @@ function renderInlineLinks(text: string) {
 }
 
 function renderArticleContent(content: string) {
-  if (/<(h1|h2|h3|p|img|strong|em|span|figure|figcaption|ul|ol|li|br)\b/i.test(content)) {
+  if (/<(h1|h2|h3|p|div|img|strong|em|span|figure|figcaption|ul|ol|li|br)\b/i.test(content)) {
     return <div dangerouslySetInnerHTML={{ __html: content }} />;
   }
 
@@ -34,11 +34,6 @@ function renderArticleContent(content: string) {
 
 function googleMapEmbedUrl(query: string) {
   return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
-}
-
-export async function generateStaticParams() {
-  const articles = await getArticles();
-  return articles.map((article) => ({ slug: article.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -103,10 +98,10 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           <img className="article-cover" src={article.coverImage} alt={article.photoAlt || article.title} />
           <div className="article-body">{renderArticleContent(article.content)}</div>
 
-          {mapBusiness ? (
+          {businessIntro || businessFeatures.length || mapBusiness ? (
             <section className="business-summary-block">
               <h2>商家介紹</h2>
-              <p>{businessIntro}</p>
+              <p className="preserve-lines">{businessIntro}</p>
               {businessFeatures.length ? (
                 <>
                   <h2>商家特色</h2>
@@ -115,7 +110,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                   </div>
                 </>
               ) : null}
-              <div className="map-preview map-preview-wide">
+              {mapBusiness ? <div className="map-preview map-preview-wide">
                 <h2>Google Map 預覽</h2>
                 <iframe
                   title={`${mapBusiness.name} Google Map`}
@@ -123,7 +118,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 />
-              </div>
+              </div> : null}
             </section>
           ) : null}
 

@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
 
   const session = await verifyAdminSession(request.cookies.get(cookieName)?.value);
   if (session) {
-    if (session.role === "user" && !pathname.startsWith("/admin/articles")) {
+    if (session.role === "user" && !pathname.startsWith("/admin/articles") && pathname !== "/admin/api/upload") {
       const articlesUrl = request.nextUrl.clone();
       articlesUrl.pathname = "/admin/articles";
       articlesUrl.search = "";

@@ -88,7 +88,8 @@ export function ArticleEditor({ defaultValue = "" }: { defaultValue?: string }) 
       editorRef.current?.focus();
       runCommand("insertHTML", `<figure><img src="${result.url}" alt="${altRef.current?.value || "文章圖片"}" /><figcaption>${altRef.current?.value || ""}</figcaption></figure>`);
       syncContent();
-      setUploadStatus("圖片已插入文章，並可直接在編輯區預覽。");
+      if (fileRef.current) fileRef.current.value = "";
+      setUploadStatus("圖片已插入文章，請儲存表單以套用到前台。");
     } catch (error) {
       setUploadStatus(error instanceof Error ? error.message : "圖片上傳失敗。");
     } finally {
@@ -97,7 +98,7 @@ export function ArticleEditor({ defaultValue = "" }: { defaultValue?: string }) 
   };
 
   return (
-    <div className="article-editor">
+    <div className="article-editor" data-upload-pending={isUploading || Boolean(fileRef.current?.files?.length)}>
       <textarea ref={hiddenRef} name="content" defaultValue={defaultValue} hidden />
       <div className="editor-toolbar" aria-label="文章編輯工具">
         <button type="button" onClick={() => applyBlock("p")}>段落</button>
@@ -115,7 +116,7 @@ export function ArticleEditor({ defaultValue = "" }: { defaultValue?: string }) 
         </select>
       </div>
       <div className="editor-upload-bar">
-        <input ref={fileRef} type="file" accept="image/*" />
+        <input ref={fileRef} type="file" accept="image/*" disabled={isUploading} onChange={() => setUploadStatus(fileRef.current?.files?.length ? "照片已選取，請按上傳並插入圖片。" : "")} />
         <input ref={altRef} type="text" placeholder="圖片替代文字 alt" />
         <button type="button" onClick={uploadAndInsert} disabled={isUploading}>
           {isUploading ? "上傳中" : "上傳並插入圖片"}

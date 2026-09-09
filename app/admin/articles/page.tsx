@@ -1,7 +1,8 @@
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AdminSubmitButton } from "@/components/AdminSubmitButton";
+import { AdminEditorForm } from "@/components/AdminEditorForm";
+import { finishCmsEdit } from "@/lib/cms-actions";
+import { contentRevision } from "@/lib/cms-store";
 import { ArticleEditor } from "@/components/ArticleEditor";
 import { CityDistrictFields } from "@/components/CityDistrictFields";
 import { ImageUploadField } from "@/components/ImageUploadField";
@@ -15,52 +16,48 @@ const categories: ArticleCategory[] = ["旅遊攻略", "餐廳美食", "景點�
 async function saveArticleAction(formData: FormData) {
   "use server";
   await requireAdminSession();
-  const originalSlug = textValue(formData, "originalSlug");
-  const citySlug = textValue(formData, "citySlug");
-  const districtSlug = textValue(formData, "districtSlug");
-  const cities = await getCities();
-  const selectedCity = cities.find((city) => city.slug === citySlug);
-  const validDistrictSlug = selectedCity?.districts.some((district) => district.slug === districtSlug) ? districtSlug : "";
-  const article: Article = {
-    slug: textValue(formData, "slug"),
-    title: textValue(formData, "title"),
-    excerpt: textValue(formData, "excerpt"),
-    content: textValue(formData, "content"),
-    category: textValue(formData, "category") as ArticleCategory,
-    country: (textValue(formData, "country") || undefined) as Article["country"],
-    citySlug: citySlug || undefined,
-    districtSlug: validDistrictSlug || undefined,
-    relatedBusinessSlug: textValue(formData, "relatedBusinessSlug") || undefined,
-    businessIntro: textValue(formData, "businessIntro"),
-    businessFeatures: listFromTextarea(formData.get("businessFeatures")),
-    intent: textValue(formData, "intent", "traffic") as Article["intent"],
-    keywords: listFromTextarea(formData.get("keywords")),
-    updatedAt: textValue(formData, "updatedAt", new Date().toISOString().slice(0, 10)),
-    coverImage: textValue(formData, "coverImage", "/brand-assets/home-hero-vietthai-commerce.png"),
-    photoAlt: textValue(formData, "photoAlt")
-  };
+  return finishCmsEdit(async () => {
+    const originalSlug = textValue(formData, "originalSlug");
+    const citySlug = textValue(formData, "citySlug");
+    const districtSlug = textValue(formData, "districtSlug");
+    const cities = await getCities();
+    const selectedCity = cities.find((city) => city.slug === citySlug);
+    const article: Article = {
+      slug: textValue(formData, "slug"),
+      title: textValue(formData, "title"),
+      excerpt: textValue(formData, "excerpt"),
+      content: textValue(formData, "content"),
+      category: textValue(formData, "category") as ArticleCategory,
+      country: (textValue(formData, "country") || selectedCity?.country || undefined) as Article["country"],
+      citySlug: citySlug || undefined,
+      districtSlug: districtSlug || undefined,
+      relatedBusinessSlug: textValue(formData, "relatedBusinessSlug") || undefined,
+      businessIntro: textValue(formData, "businessIntro"),
+      businessFeatures: listFromTextarea(formData.get("businessFeatures")),
+      intent: textValue(formData, "intent", "traffic") as Article["intent"],
+      keywords: listFromTextarea(formData.get("keywords")),
+      updatedAt: textValue(formData, "updatedAt", new Date().toISOString().slice(0, 10)),
+      coverImage: textValue(formData, "coverImage", "/brand-assets/home-hero-vietthai-commerce.png"),
+      photoAlt: textValue(formData, "photoAlt")
+    };
 
-  await saveArticle(article, originalSlug || undefined);
-  revalidatePath("/");
-  revalidatePath("/articles");
-  revalidatePath(`/articles/${article.slug}`);
-  if (article.citySlug) revalidatePath(`/cities/${article.citySlug}`);
-  if (article.citySlug && article.districtSlug) revalidatePath(`/cities/${article.citySlug}/districts/${article.districtSlug}`);
-  redirect("/admin/articles?saved=article");
+    await saveArticle(article, originalSlug || undefined, textValue(formData, "revision"));
+    return `/admin/articles?edit=${encodeURIComponent(article.slug)}&saved=article&savedAt=${Date.now()}`;
+  });
 }
 
 async function deleteArticleAction(formData: FormData) {
   "use server";
   await requireAdminSession();
-  await deleteArticle(textValue(formData, "slug"));
-  revalidatePath("/");
-  revalidatePath("/articles");
-  redirect("/admin/articles");
+  return finishCmsEdit(async () => {
+    await deleteArticle(textValue(formData, "slug"), textValue(formData, "revision"));
+    return "/admin/articles";
+  });
 }
 
-export default async function AdminArticlesPage({ searchParams }: { searchParams: Promise<{ edit?: string; saved?: string }> }) {
+export default async function AdminArticlesPage({ searchParams }: { searchParams: Promise<{ edit?: string; saved?: string; savedAt?: string }> }) {
   await requireAdminSession();
-  const { edit, saved } = await searchParams;
+  const { edit, saved, savedAt } = await searchParams;
   const [articles, cities, businesses] = await Promise.all([getArticles(), getCities(), getBusinesses()]);
   const editing = articles.find((item) => item.slug === edit);
 
@@ -72,7 +69,8 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
       {saved === "article" ? <div className="settings-saved">已完成</div> : null}
 
       <section className="admin-editor-grid">
-        <form action={saveArticleAction} className="panel admin-form">
+        <AdminEditorForm key={`${edit || "new"}:${savedAt || ""}`} action={saveArticleAction} className="panel admin-form">
+          <input type="hidden" name="revision" value={contentRevision(editing)} />
           <h2>{editing ? "編輯文章" : "新增文章"}</h2>
           <input type="hidden" name="originalSlug" defaultValue={editing?.slug || ""} />
           <label>標題<input name="title" required defaultValue={editing?.title || ""} /></label>
@@ -82,9 +80,10 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
           <div className="grid two">
             <label>分類<select name="category" defaultValue={editing?.category || "旅遊攻略"}>{categories.map((item) => <option key={item}>{item}</option>)}</select></label>
             <label>內容目的<select name="intent" defaultValue={editing?.intent || "traffic"}><option value="traffic">搜尋流量</option><option value="commercial">商務轉換</option><option value="authority">權威建立</option></select></label>
-            <label>國家<select name="country" defaultValue={editing?.country || ""}><option value="">不限國家</option><option value="vietnam">越南</option><option value="thailand">泰國</option></select></label>
             <CityDistrictFields
               cities={cities}
+              showCountry
+              defaultCountry={editing?.country || ""}
               defaultCitySlug={editing?.citySlug || ""}
               defaultDistrictSlug={editing?.districtSlug || ""}
             />
@@ -115,7 +114,7 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
           <label>最後更新日期<input type="date" name="updatedAt" defaultValue={editing?.updatedAt || new Date().toISOString().slice(0, 10)} /></label>
           <label>文章內容<ArticleEditor defaultValue={editing?.content || ""} /></label>
           <AdminSubmitButton idleLabel={editing ? "更新文章" : "新增文章"} />
-        </form>
+        </AdminEditorForm>
 
         <div className="panel">
           <h2>文章列表</h2>
@@ -126,7 +125,7 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
                 <span>{article.category} / {article.citySlug || "不限城市"} / {article.districtSlug || "不限分區"} / {article.relatedBusinessSlug || "未關聯商家"}</span>
                 <div className="admin-row-actions">
                   <Link href={`/admin/articles?edit=${article.slug}`}>編輯</Link>
-                  <form action={deleteArticleAction}><input type="hidden" name="slug" value={article.slug} /><button type="submit">刪除</button></form>
+                  <AdminEditorForm action={deleteArticleAction}><input type="hidden" name="slug" value={article.slug} /><input type="hidden" name="revision" value={contentRevision(article)} /><AdminSubmitButton idleLabel="刪除" /></AdminEditorForm>
                 </div>
               </div>
             ))}
