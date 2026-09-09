@@ -3,6 +3,7 @@ import { InfoStrip } from "@/components/Cards";
 import { SiteShell } from "@/components/SiteShell";
 import { getBusinesses, getCities } from "@/lib/cms-store";
 import { breadcrumbJsonLd, businessJsonLd } from "@/lib/seo";
+import { findByRouteSlug } from "@/lib/routes";
 
 function googleMapEmbedUrl(query: string) {
   return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
@@ -49,7 +50,7 @@ function contactRows(business: Awaited<ReturnType<typeof getBusinesses>>[number]
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const businesses = await getBusinesses();
-  const business = businesses.find((item) => item.slug === slug);
+  const business = findByRouteSlug(businesses, slug);
   if (!business) return {};
   return {
     title: business.name,
@@ -68,7 +69,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function BusinessDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [businesses, cities] = await Promise.all([getBusinesses(), getCities()]);
-  const business = businesses.find((item) => item.slug === slug);
+  const business = findByRouteSlug(businesses, slug);
   if (!business) notFound();
   const city = cities.find((item) => item.slug === business.citySlug);
   const district = city?.districts.find((item) => item.slug === business.districtSlug);

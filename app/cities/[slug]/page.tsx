@@ -3,11 +3,12 @@ import { ArticleCard, BusinessCard, InfoStrip, SectionHeader } from "@/component
 import { SiteShell } from "@/components/SiteShell";
 import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
 import { breadcrumbJsonLd, cityJsonLd } from "@/lib/seo";
+import { findByRouteSlug } from "@/lib/routes";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const cities = await getCities();
-  const city = cities.find((item) => item.slug === slug);
+  const city = findByRouteSlug(cities, slug);
   if (!city) return {};
   return {
     title: `${city.name}旅遊與生活指南`,
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function CityDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [cities, articles, businesses] = await Promise.all([getCities(), getArticles(), getBusinesses()]);
-  const city = cities.find((item) => item.slug === slug);
+  const city = findByRouteSlug(cities, slug);
   if (!city) notFound();
 
   const cityArticles = articles.filter((article) => article.citySlug === city.slug || !article.citySlug);

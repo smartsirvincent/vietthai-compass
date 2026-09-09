@@ -4,6 +4,7 @@ import { SectionHeader } from "@/components/Cards";
 import { SiteShell } from "@/components/SiteShell";
 import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
 import { articleJsonLd, breadcrumbJsonLd } from "@/lib/seo";
+import { findByRouteSlug } from "@/lib/routes";
 
 function renderInlineLinks(text: string) {
   const parts = text.split(/(\[[^\]]+\]\([^)]+\))/g);
@@ -39,7 +40,7 @@ function googleMapEmbedUrl(query: string) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const articles = await getArticles();
-  const article = articles.find((item) => item.slug === slug);
+  const article = findByRouteSlug(articles, slug);
   if (!article) return {};
   return {
     title: article.title,
@@ -65,7 +66,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [articles, cities, businesses] = await Promise.all([getArticles(), getCities(), getBusinesses()]);
-  const article = articles.find((item) => item.slug === slug);
+  const article = findByRouteSlug(articles, slug);
   if (!article) notFound();
 
   const city = cities.find((item) => item.slug === article.citySlug);

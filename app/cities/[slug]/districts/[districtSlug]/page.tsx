@@ -4,12 +4,13 @@ import { ArticleCard, BusinessCard, InfoStrip, SectionHeader } from "@/component
 import { SiteShell } from "@/components/SiteShell";
 import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
 import { breadcrumbJsonLd } from "@/lib/seo";
+import { findByRouteSlug } from "@/lib/routes";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string; districtSlug: string }> }): Promise<Metadata> {
   const { slug, districtSlug } = await params;
   const cities = await getCities();
-  const city = cities.find((item) => item.slug === slug);
-  const district = city?.districts.find((item) => item.slug === districtSlug);
+  const city = findByRouteSlug(cities, slug);
+  const district = findByRouteSlug(city?.districts || [], districtSlug);
   if (!city || !district) return {};
   return {
     title: `${city.name}${district.name}分區指南`,
@@ -28,8 +29,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function DistrictPage({ params }: { params: Promise<{ slug: string; districtSlug: string }> }) {
   const { slug, districtSlug } = await params;
   const [cities, articles, businesses] = await Promise.all([getCities(), getArticles(), getBusinesses()]);
-  const city = cities.find((item) => item.slug === slug);
-  const district = city?.districts.find((item) => item.slug === districtSlug);
+  const city = findByRouteSlug(cities, slug);
+  const district = findByRouteSlug(city?.districts || [], districtSlug);
   if (!city || !district) notFound();
 
   const districtArticles = articles.filter((article) => article.citySlug === city.slug && article.districtSlug === district.slug);
