@@ -2162,3 +2162,17 @@ p {
     font-size: 40px;
   }
 }
+
+/* 內文圖：完整顯示，不裁切 */
+.article-inline-image {
+  max-height: none;
+  object-fit: contain;
+  height: auto;
+}
+
+/* 手機與平板：文章頁改成單欄 */
+@media (max-width: 1080px) {
+  .article-layout {
+    grid-template-columns: 1fr;
+  }
+}
