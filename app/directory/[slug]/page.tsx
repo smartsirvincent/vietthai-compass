@@ -1,7 +1,11 @@
 import { notFound } from "next/navigation";
-import { InfoStrip } from "@/components/Cards";
+import { ContentImage } from "@/components/ContentImage";
+import { ArticleCard, InfoStrip, SectionHeader } from "@/components/Cards";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { ShareButton } from "@/components/ShareButton";
+import { MapPin, Phone } from "lucide-react";
 import { SiteShell } from "@/components/SiteShell";
-import { getBusinesses, getCities } from "@/lib/cms-store";
+import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
 import { breadcrumbJsonLd, businessJsonLd } from "@/lib/seo";
 import { findByRouteSlug } from "@/lib/routes";
 
@@ -59,6 +63,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       canonical: `/directory/${business.slug}`
     },
     openGraph: {
+      url: `/directory/${encodeURIComponent(business.slug)}`,
       title: business.name,
       description: business.description,
       images: [business.image || "/brand-assets/home-business-local-life.png"]
@@ -68,28 +73,36 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function BusinessDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [businesses, cities] = await Promise.all([getBusinesses(), getCities()]);
+  const [businesses, cities, articles] = await Promise.all([getBusinesses(), getCities(), getArticles()]);
   const business = findByRouteSlug(businesses, slug);
   if (!business) notFound();
   const city = cities.find((item) => item.slug === business.citySlug);
   const district = city?.districts.find((item) => item.slug === business.districtSlug);
   const contacts = contactRows(business);
+  const relatedArticles = articles.filter(article => article.relatedBusinessSlug === business.slug);
 
   return (
     <SiteShell>
+      <Breadcrumbs items={[{ label: "精選商家", href: "/directory" }, ...(city ? [{ label: city.name, href: `/cities/${city.slug}` }] : []), { label: business.name }]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd(business)) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd([{ name: "首頁", url: "/" }, { name: "商家名錄", url: "/directory" }, { name: business.name, url: `/directory/${business.slug}` }])) }} />
       <section className="page-hero">
         <p className="eyebrow">{business.category}</p>
         <h1>{business.name}</h1>
         <p>{business.description}</p>
+        <div className="detail-actions">
+          {business.googleMapUrl ? <a className="primary-button" href={business.googleMapUrl} target="_blank" rel="noopener noreferrer"><MapPin size={18} />在 Google 地圖查看</a> : null}
+          {business.socials.phone ? <a className="secondary-button" href={`tel:${phoneDigits(business.socials.phone)}`}><Phone size={18} />致電商家</a> : null}
+          <ShareButton title={business.name} />
+        </div>
+        <p className="travel-note">營業時間、價格與店況可能變動，出發前請查看地圖最新資訊或聯絡商家。</p>
       </section>
       <section className="band light">
         <InfoStrip items={[["分類", business.category || "待補"], ["城市", city?.name || business.citySlug], ["分區", district?.name || "不限分區"], ["特色", business.badges.join(" / ") || "待補"]]} />
       </section>
       <section className="content-layout">
         <article className="panel">
-          {business.image ? <img className="article-cover" src={business.image} alt={`${business.name}商家照片`} /> : null}
+          {business.image ? <ContentImage className="article-cover" src={business.image} alt={`${business.name}商家照片`} priority sizes="(max-width: 900px) 100vw, 800px" /> : null}
           <h2>商家介紹</h2>
           <p className="preserve-lines">{business.description}</p>
           <h2>商家評價</h2>
@@ -127,6 +140,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
           </div>
         </aside>
       </section>
+      {relatedArticles.length ? <section className="band light"><SectionHeader title="關於這間店的文章" /><div className="grid three">{relatedArticles.map(article => <ArticleCard key={article.slug} article={article} />)}</div></section> : null}
     </SiteShell>
   );
 }

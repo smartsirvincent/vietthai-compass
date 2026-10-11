@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { siteUrl } from "@/lib/seo";
 import { defaultSiteSettings, getSiteSettings } from "@/lib/cms-store";
 import "./globals.css";
+import "./travel.css";
+import "./brand-theme.css";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const ogImage = settings.heroImage || "/brand-assets/vietthai-compass-article-cover-hero.png";
 
   return {
-    metadataBase: new URL("https://vietthaicompass.com"),
+    metadataBase: new URL(siteUrl),
     title: {
       default: `${siteName}｜越南泰國旅遊、在地生活與台商商務指南`,
       template: `%s｜${siteName}`
@@ -44,7 +47,6 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName,
       title: `${siteName}｜越南泰國旅遊、在地生活與台商商務指南`,
       description: siteDescription,
-      url: "https://vietthaicompass.com",
       images: [
         {
           url: ogImage,
@@ -72,8 +74,8 @@ export async function generateMetadata(): Promise<Metadata> {
       }
     },
     icons: {
-      icon: settings.logoImage || "/brand-assets/vietthai-compass-square-icon.png",
-      apple: settings.logoImage || "/brand-assets/vietthai-compass-square-icon.png"
+      icon: "/brand-assets/logo-02/vietthai-logo-symbol.png",
+      apple: "/brand-assets/logo-02/vietthai-logo-symbol.png"
     }
   };
 }

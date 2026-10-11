@@ -26,22 +26,31 @@ function runCommand(command: string, value?: string) {
 
 export function ArticleEditor({ defaultValue = "" }: { defaultValue?: string }) {
   const editorRef = useRef<HTMLDivElement>(null);
-  const hiddenRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const altRef = useRef<HTMLInputElement>(null);
   const [uploadStatus, setUploadStatus] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [mode, setMode] = useState<"visual" | "html">("visual");
+  const [content, setContent] = useState(() => markdownToHtml(defaultValue));
 
   const syncContent = () => {
-    if (hiddenRef.current && editorRef.current) hiddenRef.current.value = editorRef.current.innerHTML;
+    if (editorRef.current) setContent(editorRef.current.innerHTML);
   };
 
   useEffect(() => {
-    if (editorRef.current && hiddenRef.current) {
-      editorRef.current.innerHTML = markdownToHtml(defaultValue);
-      syncContent();
-    }
+    const html = markdownToHtml(defaultValue);
+    setContent(html);
+    if (editorRef.current) editorRef.current.innerHTML = html;
   }, [defaultValue]);
+
+  useEffect(() => {
+    if (mode === "visual" && editorRef.current) editorRef.current.innerHTML = content;
+  }, [mode]);
+
+  const switchToHtml = () => {
+    if (editorRef.current) setContent(editorRef.current.innerHTML);
+    setMode("html");
+  };
 
   const applyBlock = (tag: "p" | "h1" | "h2" | "h3") => {
     editorRef.current?.focus();
@@ -99,7 +108,12 @@ export function ArticleEditor({ defaultValue = "" }: { defaultValue?: string }) 
 
   return (
     <div className="article-editor" data-upload-pending={isUploading || Boolean(fileRef.current?.files?.length)}>
-      <textarea ref={hiddenRef} name="content" defaultValue={defaultValue} hidden />
+      <textarea name="content" value={content} readOnly hidden />
+      <div className="editor-mode-switch" role="group" aria-label="文章編輯模式">
+        <button type="button" aria-pressed={mode === "visual"} onClick={() => setMode("visual")}>視覺編輯</button>
+        <button type="button" aria-pressed={mode === "html"} onClick={switchToHtml}>HTML 原始碼</button>
+      </div>
+      {mode === "visual" ? <>
       <div className="editor-toolbar" aria-label="文章編輯工具">
         <button type="button" onClick={() => applyBlock("p")}>段落</button>
         <button type="button" onClick={() => applyBlock("h1")}>H1</button>
@@ -133,6 +147,18 @@ export function ArticleEditor({ defaultValue = "" }: { defaultValue?: string }) 
         aria-label="文章內容編輯器"
       />
       <p className="form-note">可直接選取文字後套用 H1/H2/H3、粗體、斜體與文字大小。圖片上傳後會直接插入並顯示預覽。</p>
+      </> : <>
+        <label className="article-source-label" htmlFor="article-html-source">文章 HTML 原始碼</label>
+        <textarea
+          id="article-html-source"
+          className="article-source-editor"
+          value={content}
+          onChange={(event) => setContent(event.target.value)}
+          spellCheck={false}
+          aria-label="文章 HTML 原始碼編輯器"
+        />
+        <p className="form-note">可編輯 HTML 標籤；不允許執行腳本、事件屬性或不安全連結。</p>
+      </>}
     </div>
   );
 }

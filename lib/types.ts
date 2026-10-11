@@ -37,7 +37,19 @@ export type City = {
   districts: District[];
 };
 
-export type ArticleCategory = "旅遊攻略" | "餐廳美食" | "景點行程" | "在地生活" | "台商專區";
+export const ARTICLE_CATEGORIES = [
+  "旅遊攻略",
+  "旅遊須知",
+  "餐廳美食",
+  "景點行程",
+  "在地生活",
+  "台商專區",
+  "節慶活動",
+  "新聞快訊",
+  "交通航線"
+] as const;
+
+export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
 
 export type Article = {
   slug: string;

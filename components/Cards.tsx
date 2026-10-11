@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ContentImage } from "@/components/ContentImage";
 import { ArrowRight, BadgeCheck, BriefcaseBusiness, MapPin } from "lucide-react";
 import { Article, City, DirectoryBusiness } from "@/lib/types";
 
@@ -32,7 +33,7 @@ export function SectionHeader({
 export function CityCard({ city }: { city: City }) {
   return (
     <Link className="card city-card has-image" href={`/cities/${city.slug}`} aria-label={`查看${city.name}指南`}>
-      <img src={city.image} alt={`${city.name}城市指南`} />
+      <ContentImage src={city.image} alt={`${city.name}擬真風格城市示意圖`} />
       <div className="article-card-body">
         <span className="pill">{city.country === "vietnam" ? "越南" : "泰國"}</span>
         <h3>{city.name}</h3>
@@ -67,7 +68,7 @@ export function CategoryVisualCard({
 }) {
   return (
     <Link className="card article-card has-image" href={href} aria-label={`查看${title}`}>
-      <img src={image} alt={alt} />
+      <ContentImage src={image} alt={alt} />
       <div className="article-card-body">
         <span className="pill">分類</span>
         <h3>{title}</h3>
@@ -80,7 +81,7 @@ export function CategoryVisualCard({
 export function ArticleCard({ article }: { article: Article }) {
   return (
     <Link className="card article-card has-image" href={`/articles/${article.slug}`} aria-label={`閱讀${article.title}`}>
-      <img src={article.coverImage} alt={article.photoAlt || article.title} />
+      <ContentImage src={article.coverImage} alt={article.photoAlt || article.title} />
       <div className="article-card-body">
         <span className="pill">{article.category}</span>
         <h3>{article.title}</h3>
@@ -99,7 +100,7 @@ export function BusinessCard({ business }: { business: DirectoryBusiness }) {
   return (
     <Link className={`card business-card ${business.image ? "has-image" : ""}`} href={`/directory/${business.slug}`} aria-label={`查看${business.name}`}>
       {business.image ? (
-        <img src={business.image} alt={`${business.name}商家照片`} />
+        <ContentImage src={business.image} alt={`${business.name}商家照片`} />
       ) : (
         <div className="card-icon">
           <BriefcaseBusiness size={20} />

@@ -1,5 +1,8 @@
 import { notFound } from "next/navigation";
+import { DestinationLinks } from "@/components/DestinationLinks";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ArticleCard, BusinessCard, InfoStrip, SectionHeader } from "@/components/Cards";
+import { ContentImage } from "@/components/ContentImage";
 import { SiteShell } from "@/components/SiteShell";
 import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
 import { breadcrumbJsonLd, cityJsonLd } from "@/lib/seo";
@@ -30,30 +33,34 @@ export default async function CityDetailPage({ params }: { params: Promise<{ slu
   const city = findByRouteSlug(cities, slug);
   if (!city) notFound();
 
-  const cityArticles = articles.filter((article) => article.citySlug === city.slug || !article.citySlug);
+  const cityArticles = articles.filter((article) => article.citySlug === city.slug);
   const cityBusinesses = businesses.filter((business) => business.citySlug === city.slug);
 
   return (
     <SiteShell>
+      <Breadcrumbs items={[{ label: "城市指南", href: "/cities" }, { label: city.name }]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(cityJsonLd(city)) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd([{ name: "首頁", url: "/" }, { name: "城市指南", url: "/cities" }, { name: city.name, url: `/cities/${city.slug}` }])) }} />
       <section className="page-hero">
         <p className="eyebrow">{city.country === "vietnam" ? "Vietnam" : "Thailand"}</p>
         <h1>{city.name}指南</h1>
         <p>{city.summary}</p>
+        <DestinationLinks city={city} />
+        <ContentImage className="city-page-cover" src={city.image} alt={`${city.name} AI 生成擬真風格城市示意圖`} priority sizes="(max-width: 900px) 100vw, 90vw" />
       </section>
       <section className="band light">
         <InfoStrip items={[["英文名稱", city.nameEn], ["推薦季節", city.bestSeason], ["建議天數", city.recommendedDays], ["適合族群", city.audience.join(" / ")]]} />
       </section>
       <section className="band">
-        <SectionHeader title={`${city.name}精選內容`} intro="整理旅遊攻略、餐廳景點與在地生活資訊，讓讀者可以從搜尋進入後快速找到可行的下一步。" />
+        <SectionHeader title={`${city.name}完整指南`} intro="從逐月天氣、行前準備到餐廳與景點，按城市整理實用資訊。" href={`/articles?country=${city.country}&city=${city.slug}`} />
         <div className="grid three">
           {cityArticles.map((article) => <ArticleCard article={article} key={article.slug} />)}
         </div>
+        {!cityArticles.length ? <p className="empty-state">這座城市的指南正在整理中，先查看<a href="/travel-info">旅遊須知</a>。</p> : null}
       </section>
       {city.districts.length ? (
         <section className="band light">
-          <SectionHeader title={`${city.name}分區指南`} intro="大城市可再依商圈、生活圈或景點區域切分，承接更精準的餐廳、景點、在地生活與商家搜尋需求。" />
+          <SectionHeader title={`${city.name}分區指南`} intro="住哪一區，就從附近開始探索。" />
           <div className="grid four">
             {city.districts.map((district) => (
               <a className="card city-card" href={`/cities/${city.slug}/districts/${district.slug}`} key={district.slug}>

@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { SectionHeader } from "@/components/Cards";
+import { ArticleCard, SectionHeader } from "@/components/Cards";
+import { ContentImage } from "@/components/ContentImage";
+import { ArticleHtml } from "@/components/ArticleHtml";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { ShareButton } from "@/components/ShareButton";
+import { articleOutline } from "@/lib/article-outline";
+import { MapPin } from "lucide-react";
 import { SiteShell } from "@/components/SiteShell";
 import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
 import { articleJsonLd, breadcrumbJsonLd } from "@/lib/seo";
@@ -17,17 +23,18 @@ function renderInlineLinks(text: string) {
 
 function renderArticleContent(content: string) {
   if (/<(h1|h2|h3|p|div|img|strong|em|span|figure|figcaption|ul|ol|li|br)\b/i.test(content)) {
-    return <div dangerouslySetInnerHTML={{ __html: content }} />;
+    return <ArticleHtml content={content} />;
   }
 
+  let section = 0;
   return content
     .split(/\n+/)
     .map((line, index) => {
       const image = line.match(/^!\[(.*?)\]\((.*?)\)$/);
-      if (image) return <img className="article-inline-image" key={index} src={image[2]} alt={image[1]} />;
-      if (line.startsWith("# ")) return <h1 key={index}>{line.replace("# ", "")}</h1>;
-      if (line.startsWith("## ")) return <h2 key={index}>{line.replace("## ", "")}</h2>;
-      if (line.startsWith("### ")) return <h3 key={index}>{line.replace("### ", "")}</h3>;
+      if (image) return <ContentImage className="article-inline-image" key={index} src={image[2]} alt={image[1]} sizes="(max-width: 900px) 100vw, 800px" />;
+      if (line.startsWith("# ")) return <h2 id={`article-section-${++section}`} key={index}>{line.replace("# ", "")}</h2>;
+      if (line.startsWith("## ")) return <h2 id={`article-section-${++section}`} key={index}>{line.replace("## ", "")}</h2>;
+      if (line.startsWith("### ")) return <h3 id={`article-section-${++section}`} key={index}>{line.replace("### ", "")}</h3>;
       if (!line.trim()) return null;
       return <p key={index}>{renderInlineLinks(line)}</p>;
     });
@@ -50,6 +57,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     },
     openGraph: {
       type: "article",
+      url: `/articles/${encodeURIComponent(article.slug)}`,
+      modifiedTime: article.updatedAt,
       title: article.title,
       description: article.excerpt,
       images: [article.coverImage]
@@ -80,23 +89,32 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         business.citySlug === article.citySlug &&
         (!article.districtSlug || business.districtSlug === article.districtSlug)
       ));
-  const mapBusiness = relatedBusinesses[0];
+  const mapBusiness = selectedBusiness;
+  const outline = articleOutline(article.content);
   const businessIntro = article.businessIntro || mapBusiness?.description;
   const businessFeatures = article.businessFeatures?.length ? article.businessFeatures : mapBusiness?.badges || [];
-  const intentLabel = article.intent === "commercial" ? "商務轉換" : article.intent === "traffic" ? "搜尋流量" : "權威建立";
+  const relatedArticles = articles.filter((item) => item.slug !== article.slug &&
+    (item.citySlug === article.citySlug || item.category === article.category)).slice(0, 3);
 
   return (
     <SiteShell>
+      <Breadcrumbs items={[{ label: "完整指南", href: "/articles" }, ...(city ? [{ label: city.name, href: `/cities/${city.slug}` }] : []), { label: article.category }]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd(article)) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd([{ name: "首頁", url: "/" }, { name: "文章", url: "/articles" }, { name: article.title, url: `/articles/${article.slug}` }])) }} />
       <section className="page-hero">
         <p className="eyebrow">{article.category}</p>
         <h1>{article.title}</h1>
         <p>{article.excerpt}</p>
+        <div className="detail-actions">
+          <span className="article-date">更新日期 <time dateTime={article.updatedAt}>{article.updatedAt.slice(0, 10)}</time></span>
+          {mapBusiness?.googleMapUrl ? <a className="primary-button" href={mapBusiness.googleMapUrl} target="_blank" rel="noopener noreferrer"><MapPin size={18} />在 Google 地圖查看</a> : null}
+          <ShareButton title={article.title} />
+        </div>
       </section>
       <section className="article-layout">
         <article className="panel article-main">
-          <img className="article-cover" src={article.coverImage} alt={article.photoAlt || article.title} />
+          <ContentImage className="article-cover" src={article.coverImage} alt={article.photoAlt || article.title} priority sizes="(max-width: 900px) 100vw, 800px" />
+          {outline.length > 1 ? <details className="article-toc" open><summary>文章目錄</summary><nav aria-label="文章目錄"><ol>{outline.map(item => <li key={item.id} className={item.level === 3 ? "toc-subheading" : ""}><a href={`#${item.id}`}>{item.text}</a></li>)}</ol></nav></details> : null}
           <div className="article-body">{renderArticleContent(article.content)}</div>
 
           {businessIntro || businessFeatures.length || mapBusiness ? (
@@ -132,7 +150,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           <p>城市：{city?.name || "不限城市"}</p>
           <p>分區：{district?.name || "不限分區"}</p>
           <p>最後更新：{article.updatedAt}</p>
-          <p>目的：{intentLabel}</p>
 
           <h3>相關連結</h3>
           <div className="link-list">
@@ -148,6 +165,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       </section>
       <section className="band light">
         <SectionHeader title="延伸閱讀" intro="繼續查看城市指南、分區內容、餐廳名單與在地生活文章，從單篇介紹延伸到完整行程與生活決策。" />
+        <div className="grid three">{relatedArticles.map((item) => <ArticleCard article={item} key={item.slug} />)}</div>
       </section>
     </SiteShell>
   );

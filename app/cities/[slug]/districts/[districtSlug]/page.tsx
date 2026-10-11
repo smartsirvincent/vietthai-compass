@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { DestinationLinks } from "@/components/DestinationLinks";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ArticleCard, BusinessCard, InfoStrip, SectionHeader } from "@/components/Cards";
 import { SiteShell } from "@/components/SiteShell";
 import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
@@ -39,17 +41,19 @@ export default async function DistrictPage({ params }: { params: Promise<{ slug:
 
   return (
     <SiteShell>
+      <Breadcrumbs items={[{ label: "城市指南", href: "/cities" }, { label: city.name, href: `/cities/${city.slug}` }, { label: district.name }]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd([{ name: "首頁", url: "/" }, { name: "城市指南", url: "/cities" }, { name: city.name, url: `/cities/${city.slug}` }, { name: district.name, url: `/cities/${city.slug}/districts/${district.slug}` }])) }} />
       <section className="page-hero">
         <p className="eyebrow">{city.name} District Guide</p>
         <h1>{city.name}{district.name}分區指南</h1>
         <p>{district.summary}</p>
+        <DestinationLinks city={city} district={district.slug} />
       </section>
       <section className="band light">
         <InfoStrip items={[["城市", city.name], ["分區", district.name], ["英文", district.nameEn || district.slug], ["內容方向", "餐廳 / 景點 / 在地生活 / 商家"]]} />
       </section>
       <section className="band">
-        <SectionHeader title={`${district.name}相關文章`} intro="優先顯示已指定到此分區的文章；資料較少時，可先用城市文章補足內容深度。" />
+        <SectionHeader title={`${district.name}相關文章`} intro="探索這一區，再搭配城市旅遊指南安排路線。" />
         <div className="grid three">
           {[...districtArticles, ...cityFallbackArticles].map((article) => <ArticleCard article={article} key={article.slug} />)}
         </div>

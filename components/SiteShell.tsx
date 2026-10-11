@@ -1,18 +1,17 @@
 import Link from "next/link";
-import { Facebook, Hash, Instagram, Mail, MessageCircle, Search } from "lucide-react";
+import { ContentImage } from "@/components/ContentImage";
+import { Facebook, Hash, Instagram, Mail, Menu, MessageCircle, Search } from "lucide-react";
 import { siteSocials } from "@/data/site";
 import { getSiteSettings } from "@/lib/cms-store";
 
 const navItems = [
-  ["越南", "/vietnam"],
-  ["泰國", "/thailand"],
-  ["城市指南", "/cities"],
+  ["目的地", "/cities"],
+  ["旅遊須知", "/travel-info"],
   ["餐廳美食", "/restaurants"],
   ["景點行程", "/attractions"],
   ["在地生活", "/local-life"],
-  ["台商專區", "/taiwan-business"],
-  ["商家名錄", "/directory"],
-  ["商務合作", "/business"]
+  ["完整指南", "/articles"],
+  ["精選商家", "/directory"]
 ];
 
 export async function SiteHeader() {
@@ -20,16 +19,16 @@ export async function SiteHeader() {
 
   return (
     <header className="site-header">
-      <Link className="brand" href="/" aria-label="越泰指南首頁">
+      <Link className={`brand${settings.logoImage ? "" : " brand-horizontal"}`} href="/" aria-label={`${settings.siteName}首頁`}>
         {settings.logoImage ? (
-          <img className="brand-logo-image" src={settings.logoImage} alt={`${settings.siteName} Logo`} />
+          <ContentImage className="brand-logo-image" src={settings.logoImage} alt={`${settings.siteName} Logo`} width={72} height={72} sizes="72px" priority />
         ) : (
-          <span className="brand-mark" aria-hidden="true">VT</span>
+          <ContentImage src="/brand-assets/logo-02/vietthai-logo-horizontal.png" alt={`${settings.siteName} ${settings.siteNameEn}`} width={2172} height={724} sizes="(max-width: 720px) 190px, 240px" priority />
         )}
-        <span>
+        {settings.logoImage ? <span>
           <strong>{settings.siteName}</strong>
           <small>{settings.siteNameEn}</small>
-        </span>
+        </span> : null}
       </Link>
       <nav className="main-nav" aria-label="主要導覽">
         {navItems.map(([label, href]) => (
@@ -38,6 +37,12 @@ export async function SiteHeader() {
           </Link>
         ))}
       </nav>
+      <details className="mobile-nav">
+        <summary aria-label="開啟導覽選單" title="導覽選單"><Menu size={22} /></summary>
+        <nav aria-label="手機導覽">
+          {navItems.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
+        </nav>
+      </details>
       <div className="header-actions" aria-label="搜尋與社群連結">
         <Link href="/search" aria-label="搜尋">
           <Search size={18} />
@@ -69,6 +74,8 @@ export function SiteFooter() {
       <div className="footer-grid">
         <Link href="/vietnam">越南</Link>
         <Link href="/thailand">泰國</Link>
+        <Link href="/travel-info">旅遊須知</Link>
+        <Link href="/articles">完整指南</Link>
         <Link href="/local-life">在地生活</Link>
         <Link href="/taiwan-business">台商專區</Link>
         <Link href="/directory">商家名錄</Link>

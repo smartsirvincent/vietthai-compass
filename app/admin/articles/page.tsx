@@ -9,9 +9,9 @@ import { ImageUploadField } from "@/components/ImageUploadField";
 import { TagInputField } from "@/components/TagInputField";
 import { requireAdminSession } from "@/lib/admin-auth";
 import { deleteArticle, getArticles, getBusinesses, getCities, listFromTextarea, saveArticle, textValue } from "@/lib/cms-store";
-import { Article, ArticleCategory } from "@/lib/types";
+import { ARTICLE_CATEGORIES, Article, ArticleCategory } from "@/lib/types";
 
-const categories: ArticleCategory[] = ["旅遊攻略", "餐廳美食", "景點行程", "在地生活", "台商專區"];
+const categories: ArticleCategory[] = [...ARTICLE_CATEGORIES];
 
 async function saveArticleAction(formData: FormData) {
   "use server";

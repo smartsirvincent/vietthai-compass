@@ -1,0 +1,14 @@
+.heading { margin-bottom: 24px; }
+.heading h1 { font-size: 28px; margin: 0 0 8px; }
+.heading p { color: #576963; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 24px; }
+.asset { min-width: 0; border: 1px solid #d8e5e1; border-radius: 8px; overflow: hidden; background: white; }
+.preview { height: 260px; padding: 20px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #d8e5e1; }
+.preview img { width: 100%; height: 100%; object-fit: contain; }
+.details { padding: 20px; }
+.details h2 { margin: 0; font-size: 20px; }
+.details p { font-size: 14px; color: #576963; line-height: 1.7; }
+.download { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border-radius: 6px; color: white; background: #2455ce; }
+.download:hover { background: #1942a6; }
+.download:focus-visible { outline: 3px solid #174f4c; outline-offset: 3px; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

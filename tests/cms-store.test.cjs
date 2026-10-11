@@ -9,7 +9,16 @@ const business = { slug: 'cafe', name: 'Cafe', citySlug: 'hcm', districtSlug: 'd
 const article = { slug: 'guide', title: 'Guide', excerpt: 'Summary', content: '<h2>Heading</h2><p>Text</p>', country: 'vietnam', citySlug: 'hcm', districtSlug: 'd1', relatedBusinessSlug: 'cafe', category: '餐廳美食', intent: 'traffic', keywords: ['Coffee'], updatedAt: '2026-09-09', coverImage: '/cover.jpg', photoAlt: 'Cover' };
 const fixture = () => structuredClone({ settings: {}, cities: [city], businesses: [business], articles: [article] });
 
-function loadStore(initial = fixture()) {
+function loadSanitizer() {
+  const source = ts.transpileModule(fs.readFileSync('lib/sanitize-article-html.ts', 'utf8'), {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, esModuleInterop: true }
+  }).outputText;
+  const exports = {};
+  vm.runInNewContext(source, { exports, require }, { filename: 'sanitize-article-html.ts' });
+  return exports;
+}
+
+function loadStore(initial = fixture(), guideArticles = []) {
   const backend = { document: structuredClone(initial), revisions: [], failReads: false, failUpdate: false, statements: [] };
   let tail = Promise.resolve();
   class Pool {
@@ -64,6 +73,9 @@ function loadStore(initial = fixture()) {
       if (name === 'react') return { cache: (fn) => fn };
       if (name === 'pg') return { Pool };
       if (name === '@/data/site') return fixture();
+      if (name === '@/data/travel-guides') return { travelGuideArticles: guideArticles };
+      if (name === './types') return { ARTICLE_CATEGORIES: ['旅遊攻略', '旅遊須知', '餐廳美食', '景點行程', '在地生活', '台商專區', '節慶活動', '新聞快訊', '交通航線'] };
+      if (name === './sanitize-article-html') return loadSanitizer();
       return require(name);
     },
     process: { env: { DATABASE_URL: 'postgres://test' }, cwd: process.cwd },
@@ -71,6 +83,19 @@ function loadStore(initial = fixture()) {
   }, { filename: 'cms-store.ts' });
   return { store: exports, backend };
 }
+
+test('travel guide import refreshes only its matching article and keeps a revision snapshot', async () => {
+  const guide = { ...article, slug: 'guide', title: 'Refreshed guide', excerpt: 'New summary', content: '<h2>New</h2>', coverImage: '/new-cover.webp', updatedAt: '2026-10-11' };
+  const untouched = { ...article, slug: 'other', title: 'Keep this article' };
+  const { store, backend } = loadStore({ ...fixture(), articles: [article, untouched] }, [guide]);
+  const result = await store.mergeTravelGuideArticles();
+  assert.equal(result.addedArticles, 0);
+  assert.equal(result.updatedArticles, 1);
+  assert.equal(result.updatedArticleImages, 1);
+  assert.equal(backend.document.articles[0].title, 'Refreshed guide');
+  assert.equal(backend.document.articles[1].title, 'Keep this article');
+  assert.equal(backend.revisions.length, 1);
+});
 
 test('parallel edits to different collections survive and each previous document is backed up', async () => {
   const { store, backend } = loadStore();
@@ -167,6 +192,16 @@ test('photos, contacts, tags, line breaks and HTML survive saving and reading ag
   assert.equal((await store.getArticles())[0].content, html);
 });
 
+test('article saving removes unsafe HTML while preserving supported formatting', async () => {
+  const { store, backend } = loadStore();
+  const record = (await store.getArticles())[0];
+  await store.saveArticle({ ...record, content: '<h2>Safe heading</h2><p onclick="alert(1)">Text</p><script>alert(1)</script><a href="javascript:alert(1)">bad link</a>' }, record.slug, store.contentRevision(record));
+  const saved = backend.document.articles[0].content;
+  assert.match(saved, /<h2>Safe heading<\/h2>/);
+  assert.match(saved, /<p>Text<\/p>/);
+  assert.doesNotMatch(saved, /onclick|script|javascript:/i);
+});
+
 test('explicitly empty districts remain empty and legacy slugs can still be edited', async () => {
   const data = fixture();
   data.cities[0].districts = [];
@@ -177,6 +212,18 @@ test('explicitly empty districts remain empty and legacy slugs can still be edit
   const record = (await store.getBusinesses())[0];
   await store.saveBusiness({ ...record, review: 'Updated' }, record.slug, store.contentRevision(record));
   assert.equal((await store.getBusinesses())[0].review, 'Updated');
+});
+
+test('Hanoi and Phuket use their dedicated city photos even when CMS has stale cover URLs', async () => {
+  const data = fixture();
+  data.cities.push(
+    { ...city, slug: 'hanoi', name: '河內', image: '/brand-assets/home-hero-vietthai-commerce.png' },
+    { ...city, slug: 'phuket', name: '普吉', country: 'thailand', image: '/brand-assets/home-hero-vietthai-commerce.png' }
+  );
+  const { store } = loadStore(data);
+  const cities = await store.getCities();
+  assert.equal(cities.find((item) => item.slug === 'hanoi').image, '/cities/hanoi.webp');
+  assert.equal(cities.find((item) => item.slug === 'phuket').image, '/cities/phuket.webp');
 });
 
 test('revision hashes are independent of JSONB property order', () => {

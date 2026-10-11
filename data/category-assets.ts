@@ -6,6 +6,11 @@ export const articleCategoryAssets: Record<ArticleCategory, { image: string; alt
     alt: "越南與泰國城市旅遊攻略圖片",
     intro: "整理交通、住宿、季節與路線，幫讀者快速規劃可執行的行程。"
   },
+  旅遊須知: {
+    image: "/cities/da-nang.webp",
+    alt: "越南與泰國旅遊須知擬真示意圖",
+    intro: "整理簽證、入境、天氣、用電與出發前需要確認的資訊。"
+  },
   餐廳美食: {
     image: "/brand-assets/home-business-local-life.png",
     alt: "越南與泰國餐廳美食圖片",
@@ -25,6 +30,21 @@ export const articleCategoryAssets: Record<ArticleCategory, { image: string; alt
     image: "/brand-assets/home-business-local-life.png",
     alt: "越南與泰國台商專區圖片",
     intro: "聚焦台商曝光、品牌行銷、在地合作與商家導流需求。"
+  },
+  節慶活動: {
+    image: "/cities/chiang-mai.webp",
+    alt: "越南與泰國節慶活動街景",
+    intro: "整理各地節慶日期、活動亮點、參與方式與行前提醒。"
+  },
+  新聞快訊: {
+    image: "/cities/ho-chi-minh.webp",
+    alt: "越南城市新聞快訊",
+    intro: "追蹤影響旅遊與在地生活的重要公告、政策與即時消息。"
+  },
+  交通航線: {
+    image: "/cities/bangkok.webp",
+    alt: "泰國城市交通與航線資訊",
+    intro: "整理國際航班、城市交通、轉乘方式與實用票務資訊。"
   }
 };
 

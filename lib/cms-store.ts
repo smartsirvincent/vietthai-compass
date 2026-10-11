@@ -5,7 +5,10 @@ import { cache } from "react";
 import { createHash, randomUUID } from "crypto";
 import { Pool } from "pg";
 import { articles as seedArticles, businesses as seedBusinesses, cities as seedCities } from "@/data/site";
-import { Article, City, DirectoryBusiness, SiteSettings } from "@/lib/types";
+import { travelGuideArticles } from "@/data/travel-guides";
+import type { Article, City, DirectoryBusiness, SiteSettings } from "@/lib/types";
+import { ARTICLE_CATEGORIES } from "./types";
+import { sanitizeArticleHtml } from "./sanitize-article-html";
 
 export type CmsContent = {
   articles: Article[];
@@ -41,6 +44,10 @@ const seedContent: CmsContent = {
 };
 
 const seedCityBySlug = new Map(seedCities.map((city) => [city.slug, city]));
+const cityImageBySlug = new Map([
+  ["hanoi", "/cities/hanoi.webp"],
+  ["phuket", "/cities/phuket.webp"]
+]);
 
 export class CmsEditError extends Error {}
 
@@ -183,7 +190,7 @@ function normalizeContent(content: CmsContent): CmsContent {
       ...city,
       audience: city.audience || [],
       businessAngle: city.businessAngle || "",
-      image: city.image || "/brand-assets/home-hero-vietthai-commerce.png",
+      image: cityImageBySlug.get(city.slug) || city.image || "/brand-assets/home-hero-vietthai-commerce.png",
       districts: city.districts ?? seedCityBySlug.get(city.slug)?.districts ?? []
     })),
     businesses: content.businesses.map((business) => ({
@@ -223,7 +230,7 @@ export const readCmsContent = cache(async (): Promise<CmsContent> => {
 
 let fileMutationQueue: Promise<void> = Promise.resolve();
 
-async function mutateCmsContent(mutate: (content: CmsContent) => void) {
+async function mutateCmsContent(mutate: (content: CmsContent) => boolean | void) {
   if (hasDatabase()) {
     await ensureDatabase();
     const client = await getPool()!.connect();
@@ -236,7 +243,10 @@ async function mutateCmsContent(mutate: (content: CmsContent) => void) {
       const previous = result.rows[0]?.value;
       if (!previous) throw new Error("CMS document is missing.");
       const content = normalizeContent(previous);
-      mutate(content);
+      if (mutate(content) === false) {
+        await client.query("commit");
+        return;
+      }
       await client.query(
         "insert into cms_document_revisions (id, document_key, value) values ($1, $2, $3::jsonb)",
         [randomUUID(), documentKey, JSON.stringify(previous)]
@@ -254,7 +264,7 @@ async function mutateCmsContent(mutate: (content: CmsContent) => void) {
   const operation = fileMutationQueue.then(async () => {
     const previous = await readFileContent();
     const content = normalizeContent(previous);
-    mutate(content);
+    if (mutate(content) === false) return;
     if (process.env.NODE_ENV === "production" || process.env.VERCEL) {
       throw new Error("Cloud database is required for production writes.");
     }
@@ -265,6 +275,43 @@ async function mutateCmsContent(mutate: (content: CmsContent) => void) {
   });
   fileMutationQueue = operation.catch(() => undefined);
   await operation;
+}
+
+export async function mergeTravelGuideArticles() {
+  const updatedImages = new Map([
+    ["hanoi", "/cities/hanoi.webp"],
+    ["phuket", "/cities/phuket.webp"],
+    ["ho-chi-minh", "/cities/ho-chi-minh.webp"],
+    ["da-nang", "/cities/da-nang.webp"],
+    ["bangkok", "/cities/bangkok.webp"],
+    ["chiang-mai", "/cities/chiang-mai.webp"]
+  ]);
+  const result = { addedArticles: 0, updatedArticles: 0, updatedCityImages: 0, updatedArticleImages: 0 };
+  await mutateCmsContent((content) => {
+    const indexBySlug = new Map(content.articles.map((article, index) => [article.slug, index]));
+    const additions = travelGuideArticles.filter((article) => !indexBySlug.has(article.slug));
+    for (const article of travelGuideArticles) {
+      const index = indexBySlug.get(article.slug);
+      if (index === undefined) continue;
+      const current = content.articles[index];
+      if (current.content !== article.content || current.title !== article.title || current.coverImage !== article.coverImage || current.excerpt !== article.excerpt) {
+        content.articles[index] = { ...current, ...article };
+        result.updatedArticles += 1;
+        if (current.coverImage !== article.coverImage) result.updatedArticleImages += 1;
+      }
+    }
+    for (const city of content.cities) {
+      const image = updatedImages.get(city.slug);
+      if (image && city.image !== image) {
+        city.image = image;
+        result.updatedCityImages += 1;
+      }
+    }
+    if (!additions.length && !result.updatedArticles && !result.updatedCityImages) return false;
+    content.articles.push(...additions);
+    result.addedArticles = additions.length;
+  });
+  return result;
 }
 
 export async function getArticles() {
@@ -312,9 +359,10 @@ function validateLocation(content: CmsContent, value: { country?: string; citySl
 
 export async function saveArticle(article: Article, originalSlug?: string, expectedRevision?: string) {
   await mutateCmsContent((content) => {
+    if (!ARTICLE_CATEGORIES.includes(article.category)) throw new CmsEditError("文章分類無效，請重新選擇分類。");
     validateLocation(content, article);
     if (article.relatedBusinessSlug && !content.businesses.some((item) => item.slug === article.relatedBusinessSlug)) throw new CmsEditError("關聯商家已變更，請重新選擇。");
-    upsert(content.articles, article, originalSlug, expectedRevision);
+    upsert(content.articles, { ...article, content: sanitizeArticleHtml(article.content) }, originalSlug, expectedRevision);
   });
 }
 

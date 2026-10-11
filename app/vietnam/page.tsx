@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ArticleCard, CityCard, SectionHeader } from "@/components/Cards";
 import { SiteShell } from "@/components/SiteShell";
 import { getArticles, getCities } from "@/lib/cms-store";
+import { inDestination } from "@/lib/explore";
 
 export const metadata: Metadata = {
   title: "越南旅遊、生活與商務指南",
@@ -12,13 +13,13 @@ export const metadata: Metadata = {
 export default async function VietnamPage() {
   const [articles, cities] = await Promise.all([getArticles(), getCities()]);
   const cityList = cities.filter((city) => city.country === "vietnam");
-  const articleList = articles.filter((article) => article.country === "vietnam" || !article.country);
+  const articleList = articles.filter((article) => inDestination(article, { country: "vietnam", city: undefined, district: undefined }, cities));
   return (
     <SiteShell>
       <section className="page-hero">
         <p className="eyebrow">Vietnam</p>
         <h1>越南旅遊、生活與商務指南</h1>
-        <p>從胡志明市到峴港，整理自由行、景點、餐廳、生活資訊與台商商務主題，建立越南中文搜尋入口。</p>
+        <p>從胡志明市的街邊小吃到峴港的海風，找找這趟旅行想體驗的越南。</p>
       </section>
       <section className="band">
         <SectionHeader title="越南城市" intro="以城市為核心整理旅遊與生活資訊，方便讀者依目的地深入閱讀。" />

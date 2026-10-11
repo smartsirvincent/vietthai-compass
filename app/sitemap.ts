@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
-import { siteUrl } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -22,32 +22,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticRoutes.map((route) => ({
-      url: `${siteUrl}${route.path}`,
-      lastModified: new Date(),
+      url: absoluteUrl(route.path),
       changeFrequency: route.changeFrequency,
       priority: route.priority
     })),
     ...cities.map((city) => ({
-      url: `${siteUrl}/cities/${city.slug}`,
-      lastModified: new Date(),
+      url: absoluteUrl(`/cities/${encodeURIComponent(city.slug)}`),
       changeFrequency: "weekly" as const,
       priority: 0.75
     })),
     ...cities.flatMap((city) => city.districts.map((district) => ({
-      url: `${siteUrl}/cities/${city.slug}/districts/${district.slug}`,
-      lastModified: new Date(),
+      url: absoluteUrl(`/cities/${encodeURIComponent(city.slug)}/districts/${encodeURIComponent(district.slug)}`),
       changeFrequency: "weekly" as const,
       priority: 0.68
     }))),
     ...articles.map((article) => ({
-      url: `${siteUrl}/articles/${article.slug}`,
+      url: absoluteUrl(`/articles/${encodeURIComponent(article.slug)}`),
       lastModified: new Date(article.updatedAt),
       changeFrequency: "monthly" as const,
       priority: article.intent === "commercial" ? 0.8 : 0.7
     })),
     ...businesses.map((business) => ({
-      url: `${siteUrl}/directory/${business.slug}`,
-      lastModified: new Date(),
+      url: absoluteUrl(`/directory/${encodeURIComponent(business.slug)}`),
+      ...(business.updatedAt ? { lastModified: new Date(business.updatedAt) } : {}),
       changeFrequency: "weekly" as const,
       priority: business.plan === "premium" ? 0.8 : 0.65
     }))

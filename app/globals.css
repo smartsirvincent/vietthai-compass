@@ -110,6 +110,29 @@ img {
   white-space: nowrap;
 }
 
+.mobile-nav { display: none; }
+.mobile-nav summary {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  list-style: none;
+}
+.mobile-nav summary::-webkit-details-marker { display: none; }
+.mobile-nav nav {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.mobile-nav nav a { padding: 14px; }
+
 .main-nav a:hover,
 .text-link:hover {
   color: var(--red);
@@ -299,9 +322,17 @@ p {
 .home-hero-media {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(90deg, rgba(14, 24, 42, 0.96) 0%, rgba(20, 31, 53, 0.82) 40%, rgba(20, 31, 53, 0.22) 100%),
-    var(--home-hero-image, url("/brand-assets/home-hero-vietthai-commerce.png")) center/cover;
+}
+
+.home-hero-media img {
+  object-fit: cover;
+}
+
+.home-hero-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(14, 24, 42, 0.96) 0%, rgba(20, 31, 53, 0.82) 40%, rgba(20, 31, 53, 0.22) 100%);
 }
 
 .home-hero-content {
@@ -630,12 +661,14 @@ p {
 .article-card.has-image img,
 .city-card.has-image img {
   width: 100%;
+  height: auto;
   aspect-ratio: 16 / 9;
   object-fit: cover;
 }
 
 .business-card.has-image > img {
   width: 100%;
+  height: auto;
   aspect-ratio: 16 / 9;
   margin-bottom: 10px;
   border-radius: 8px;
@@ -984,6 +1017,16 @@ p {
   color: rgba(255, 255, 255, 0.84);
 }
 
+.city-page-cover {
+  display: block;
+  width: min(100%, 1320px);
+  max-height: 460px;
+  aspect-ratio: 16 / 7;
+  margin-top: 28px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
 .business-hero h1 {
   max-width: 1120px;
   font-size: clamp(42px, 4vw, 62px);
@@ -1022,6 +1065,7 @@ p {
 
 .article-cover {
   width: 100%;
+  height: auto;
   aspect-ratio: 16 / 9;
   object-fit: cover;
   border-radius: 8px;
@@ -1057,6 +1101,7 @@ p {
 
 .article-inline-image {
   width: 100%;
+  height: auto;
   max-height: 520px;
   object-fit: cover;
   border-radius: 8px;
@@ -1949,6 +1994,35 @@ p {
   gap: 8px;
 }
 
+.editor-mode-switch {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  padding: 3px;
+  gap: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f3f6f5;
+}
+
+.editor-mode-switch button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.editor-mode-switch button[aria-pressed="true"] {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(20, 36, 31, 0.14);
+}
+
 .editor-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -1983,6 +2057,28 @@ p {
 .rich-editor-surface:focus {
   border-color: rgba(15, 91, 107, 0.52);
   box-shadow: 0 0 0 3px rgba(15, 91, 107, 0.08);
+}
+
+.article-source-label {
+  font-weight: 800;
+}
+
+.article-source-editor {
+  width: 100%;
+  min-height: 360px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: #101a1e;
+  color: #e7f2ee;
+  font: 14px/1.65 ui-monospace, SFMono-Regular, Consolas, monospace;
+  tab-size: 2;
+}
+
+.article-source-editor:focus {
+  border-color: rgba(15, 91, 107, 0.65);
+  outline: 3px solid rgba(15, 91, 107, 0.12);
 }
 
 .rich-editor-surface h1,
@@ -2024,6 +2120,7 @@ p {
 }
 
 @media (max-width: 1080px) {
+  .mobile-nav { display: block; margin-left: auto; }
   .main-nav {
     display: none;
   }
@@ -2050,6 +2147,8 @@ p {
 }
 
 @media (max-width: 720px) {
+  .site-header { gap: 8px; }
+  .header-actions a:not(:first-child) { display: none; }
   .site-header {
     gap: 10px;
   }

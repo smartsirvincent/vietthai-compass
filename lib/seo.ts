@@ -1,12 +1,11 @@
 import { Article, City, DirectoryBusiness, SiteSettings } from "@/lib/types";
 
-export const siteUrl = "https://vietthaicompass.com";
+export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://vietthai-compass.vercel.app").replace(/\/$/, "");
 export const siteName = "越泰指南";
 export const siteAlternateName = "VietThai Compass";
 
 export function absoluteUrl(path = "") {
-  if (path.startsWith("http")) return path;
-  return `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
+  return new URL(path || "/", `${siteUrl}/`).href;
 }
 
 export function organizationJsonLd(settings: SiteSettings = {}) {
@@ -18,7 +17,7 @@ export function organizationJsonLd(settings: SiteSettings = {}) {
     name: currentSiteName,
     alternateName: currentAlternateName,
     url: siteUrl,
-    logo: absoluteUrl(settings.logoImage || "/brand-assets/vietthai-compass-square-icon.png"),
+    logo: absoluteUrl(settings.logoImage || "/brand-assets/logo-02/vietthai-logo-symbol.png"),
     sameAs: [
       "https://facebook.com/vietthaicompass",
       "https://instagram.com/vietthaicompass",
@@ -63,7 +62,6 @@ export function articleJsonLd(article: Article) {
     headline: article.title,
     description: article.excerpt,
     image: absoluteUrl(article.coverImage),
-    datePublished: article.updatedAt,
     dateModified: article.updatedAt,
     author: {
       "@type": "Organization",
