@@ -75,7 +75,7 @@ export default async function CityDetailPage({ params, searchParams }: { params:
           </div>
         </section>
       ) : null}
-      {cityBusinesses.length ? (
+      {cityBusinesses.length && city.slug !== "bangkok" ? (
         <section className="band">
           <SectionHeader title="相關商家" href="/directory" />
           <div className="grid three">
