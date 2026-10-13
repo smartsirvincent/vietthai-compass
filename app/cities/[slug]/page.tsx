@@ -7,6 +7,7 @@ import { SiteShell } from "@/components/SiteShell";
 import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
 import { breadcrumbJsonLd, cityJsonLd } from "@/lib/seo";
 import { findByRouteSlug } from "@/lib/routes";
+import { BangkokTransitExplorer } from "@/components/BangkokTransitExplorer";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -27,14 +28,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function CityDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const [cities, articles, businesses] = await Promise.all([getCities(), getArticles(), getBusinesses()]);
+export default async function CityDetailPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ station?: string | string[]; merchantType?: string | string[] }> }) {
+  const [{ slug }, query, cities, articles, businesses] = await Promise.all([params, searchParams, getCities(), getArticles(), getBusinesses()]);
   const city = findByRouteSlug(cities, slug);
   if (!city) notFound();
 
   const cityArticles = articles.filter((article) => article.citySlug === city.slug);
   const cityBusinesses = businesses.filter((business) => business.citySlug === city.slug);
+  const station = Array.isArray(query.station) ? query.station[0] : query.station;
+  const merchantType = Array.isArray(query.merchantType) ? query.merchantType[0] : query.merchantType;
 
   return (
     <SiteShell>
@@ -51,6 +53,7 @@ export default async function CityDetailPage({ params }: { params: Promise<{ slu
       <section className="band light">
         <InfoStrip items={[["英文名稱", city.nameEn], ["推薦季節", city.bestSeason], ["建議天數", city.recommendedDays], ["適合族群", city.audience.join(" / ")]]} />
       </section>
+      {city.slug === "bangkok" ? <BangkokTransitExplorer businesses={cityBusinesses} stationId={station} merchantType={merchantType} /> : null}
       <section className="band">
         <SectionHeader title={`${city.name}完整指南`} intro="從逐月天氣、行前準備到餐廳與景點，按城市整理實用資訊。" href={`/articles?country=${city.country}&city=${city.slug}`} />
         <div className="grid three">

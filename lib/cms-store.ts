@@ -9,6 +9,7 @@ import { travelGuideArticles } from "@/data/travel-guides";
 import type { Article, City, DirectoryBusiness, SiteSettings } from "@/lib/types";
 import { ARTICLE_CATEGORIES } from "./types";
 import { inferBusinessSubcategory, isBusinessCategory, isBusinessSubcategory } from "./business-taxonomy";
+import { suggestedBangkokTransitStations } from "./bangkok-transit";
 import { sanitizeArticleHtml } from "./sanitize-article-html";
 
 export type CmsContent = {
@@ -201,6 +202,7 @@ function normalizeContent(content: CmsContent, suggestBusinessSubcategories = tr
       subcategory: business.subcategory || (suggestBusinessSubcategories ? inferBusinessSubcategory(business) : undefined),
       review: business.review || "",
       districtSlug: business.districtSlug || "",
+      transitStationIds: business.transitStationIds ?? suggestedBangkokTransitStations(business),
       googleMapUrl: business.googleMapUrl || "",
       badges: business.badges || [],
       socials: {

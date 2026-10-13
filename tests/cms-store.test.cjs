@@ -86,6 +86,9 @@ function loadStore(initial = fixture(), guideArticles = []) {
       if (name === './types') return { ARTICLE_CATEGORIES: ['旅遊攻略', '旅遊須知', '餐廳美食', '景點行程', '在地生活', '台商專區', '節慶活動', '新聞快訊', '交通航線'] };
       if (name === './sanitize-article-html') return loadSanitizer();
       if (name === './business-taxonomy') return loadTaxonomy();
+      if (name === './bangkok-transit') return {
+        suggestedBangkokTransitStations: ({ slug, country, citySlug }) => country === 'thailand' && citySlug === 'bangkok' && slug === 'once-upon-a-thai-spa-phrom-phong' ? ['bts-phrom-phong'] : []
+      };
       return require(name);
     },
     process: { env: { DATABASE_URL: 'postgres://test' }, cwd: process.cwd },
@@ -217,6 +220,17 @@ test('legacy businesses get a suggested fine category and saves validate categor
     store.saveBusiness({ ...updated, category: '景點行程' }, 'cafe', store.contentRevision(updated)),
     /細分類與商家分類不一致/
   );
+});
+
+test('legacy Bangkok businesses receive suggested station tags while explicit station edits are preserved', async () => {
+  const legacyData = fixture();
+  legacyData.cities.push({ ...city, slug: 'bangkok', country: 'thailand', name: 'Bangkok' });
+  legacyData.businesses[0] = { ...legacyData.businesses[0], slug: 'once-upon-a-thai-spa-phrom-phong', citySlug: 'bangkok', country: 'thailand' };
+  const { store, backend } = loadStore(legacyData);
+  const record = (await store.getBusinesses())[0];
+  assert.deepEqual(record.transitStationIds, ['bts-phrom-phong']);
+  await store.saveBusiness({ ...record, transitStationIds: ['bts-phrom-phong', 'mrt-hua-lamphong'] }, record.slug, store.contentRevision(record));
+  assert.deepEqual(backend.document.businesses[0].transitStationIds, ['bts-phrom-phong', 'mrt-hua-lamphong']);
 });
 
 test('business subcategory backfill writes one revision and leaves completed classifications unchanged', async () => {

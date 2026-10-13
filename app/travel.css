@@ -44,6 +44,49 @@
 .destination-filters { display: grid; grid-template-columns: 1fr 1fr 1fr 1.5fr auto; gap: 12px; align-items: end; padding-bottom: 24px; border-bottom: 1px solid #d8e5e1; }
 .directory-filters { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .business-category-filters { grid-template-columns: repeat(4, minmax(0, 1fr)) 1.5fr auto; }
+.bangkok-transit { background: #f5f8f6; }
+.bangkok-transit-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 28px; }
+.bangkok-transit-heading h2 { font-size: 30px; margin: 4px 0 8px; }
+.bangkok-transit-heading p { margin: 0; color: #596963; }
+.transit-count { display: inline-flex; align-items: baseline; gap: 6px; color: #53625c; white-space: nowrap; }
+.transit-count strong { color: #172c2a; font-size: 28px; }
+.transit-line-list { display: grid; gap: 12px; }
+.transit-line { display: grid; grid-template-columns: 210px minmax(0, 1fr); align-items: center; gap: 16px; padding: 14px 16px; border: 1px solid #d8e3df; border-left: 4px solid var(--transit-line); border-radius: 6px; background: #fff; }
+.transit-line-name { display: grid; grid-template-columns: 12px 1fr; column-gap: 9px; align-items: center; font-weight: 700; }
+.transit-line-name > span { width: 10px; aspect-ratio: 1; border-radius: 50%; background: var(--transit-line); grid-row: span 2; }
+.transit-line-name small { grid-column: 2; color: #6a7973; font-size: 12px; font-weight: 500; }
+.transit-stations { display: flex; gap: 10px; min-width: 0; overflow-x: auto; padding: 2px 0 6px; scrollbar-width: thin; }
+.transit-station { display: flex; align-items: center; gap: 9px; min-height: 48px; min-width: max-content; padding: 7px 12px; border: 1px solid #dce5e1; border-radius: 6px; background: #fff; text-decoration: none; }
+.transit-station:hover, .transit-station:focus-visible { border-color: var(--transit-line); }
+.transit-station:focus-visible, .transit-type-filters a:focus-visible { outline: 3px solid #ecbd38; outline-offset: 2px; }
+.transit-station.is-active { border-color: var(--transit-line); background: color-mix(in srgb, var(--transit-line) 9%, white); }
+.transit-station-dot { width: 13px; height: 13px; flex: 0 0 auto; border: 3px solid var(--transit-line); border-radius: 50%; background: white; }
+.transit-station-text { display: grid; line-height: 1.25; }
+.transit-station-text strong { color: #1b302d; font-size: 14px; }
+.transit-station-text small { color: #66746e; font-size: 12px; }
+.transit-station-count { min-width: 22px; padding: 2px 6px; border-radius: 10px; background: #edf2ef; color: #3f514a; font-size: 12px; text-align: center; }
+.transit-note { margin: 12px 0 30px; color: #68766f; font-size: 13px; line-height: 1.6; }
+.transit-results { padding-top: 24px; border-top: 1px solid #d4ded9; }
+.transit-results-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
+.transit-results-heading .eyebrow { margin: 0 0 4px; font-size: 12px; }
+.transit-results-heading h3 { margin: 0; font-size: 24px; }
+.transit-type-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 24px; }
+.transit-type-filters a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 14px; border: 1px solid #cad8d2; border-radius: 22px; background: white; color: #304741; font-size: 14px; text-decoration: none; }
+.transit-type-filters a.is-active { border-color: #225b4c; background: #225b4c; color: white; }
+.transit-business-grid .business-card { height: 100%; }
+.transit-empty { padding: 28px 0; }
+.transit-empty h3 { margin: 0 0 6px; font-size: 18px; }
+.transit-empty p { margin: 0; color: #64736d; }
+.transit-source-links { display: flex; flex-wrap: wrap; gap: 14px 20px; margin-top: 28px; padding-top: 14px; border-top: 1px solid #d4ded9; color: #64736d; font-size: 13px; }
+.transit-source-links a { color: #235e53; text-decoration: underline; text-underline-offset: 3px; }
+.bangkok-station-fields { grid-column: 1 / -1; min-width: 0; padding: 16px; border: 1px solid #d9e1de; border-radius: 6px; }
+.bangkok-station-fields legend { padding: 0 6px; font-weight: 700; }
+.bangkok-station-fields > p { margin: 0 0 14px; color: #68766f; font-size: 13px; }
+.bangkok-station-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.bangkok-station-group { display: grid; align-content: start; gap: 8px; }
+.bangkok-station-group > strong { font-size: 14px; }
+.bangkok-station-group .checkbox-field { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.bangkok-station-group .checkbox-field input { width: 18px; height: 18px; }
 .destination-filters select:disabled { background: #f4f6f5; color: #6a7773; }
 .results-summary { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 24px 0; }
 .results-summary h2 { font-size: 22px; margin: 0; }
@@ -68,6 +111,7 @@
   .destination-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .business-category-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .destination-keyword { grid-column: span 2; }
+  .transit-line { grid-template-columns: 165px minmax(0, 1fr); }
 }
 @media (max-width: 720px) {
   .traveler-hero { min-height: 0; }
@@ -86,4 +130,14 @@
   .destination-filters label { font-size: 13px; }
   .destination-filters select { padding: 0 5px; }
   .page-hero h1 { font-size: 28px; }
+  .bangkok-transit-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .bangkok-transit-heading h2 { font-size: 25px; }
+  .transit-line { grid-template-columns: 1fr; gap: 10px; padding: 12px; }
+  .transit-line-name { grid-template-columns: 12px auto; justify-content: start; }
+  .transit-line-name small { margin-left: 4px; }
+  .transit-stations { margin-left: 4px; }
+  .transit-type-filters { flex-wrap: nowrap; overflow-x: auto; padding: 3px 2px 6px; }
+  .transit-type-filters a { flex: 0 0 auto; }
+  .transit-results-heading h3 { font-size: 21px; }
+  .bangkok-station-options { grid-template-columns: 1fr; }
 }

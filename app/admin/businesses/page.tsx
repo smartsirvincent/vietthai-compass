@@ -5,12 +5,14 @@ import { finishCmsEdit } from "@/lib/cms-actions";
 import { contentRevision } from "@/lib/cms-store";
 import { CityDistrictFields } from "@/components/CityDistrictFields";
 import { BusinessCategoryFields } from "@/components/BusinessCategoryFields";
+import { BangkokTransitStationFields } from "@/components/BangkokTransitStationFields";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import { TagInputField } from "@/components/TagInputField";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { backfillBusinessSubcategories, deleteBusiness, getArticles, getBusinesses, getCities, listFromTextarea, saveBusiness, textValue } from "@/lib/cms-store";
 import { DirectoryBusiness } from "@/lib/types";
 import { BUSINESS_CATEGORIES, BUSINESS_SUBCATEGORIES, isBusinessCategory } from "@/lib/business-taxonomy";
+import { isBangkokTransitStationId } from "@/lib/bangkok-transit";
 
 function formatBusinessDate(value?: string) {
   if (!value) return "尚未記錄";
@@ -42,6 +44,9 @@ async function saveBusinessAction(formData: FormData) {
       image: textValue(formData, "image", "/brand-assets/home-business-local-life.png"),
       citySlug: selectedCity?.slug || citySlug,
       districtSlug: districtSlug || undefined,
+      transitStationIds: country === "thailand" && citySlug === "bangkok"
+        ? formData.getAll("transitStationIds").map(String).filter(isBangkokTransitStationId)
+        : [],
       country,
       description: textValue(formData, "description"),
       review: textValue(formData, "review"),
@@ -149,6 +154,7 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
               cityPlaceholder="請選擇城市"
               requiredCity
             />
+            <BangkokTransitStationFields defaultValue={editing?.transitStationIds || []} />
           </div>
           <label>Google Map 網址<input name="googleMapUrl" defaultValue={editing?.googleMapUrl || ""} placeholder="https://maps.google.com/..." /></label>
           <ImageUploadField

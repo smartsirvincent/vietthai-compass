@@ -80,6 +80,7 @@ export type DirectoryBusiness = {
   image?: string;
   citySlug: string;
   districtSlug?: string;
+  transitStationIds?: string[];
   country: CountryCode;
   description: string;
   review?: string;
