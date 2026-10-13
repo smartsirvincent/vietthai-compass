@@ -1,8 +1,8 @@
 import type { City, CountryCode } from "@/lib/types";
-export type ExploreQuery = { country?: string; city?: string; district?: string; q?: string; page?: string };
+export type ExploreQuery = { country?: string; city?: string; district?: string; q?: string; page?: string; category?: string; subcategory?: string };
 export function cleanExploreQuery(query: ExploreQuery): ExploreQuery {
   const clean: ExploreQuery = {};
-  for (const key of ["country", "city", "district", "q", "page"] as const) {
+  for (const key of ["country", "city", "district", "q", "page", "category", "subcategory"] as const) {
     const value = query[key];
     const first = Array.isArray(value) ? value[0] : value;
     if (typeof first === "string") clean[key] = first.trim().slice(0, 200);

@@ -8,6 +8,7 @@ import { articles as seedArticles, businesses as seedBusinesses, cities as seedC
 import { travelGuideArticles } from "@/data/travel-guides";
 import type { Article, City, DirectoryBusiness, SiteSettings } from "@/lib/types";
 import { ARTICLE_CATEGORIES } from "./types";
+import { inferBusinessSubcategory, isBusinessCategory, isBusinessSubcategory } from "./business-taxonomy";
 import { sanitizeArticleHtml } from "./sanitize-article-html";
 
 export type CmsContent = {
@@ -156,7 +157,7 @@ async function readFileContent(): Promise<CmsContent> {
   return JSON.parse(raw) as CmsContent;
 }
 
-function normalizeContent(content: CmsContent): CmsContent {
+function normalizeContent(content: CmsContent, suggestBusinessSubcategories = true): CmsContent {
   return {
     ...content,
     settings: {
@@ -197,6 +198,7 @@ function normalizeContent(content: CmsContent): CmsContent {
       ...business,
       image: business.image || "/brand-assets/home-business-local-life.png",
       category: business.category || "在地生活",
+      subcategory: business.subcategory || (suggestBusinessSubcategories ? inferBusinessSubcategory(business) : undefined),
       review: business.review || "",
       districtSlug: business.districtSlug || "",
       googleMapUrl: business.googleMapUrl || "",
@@ -230,7 +232,7 @@ export const readCmsContent = cache(async (): Promise<CmsContent> => {
 
 let fileMutationQueue: Promise<void> = Promise.resolve();
 
-async function mutateCmsContent(mutate: (content: CmsContent) => boolean | void) {
+async function mutateCmsContent(mutate: (content: CmsContent) => boolean | void, suggestBusinessSubcategories = true) {
   if (hasDatabase()) {
     await ensureDatabase();
     const client = await getPool()!.connect();
@@ -242,7 +244,7 @@ async function mutateCmsContent(mutate: (content: CmsContent) => boolean | void)
       );
       const previous = result.rows[0]?.value;
       if (!previous) throw new Error("CMS document is missing.");
-      const content = normalizeContent(previous);
+      const content = normalizeContent(previous, suggestBusinessSubcategories);
       if (mutate(content) === false) {
         await client.query("commit");
         return;
@@ -263,7 +265,7 @@ async function mutateCmsContent(mutate: (content: CmsContent) => boolean | void)
   }
   const operation = fileMutationQueue.then(async () => {
     const previous = await readFileContent();
-    const content = normalizeContent(previous);
+    const content = normalizeContent(previous, suggestBusinessSubcategories);
     if (mutate(content) === false) return;
     if (process.env.NODE_ENV === "production" || process.env.VERCEL) {
       throw new Error("Cloud database is required for production writes.");
@@ -290,16 +292,6 @@ export async function mergeTravelGuideArticles() {
   await mutateCmsContent((content) => {
     const indexBySlug = new Map(content.articles.map((article, index) => [article.slug, index]));
     const additions = travelGuideArticles.filter((article) => !indexBySlug.has(article.slug));
-    for (const article of travelGuideArticles) {
-      const index = indexBySlug.get(article.slug);
-      if (index === undefined) continue;
-      const current = content.articles[index];
-      if (current.content !== article.content || current.title !== article.title || current.coverImage !== article.coverImage || current.excerpt !== article.excerpt) {
-        content.articles[index] = { ...current, ...article };
-        result.updatedArticles += 1;
-        if (current.coverImage !== article.coverImage) result.updatedArticleImages += 1;
-      }
-    }
     for (const city of content.cities) {
       const image = updatedImages.get(city.slug);
       if (image && city.image !== image) {
@@ -307,7 +299,7 @@ export async function mergeTravelGuideArticles() {
         result.updatedCityImages += 1;
       }
     }
-    if (!additions.length && !result.updatedArticles && !result.updatedCityImages) return false;
+    if (!additions.length && !result.updatedCityImages) return false;
     content.articles.push(...additions);
     result.addedArticles = additions.length;
   });
@@ -324,6 +316,20 @@ export async function getCities() {
 
 export async function getBusinesses() {
   return (await readCmsContent()).businesses;
+}
+
+export async function backfillBusinessSubcategories() {
+  let updated = 0;
+  await mutateCmsContent((content) => {
+    for (const business of content.businesses) {
+      if (!business.subcategory) {
+        business.subcategory = inferBusinessSubcategory(business);
+        updated += 1;
+      }
+    }
+    if (!updated) return false;
+  }, false);
+  return updated;
 }
 
 export async function getSiteSettings() {
@@ -380,6 +386,8 @@ export async function saveCity(city: City, originalSlug?: string, expectedRevisi
 
 export async function saveBusiness(business: DirectoryBusiness, originalSlug?: string, expectedRevision?: string) {
   await mutateCmsContent((content) => {
+    if (!isBusinessCategory(business.category)) throw new CmsEditError("商家分類無效，請重新選擇分類。");
+    if (!business.subcategory || !isBusinessSubcategory(business.category, business.subcategory)) throw new CmsEditError("細分類與商家分類不一致，請重新選擇。");
     validateLocation(content, business);
     upsert(content.businesses, business, originalSlug, expectedRevision);
     if (originalSlug && originalSlug !== business.slug) {

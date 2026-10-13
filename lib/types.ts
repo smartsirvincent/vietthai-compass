@@ -1,3 +1,5 @@
+import type { BusinessSubcategory } from "./business-taxonomy";
+
 export type CountryCode = "vietnam" | "thailand";
 
 export type ContentStatus = "draft" | "pending" | "published" | "scheduled" | "archived";
@@ -74,6 +76,7 @@ export type DirectoryBusiness = {
   slug: string;
   name: string;
   category: string;
+  subcategory?: BusinessSubcategory;
   image?: string;
   citySlug: string;
   districtSlug?: string;

@@ -87,7 +87,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd(business)) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd([{ name: "首頁", url: "/" }, { name: "商家名錄", url: "/directory" }, { name: business.name, url: `/directory/${business.slug}` }])) }} />
       <section className="page-hero">
-        <p className="eyebrow">{business.category}</p>
+        <p className="eyebrow">{business.category}・{business.subcategory}</p>
         <h1>{business.name}</h1>
         <p>{business.description}</p>
         <div className="detail-actions">
@@ -98,7 +98,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
         <p className="travel-note">營業時間、價格與店況可能變動，出發前請查看地圖最新資訊或聯絡商家。</p>
       </section>
       <section className="band light">
-        <InfoStrip items={[["分類", business.category || "待補"], ["城市", city?.name || business.citySlug], ["分區", district?.name || "不限分區"], ["特色", business.badges.join(" / ") || "待補"]]} />
+        <InfoStrip items={[["分類", business.category || "待補"], ["細分類", business.subcategory || "待補"], ["城市", city?.name || business.citySlug], ["分區", district?.name || "不限分區"], ["特色", business.badges.join(" / ") || "待補"]]} />
       </section>
       <section className="content-layout">
         <article className="panel">

@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const ts = require('typescript');
 
 const city = { slug: 'hcm', country: 'vietnam', name: 'HCM', nameEn: 'HCM', summary: 'City', bestSeason: '', recommendedDays: '', audience: [], businessAngle: '', image: '/city.jpg', districts: [{ slug: 'd1', name: 'D1', summary: 'District' }] };
-const business = { slug: 'cafe', name: 'Cafe', citySlug: 'hcm', districtSlug: 'd1', country: 'vietnam', category: '餐廳美食', description: 'Original', review: 'First\nSecond', image: '/photo.jpg', badges: ['Coffee'], socials: { phone: '123', instagram: 'https://instagram.com/cafe' }, plan: 'free' };
+const business = { slug: 'cafe', name: 'Cafe', citySlug: 'hcm', districtSlug: 'd1', country: 'vietnam', category: '餐廳美食', subcategory: '咖啡廳', description: 'Original', review: 'First\nSecond', image: '/photo.jpg', badges: ['Coffee'], socials: { phone: '123', instagram: 'https://instagram.com/cafe' }, plan: 'free' };
 const article = { slug: 'guide', title: 'Guide', excerpt: 'Summary', content: '<h2>Heading</h2><p>Text</p>', country: 'vietnam', citySlug: 'hcm', districtSlug: 'd1', relatedBusinessSlug: 'cafe', category: '餐廳美食', intent: 'traffic', keywords: ['Coffee'], updatedAt: '2026-09-09', coverImage: '/cover.jpg', photoAlt: 'Cover' };
 const fixture = () => structuredClone({ settings: {}, cities: [city], businesses: [business], articles: [article] });
 
@@ -15,6 +15,15 @@ function loadSanitizer() {
   }).outputText;
   const exports = {};
   vm.runInNewContext(source, { exports, require }, { filename: 'sanitize-article-html.ts' });
+  return exports;
+}
+
+function loadTaxonomy() {
+  const source = ts.transpileModule(fs.readFileSync('lib/business-taxonomy.ts', 'utf8'), {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, esModuleInterop: true }
+  }).outputText;
+  const exports = {};
+  vm.runInNewContext(source, { exports, require }, { filename: 'business-taxonomy.ts' });
   return exports;
 }
 
@@ -51,7 +60,7 @@ function loadStore(initial = fixture(), guideArticles = []) {
           }
           if (sql === 'commit') {
             backend.document = nextDocument;
-            backend.revisions.push(revision);
+            if (revision) backend.revisions.push(revision);
             unlock?.();
             unlock = undefined;
           }
@@ -76,6 +85,7 @@ function loadStore(initial = fixture(), guideArticles = []) {
       if (name === '@/data/travel-guides') return { travelGuideArticles: guideArticles };
       if (name === './types') return { ARTICLE_CATEGORIES: ['旅遊攻略', '旅遊須知', '餐廳美食', '景點行程', '在地生活', '台商專區', '節慶活動', '新聞快訊', '交通航線'] };
       if (name === './sanitize-article-html') return loadSanitizer();
+      if (name === './business-taxonomy') return loadTaxonomy();
       return require(name);
     },
     process: { env: { DATABASE_URL: 'postgres://test' }, cwd: process.cwd },
@@ -84,16 +94,18 @@ function loadStore(initial = fixture(), guideArticles = []) {
   return { store: exports, backend };
 }
 
-test('travel guide import refreshes only its matching article and keeps a revision snapshot', async () => {
+test('travel guide import adds missing articles without overwriting edited content', async () => {
   const guide = { ...article, slug: 'guide', title: 'Refreshed guide', excerpt: 'New summary', content: '<h2>New</h2>', coverImage: '/new-cover.webp', updatedAt: '2026-10-11' };
+  const addition = { ...guide, slug: 'new-guide', title: 'New guide' };
   const untouched = { ...article, slug: 'other', title: 'Keep this article' };
-  const { store, backend } = loadStore({ ...fixture(), articles: [article, untouched] }, [guide]);
+  const { store, backend } = loadStore({ ...fixture(), articles: [article, untouched] }, [guide, addition]);
   const result = await store.mergeTravelGuideArticles();
-  assert.equal(result.addedArticles, 0);
-  assert.equal(result.updatedArticles, 1);
-  assert.equal(result.updatedArticleImages, 1);
-  assert.equal(backend.document.articles[0].title, 'Refreshed guide');
+  assert.equal(result.addedArticles, 1);
+  assert.equal(result.updatedArticles, 0);
+  assert.equal(result.updatedArticleImages, 0);
+  assert.equal(backend.document.articles[0].title, 'Guide');
   assert.equal(backend.document.articles[1].title, 'Keep this article');
+  assert.equal(backend.document.articles[2].slug, 'new-guide');
   assert.equal(backend.revisions.length, 1);
 });
 
@@ -190,6 +202,32 @@ test('photos, contacts, tags, line breaks and HTML survive saving and reading ag
   const html = '<h2>Heading</h2><p><strong>Bold</strong></p><figure><img src="/photo.jpg" alt="Photo" /></figure>';
   await store.saveArticle({ ...currentArticle, content: html }, 'guide', store.contentRevision(currentArticle));
   assert.equal((await store.getArticles())[0].content, html);
+});
+
+test('legacy businesses get a suggested fine category and saves validate category pairing', async () => {
+  const legacyData = fixture();
+  delete legacyData.businesses[0].subcategory;
+  const { store, backend } = loadStore(legacyData);
+  const record = (await store.getBusinesses())[0];
+  assert.equal(record.subcategory, '咖啡廳');
+  await store.saveBusiness({ ...record, subcategory: '日本料理' }, 'cafe', store.contentRevision(record));
+  assert.equal(backend.document.businesses[0].subcategory, '日本料理');
+  const updated = (await store.getBusinesses())[0];
+  await assert.rejects(
+    store.saveBusiness({ ...updated, category: '景點行程' }, 'cafe', store.contentRevision(updated)),
+    /細分類與商家分類不一致/
+  );
+});
+
+test('business subcategory backfill writes one revision and leaves completed classifications unchanged', async () => {
+  const legacyData = fixture();
+  delete legacyData.businesses[0].subcategory;
+  const { store, backend } = loadStore(legacyData);
+  assert.equal(await store.backfillBusinessSubcategories(), 1);
+  assert.equal(backend.document.businesses[0].subcategory, '咖啡廳');
+  assert.equal(backend.revisions.length, 1);
+  assert.equal(await store.backfillBusinessSubcategories(), 0);
+  assert.equal(backend.revisions.length, 1);
 });
 
 test('article saving removes unsafe HTML while preserving supported formatting', async () => {

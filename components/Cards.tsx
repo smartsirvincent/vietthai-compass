@@ -106,7 +106,7 @@ export function BusinessCard({ business }: { business: DirectoryBusiness }) {
           <BriefcaseBusiness size={20} />
         </div>
       )}
-      <span className="pill">{business.category}</span>
+      <span className="pill">{business.category}・{business.subcategory || "其他"}</span>
       <h3>{business.name}</h3>
       <p>{business.description}</p>
       <div className="badge-row">
