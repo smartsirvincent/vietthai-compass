@@ -3,6 +3,8 @@
 !.env.example
 data/cms-content.backup-*.json
 data/*.tmp
+output/
+work/
 dist-packages/
 dev-server.log
 dev-server.err.log
