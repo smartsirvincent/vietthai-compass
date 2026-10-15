@@ -13,6 +13,7 @@ import { backfillBusinessSubcategories, deleteBusiness, getArticles, getBusiness
 import { DirectoryBusiness } from "@/lib/types";
 import { BUSINESS_CATEGORIES, BUSINESS_SUBCATEGORIES, isBusinessCategory } from "@/lib/business-taxonomy";
 import { isBangkokTransitStationId } from "@/lib/bangkok-transit";
+import { bangkokBusinessAdditions } from "@/data/bangkok-businesses";
 
 function formatBusinessDate(value?: string) {
   if (!value) return "尚未記錄";
@@ -93,9 +94,29 @@ async function backfillBusinessSubcategoriesAction() {
   });
 }
 
-export default async function AdminBusinessesPage({ searchParams }: { searchParams: Promise<{ edit?: string; error?: string; country?: string; city?: string; category?: string; subcategory?: string; saved?: string; savedAt?: string; classified?: string }> }) {
+async function importBangkokBusinessesAction() {
+  "use server";
   await requireAdminRole();
-  const { edit, error, country, city, category, subcategory, saved, savedAt, classified } = await searchParams;
+  return finishCmsEdit(async () => {
+    const existing = new Set((await getBusinesses()).map((business) => business.slug));
+    let added = 0;
+    let skipped = 0;
+    for (const business of bangkokBusinessAdditions) {
+      if (existing.has(business.slug)) {
+        skipped += 1;
+        continue;
+      }
+      await saveBusiness(business, undefined, "new");
+      existing.add(business.slug);
+      added += 1;
+    }
+    return `/admin/businesses?imported=${added}&skipped=${skipped}`;
+  });
+}
+
+export default async function AdminBusinessesPage({ searchParams }: { searchParams: Promise<{ edit?: string; error?: string; country?: string; city?: string; category?: string; subcategory?: string; saved?: string; savedAt?: string; classified?: string; imported?: string; skipped?: string }> }) {
+  await requireAdminRole();
+  const { edit, error, country, city, category, subcategory, saved, savedAt, classified, imported, skipped } = await searchParams;
   const [businesses, cities, articles] = await Promise.all([getBusinesses(), getCities(), getArticles()]);
   const editing = businesses.find((item) => item.slug === edit);
   const relatedArticles = editing ? articles.filter((article) => article.relatedBusinessSlug === editing.slug) : [];
@@ -124,6 +145,9 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
       <AdminEditorForm action={backfillBusinessSubcategoriesAction} className="business-classification-action">
         <AdminSubmitButton idleLabel="補齊現有商家細分類" />
       </AdminEditorForm>
+      <AdminEditorForm action={importBangkokBusinessesAction} className="business-classification-action">
+        <AdminSubmitButton idleLabel="新增曼谷捷運沿線 30 家" pendingLabel="新增商家中" />
+      </AdminEditorForm>
       {error === "database" ? (
         <div className="admin-error">
           商家資料無法儲存：目前雲端資料庫連線異常，請先修正 Vercel 的 DATABASE_URL 後再新增或更新商家。
@@ -131,6 +155,7 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
       ) : null}
       {saved === "business" ? <div className="settings-saved">已完成</div> : null}
       {classified !== undefined ? <div className="settings-saved">分類完成：已補上 {Number(classified) || 0} 筆商家細分類，其他資料未變更。</div> : null}
+      {imported !== undefined ? <div className="settings-saved">曼谷商家匯入完成：新增 {Number(imported) || 0} 家，略過既有 {Number(skipped) || 0} 家；既有商家內容未更動。</div> : null}
       <section className="admin-editor-grid">
         <AdminEditorForm key={`${edit || "new"}:${savedAt || ""}`} action={saveBusinessAction} className="panel admin-form">
           <input type="hidden" name="revision" value={contentRevision(editing)} />

@@ -5,7 +5,7 @@ export const BANGKOK_TRANSIT_LINES = [
     label: "BTS 素坤逸線",
     color: "#398341",
     mapUrl: "https://www.bts.co.th/eng/routemap.html?lang=en",
-    stations: ["bts-phrom-phong"]
+    stations: ["bts-asok", "bts-phrom-phong", "bts-thong-lo", "bts-siam", "bts-chit-lom"]
   },
   {
     id: "bts-silom",
@@ -13,7 +13,7 @@ export const BANGKOK_TRANSIT_LINES = [
     label: "BTS 是隆線",
     color: "#167b75",
     mapUrl: "https://www.bts.co.th/eng/routemap.html?lang=en",
-    stations: ["bts-sala-daeng"]
+    stations: ["bts-national-stadium", "bts-sala-daeng"]
   },
   {
     id: "mrt-blue",
@@ -21,16 +21,23 @@ export const BANGKOK_TRANSIT_LINES = [
     label: "MRT 藍線",
     color: "#2875c7",
     mapUrl: "https://metro.bemplc.co.th/MRT-System-Map?lang=en",
-    stations: ["mrt-sam-yot", "mrt-wat-mangkon", "mrt-hua-lamphong", "mrt-lumphini"]
+    stations: ["mrt-sukhumvit", "mrt-sam-yot", "mrt-wat-mangkon", "mrt-hua-lamphong", "mrt-silom", "mrt-lumphini"]
   }
 ] as const;
 
 export const BANGKOK_TRANSIT_STATIONS = [
+  { id: "bts-asok", lineId: "bts-sukhumvit", name: "Asok", nameZh: "阿索克", area: "Sukhumvit／Asok" },
   { id: "bts-phrom-phong", lineId: "bts-sukhumvit", name: "Phrom Phong", nameZh: "澎蓬", area: "Sukhumvit 24–31" },
+  { id: "bts-thong-lo", lineId: "bts-sukhumvit", name: "Thong Lo", nameZh: "通羅", area: "Thong Lo／Sukhumvit 55" },
+  { id: "bts-siam", lineId: "bts-sukhumvit", name: "Siam", nameZh: "暹羅", area: "Siam 商圈" },
+  { id: "bts-chit-lom", lineId: "bts-sukhumvit", name: "Chit Lom", nameZh: "奇隆", area: "Ratchaprasong／CentralWorld" },
+  { id: "bts-national-stadium", lineId: "bts-silom", name: "National Stadium", nameZh: "國家體育館", area: "MBK／藝術文化中心" },
   { id: "bts-sala-daeng", lineId: "bts-silom", name: "Sala Daeng", nameZh: "沙拉當", area: "Silom／Surawong" },
+  { id: "mrt-sukhumvit", lineId: "mrt-blue", name: "Sukhumvit", nameZh: "素坤逸", area: "Asok 轉乘站" },
   { id: "mrt-sam-yot", lineId: "mrt-blue", name: "Sam Yot", nameZh: "三耀", area: "Phra Nakhon／考山路一帶" },
   { id: "mrt-wat-mangkon", lineId: "mrt-blue", name: "Wat Mangkon", nameZh: "龍蓮寺", area: "Yaowarat／唐人街" },
   { id: "mrt-hua-lamphong", lineId: "mrt-blue", name: "Hua Lamphong", nameZh: "華喃峰", area: "Talat Noi／Charoen Krung" },
+  { id: "mrt-silom", lineId: "mrt-blue", name: "Si Lom", nameZh: "席隆", area: "Sala Daeng／Silom" },
   { id: "mrt-lumphini", lineId: "mrt-blue", name: "Lumphini", nameZh: "倫披尼", area: "Suan Phlu／Sathorn" }
 ] as const;
 

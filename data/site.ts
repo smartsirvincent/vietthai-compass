@@ -1,5 +1,6 @@
 import { Article, City, DirectoryBusiness, ResearchBrief } from "@/lib/types";
 import { travelGuideArticles } from "@/data/travel-guides";
+import { bangkokBusinessAdditions } from "@/data/bangkok-businesses";
 
 export const siteSocials = {
   line: "https://line.me/R/ti/p/@vietthaicompass",
@@ -173,7 +174,8 @@ export const businesses: DirectoryBusiness[] = [
       instagram: "https://www.instagram.com/nuckitchenandbar/"
     },
     plan: "featured"
-  }
+  },
+  ...bangkokBusinessAdditions
 ];
 
 export const articles: Article[] = [
