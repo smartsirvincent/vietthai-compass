@@ -6,7 +6,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 export type AdminRole = "admin" | "user";
 
 const cookieName = "vt_admin_session";
-const maxAgeSeconds = 60 * 60 * 12;
+const maxAgeSeconds = 60 * 60 * 24 * 30;
 
 function authSecret() {
   return process.env.AUTH_SECRET || "local-development-secret";
