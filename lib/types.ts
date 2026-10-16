@@ -32,6 +32,7 @@ export type City = {
   nameEn: string;
   summary: string;
   bestSeason: string;
+  weather?: string;
   recommendedDays: string;
   audience: string[];
   businessAngle: string;

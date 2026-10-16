@@ -7,6 +7,9 @@ import { ImageUploadField } from "@/components/ImageUploadField";
 import { requireAdminRole } from "@/lib/admin-auth";
 import { deleteCity, getCities, listFromTextarea, saveCity, textValue } from "@/lib/cms-store";
 import { City, District } from "@/lib/types";
+import { fillMissingCityClimate } from "@/lib/city-climate";
+import { cities as featuredCities } from "@/data/site";
+import { additionalCityGuides } from "@/data/city-enrichment";
 
 function districtsFromTextarea(value: FormDataEntryValue | null): District[] {
   return String(value || "")
@@ -41,6 +44,7 @@ async function saveCityAction(formData: FormData) {
       nameEn: textValue(formData, "nameEn"),
       summary: textValue(formData, "summary"),
       bestSeason: textValue(formData, "bestSeason"),
+      weather: textValue(formData, "weather"),
       recommendedDays: textValue(formData, "recommendedDays"),
       audience: listFromTextarea(formData.get("audience")),
       businessAngle: textValue(formData, "businessAngle"),
@@ -61,9 +65,38 @@ async function deleteCityAction(formData: FormData) {
   });
 }
 
-export default async function AdminCitiesPage({ searchParams }: { searchParams: Promise<{ edit?: string; saved?: string; savedAt?: string }> }) {
+async function importCityGuidesAction() {
+  "use server";
   await requireAdminRole();
-  const { edit, saved, savedAt } = await searchParams;
+  return finishCmsEdit(async () => {
+    const existingCities = await getCities();
+    const bySlug = new Map(existingCities.map((city) => [city.slug, city]));
+    const guides = [...featuredCities, ...additionalCityGuides];
+    let added = 0;
+    let enriched = 0;
+
+    for (const guide of guides) {
+      const existing = bySlug.get(guide.slug);
+      if (!existing) {
+        await saveCity(guide, undefined, "new");
+        added += 1;
+        continue;
+      }
+
+      const updated = fillMissingCityClimate(existing, guide);
+      if (updated.bestSeason !== existing.bestSeason || updated.weather !== existing.weather || updated.recommendedDays !== existing.recommendedDays) {
+        await saveCity(updated, existing.slug, contentRevision(existing));
+        enriched += 1;
+      }
+    }
+
+    return `/admin/cities?added=${added}&enriched=${enriched}`;
+  });
+}
+
+export default async function AdminCitiesPage({ searchParams }: { searchParams: Promise<{ edit?: string; saved?: string; savedAt?: string; added?: string; enriched?: string }> }) {
+  await requireAdminRole();
+  const { edit, saved, savedAt, added, enriched } = await searchParams;
   const cities = await getCities();
   const editing = cities.find((item) => item.slug === edit);
 
@@ -72,7 +105,11 @@ export default async function AdminCitiesPage({ searchParams }: { searchParams: 
       <p className="eyebrow">Places</p>
       <h1>城市管理</h1>
       {saved === "city" ? <div className="settings-saved">已完成</div> : null}
+      {added !== undefined ? <div className="settings-saved">城市資料完成：新增 {Number(added) || 0} 個城市，補上 {Number(enriched) || 0} 個既有城市的空白季節／天氣／建議天數欄位；原有文字與分區未覆蓋。</div> : null}
       <p>城市可設定分區，讓餐廳美食、景點行程、在地生活與商家內容能依城市與大城市分區做 SEO。</p>
+      <AdminEditorForm action={importCityGuidesAction} className="business-classification-action">
+        <AdminSubmitButton idleLabel="補齊季節天氣並新增城市" pendingLabel="更新城市資料中" />
+      </AdminEditorForm>
       <section className="admin-editor-grid">
         <AdminEditorForm key={`${edit || "new"}:${savedAt || ""}`} action={saveCityAction} className="panel admin-form">
           <input type="hidden" name="revision" value={contentRevision(editing)} />
@@ -86,6 +123,7 @@ export default async function AdminCitiesPage({ searchParams }: { searchParams: 
             <label>推薦季節<input name="bestSeason" defaultValue={editing?.bestSeason || ""} /></label>
             <label>建議天數<input name="recommendedDays" defaultValue={editing?.recommendedDays || ""} /></label>
           </div>
+          <label>季節與天氣<textarea name="weather" rows={2} defaultValue={editing?.weather || ""} placeholder="例：11–2 月較乾爽；3–5 月炎熱，5–10 月午後陣雨較多。" /></label>
           <label>城市摘要<textarea name="summary" required rows={3} defaultValue={editing?.summary || ""} /></label>
           <label>適合族群<textarea name="audience" rows={3} defaultValue={editing?.audience.join("\n") || ""} /></label>
           <label>商務備註<textarea name="businessAngle" rows={3} defaultValue={editing?.businessAngle || ""} /></label>

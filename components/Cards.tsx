@@ -47,6 +47,10 @@ export function CityCard({ city }: { city: City }) {
             <dt>天數</dt>
             <dd>{city.recommendedDays}</dd>
           </div>
+          <div className="city-weather-summary">
+            <dt>天氣提醒</dt>
+            <dd>{city.weather || "出發前查看近期天氣與交通公告。"}</dd>
+          </div>
         </dl>
       </div>
     </Link>

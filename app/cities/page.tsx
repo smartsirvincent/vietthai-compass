@@ -5,7 +5,7 @@ import { getCities } from "@/lib/cms-store";
 
 export const metadata: Metadata = {
   title: "城市指南",
-  description: "查看越南與泰國城市指南，包含胡志明市、峴港、曼谷、清邁的旅遊季節、建議天數、分區、在地生活與相關文章。",
+  description: "探索越南與泰國城市指南，查看當地季節天氣、建議天數、城市分區、景點美食與行前提醒。",
   alternates: { canonical: "/cities" }
 };
 

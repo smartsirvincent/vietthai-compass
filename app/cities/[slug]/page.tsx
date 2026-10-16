@@ -51,7 +51,7 @@ export default async function CityDetailPage({ params, searchParams }: { params:
         <ContentImage className="city-page-cover" src={city.image} alt={`${city.name} AI 生成擬真風格城市示意圖`} priority sizes="(max-width: 900px) 100vw, 90vw" />
       </section>
       <section className="band light">
-        <InfoStrip items={[["英文名稱", city.nameEn], ["推薦季節", city.bestSeason], ["建議天數", city.recommendedDays], ["適合族群", city.audience.join(" / ")]]} />
+        <InfoStrip items={[["英文名稱", city.nameEn], ["推薦季節", city.bestSeason], ["季節與天氣", city.weather || "出發前查看近期天氣與交通公告。"], ["建議天數", city.recommendedDays], ["適合族群", city.audience.join(" / ")]]} />
       </section>
       {city.slug === "bangkok" ? <BangkokTransitExplorer businesses={cityBusinesses} stationId={station} merchantType={merchantType} /> : null}
       <section className="band">

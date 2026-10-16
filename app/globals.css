@@ -711,6 +711,17 @@ p {
   font-weight: 700;
 }
 
+.city-card .city-weather-summary {
+  grid-column: 1 / -1;
+}
+
+.city-card .city-weather-summary dd {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
 .keyword-row,
 .badge-row {
   display: flex;
