@@ -37,6 +37,8 @@ export type City = {
   audience: string[];
   businessAngle: string;
   image: string;
+  imageSource?: string;
+  imageCredit?: string;
   districts: District[];
 };
 
@@ -79,6 +81,8 @@ export type DirectoryBusiness = {
   category: string;
   subcategory?: BusinessSubcategory;
   image?: string;
+  imageSource?: string;
+  imageCredit?: string;
   citySlug: string;
   districtSlug?: string;
   transitStationIds?: string[];

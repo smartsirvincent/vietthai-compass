@@ -43,6 +43,8 @@ async function saveBusinessAction(formData: FormData) {
       category: textValue(formData, "category"),
       subcategory: textValue(formData, "subcategory") as DirectoryBusiness["subcategory"],
       image: textValue(formData, "image", "/brand-assets/home-business-local-life.png"),
+      imageSource: textValue(formData, "imageSource") || undefined,
+      imageCredit: textValue(formData, "imageCredit") || undefined,
       citySlug: selectedCity?.slug || citySlug,
       districtSlug: districtSlug || undefined,
       transitStationIds: country === "thailand" && citySlug === "bangkok"
@@ -142,6 +144,7 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
       <p className="eyebrow">Directory</p>
       <h1>商家管理</h1>
       <p>商家可指定城市與分區，適合建立「曼谷 Sukhumvit 餐廳」或「胡志明市第一郡服務商」等分區 SEO 頁。</p>
+      <p className="form-note">新增商家規則：商家介紹至少 500 字；照片須為店家提供或已獲授權的真實照片，並填寫可核對的來源網址、攝影者與授權資訊。</p>
       <AdminEditorForm action={backfillBusinessSubcategoriesAction} className="business-classification-action">
         <AdminSubmitButton idleLabel="補齊現有商家細分類" />
       </AdminEditorForm>
@@ -188,7 +191,11 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
             defaultValue={editing?.image || "/brand-assets/home-business-local-life.png"}
             folder="vietthai-compass/businesses"
           />
-          <label>商家介紹<textarea name="description" required rows={3} defaultValue={editing?.description || ""} /></label>
+          <div className="grid two">
+            <label>照片來源網址<input name="imageSource" type="url" required={!editing} defaultValue={editing?.imageSource || ""} placeholder="官方提供頁、授權圖庫或原始照片頁" /></label>
+            <label>攝影者與授權<input name="imageCredit" required={!editing} defaultValue={editing?.imageCredit || ""} placeholder="攝影者 / 授權方式" /></label>
+          </div>
+          <label>商家介紹（至少 500 字）<textarea name="description" required minLength={!editing || editing.description.replace(/\s/g, "").length < 500 ? 0 : 500} rows={8} defaultValue={editing?.description || ""} /></label>
           <label>商家評價<textarea name="review" rows={4} defaultValue={editing?.review || ""} placeholder="整理讀者會在意的評價重點、適合族群、注意事項。" /></label>
           <TagInputField label="特色標籤" name="badges" defaultTags={editing?.badges || []} />
           <div className="grid two">

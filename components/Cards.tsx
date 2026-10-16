@@ -33,11 +33,12 @@ export function SectionHeader({
 export function CityCard({ city }: { city: City }) {
   return (
     <Link className="card city-card has-image" href={`/cities/${city.slug}`} aria-label={`查看${city.name}指南`}>
-      <ContentImage src={city.image} alt={`${city.name}擬真風格城市示意圖`} />
+      <ContentImage src={city.image} alt={`${city.name}實景照片`} />
       <div className="article-card-body">
         <span className="pill">{city.country === "vietnam" ? "越南" : "泰國"}</span>
         <h3>{city.name}</h3>
         <p>{city.summary}</p>
+        {city.imageCredit ? <span className="image-credit">照片：{city.imageCredit}</span> : null}
         <dl>
           <div>
             <dt>季節</dt>
@@ -113,6 +114,7 @@ export function BusinessCard({ business }: { business: DirectoryBusiness }) {
       <span className="pill">{business.category}・{business.subcategory || "其他"}</span>
       <h3>{business.name}</h3>
       <p>{business.description}</p>
+      {business.imageCredit ? <span className="image-credit">照片：{business.imageCredit}</span> : null}
       <div className="badge-row">
         {business.isTaiwanBusiness ? (
           <span>

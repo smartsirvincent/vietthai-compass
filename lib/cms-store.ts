@@ -47,8 +47,12 @@ const seedContent: CmsContent = {
 
 const seedCityBySlug = new Map(seedCities.map((city) => [city.slug, city]));
 const cityImageBySlug = new Map([
-  ["hanoi", "/cities/hanoi.webp"],
-  ["phuket", "/cities/phuket.webp"]
+  ["hanoi", "https://commons.wikimedia.org/wiki/Special:FilePath/Hanoi%2C_Vietnam%2C_Sunset_at_Hoan_Kiem_Lake.jpg?width=1600"],
+  ["phuket", "https://commons.wikimedia.org/wiki/Special:FilePath/Patong_Beach_in_Phuket.jpg?width=1600"]
+]);
+const cityImageAttributionBySlug = new Map([
+  ["hanoi", { imageSource: "https://commons.wikimedia.org/wiki/File:Hanoi,_Vietnam,_Sunset_at_Hoan_Kiem_Lake.jpg", imageCredit: "Vyacheslav Argenberg / CC BY 4.0" }],
+  ["phuket", { imageSource: "https://commons.wikimedia.org/wiki/File:Patong_Beach_in_Phuket.jpg", imageCredit: "Ewong17 / CC BY-SA 4.0" }]
 ]);
 
 export class CmsEditError extends Error {}
@@ -193,6 +197,7 @@ function normalizeContent(content: CmsContent, suggestBusinessSubcategories = tr
       audience: city.audience || [],
       businessAngle: city.businessAngle || "",
       image: cityImageBySlug.get(city.slug) || city.image || "/brand-assets/home-hero-vietthai-commerce.png",
+      ...(cityImageAttributionBySlug.get(city.slug) || {}),
       districts: city.districts ?? seedCityBySlug.get(city.slug)?.districts ?? []
     })),
     businesses: content.businesses.map((business) => ({
@@ -283,12 +288,12 @@ async function mutateCmsContent(mutate: (content: CmsContent) => boolean | void,
 
 export async function mergeTravelGuideArticles() {
   const updatedImages = new Map([
-    ["hanoi", "/cities/hanoi.webp"],
-    ["phuket", "/cities/phuket.webp"],
-    ["ho-chi-minh", "/cities/ho-chi-minh.webp"],
-    ["da-nang", "/cities/da-nang.webp"],
-    ["bangkok", "/cities/bangkok.webp"],
-    ["chiang-mai", "/cities/chiang-mai.webp"]
+    ["hanoi", { image: "https://commons.wikimedia.org/wiki/Special:FilePath/Hanoi%2C_Vietnam%2C_Sunset_at_Hoan_Kiem_Lake.jpg?width=1600", source: "https://commons.wikimedia.org/wiki/File:Hanoi,_Vietnam,_Sunset_at_Hoan_Kiem_Lake.jpg", credit: "Vyacheslav Argenberg / CC BY 4.0" }],
+    ["phuket", { image: "https://commons.wikimedia.org/wiki/Special:FilePath/Patong_Beach_in_Phuket.jpg?width=1600", source: "https://commons.wikimedia.org/wiki/File:Patong_Beach_in_Phuket.jpg", credit: "Ewong17 / CC BY-SA 4.0" }],
+    ["ho-chi-minh", { image: "https://commons.wikimedia.org/wiki/Special:FilePath/Ho_Chi_Minh_city_%2839514086172%29.jpg?width=1600", source: "https://commons.wikimedia.org/wiki/File:Ho_Chi_Minh_city_(39514086172).jpg", credit: "dronepicr / CC BY 2.0" }],
+    ["da-nang", { image: "https://commons.wikimedia.org/wiki/Special:FilePath/My_Khe_Beach%2C_Da_Nang%2C_Vietnam.jpg?width=1600", source: "https://commons.wikimedia.org/wiki/File:My_Khe_Beach,_Da_Nang,_Vietnam.jpg", credit: ". Ray in Manila / CC BY 2.0" }],
+    ["bangkok", { image: "https://commons.wikimedia.org/wiki/Special:FilePath/Wat_Arun_Bangkok_1.jpg?width=1600", source: "https://commons.wikimedia.org/wiki/File:Wat_Arun_Bangkok_1.jpg", credit: "Philip Nalangan / CC BY 4.0" }],
+    ["chiang-mai", { image: "https://commons.wikimedia.org/wiki/Special:FilePath/Chiang-Mai_Thailand_Brick-wall-01.jpg?width=1600", source: "https://commons.wikimedia.org/wiki/File:Chiang-Mai_Thailand_Brick-wall-01.jpg", credit: "CEphoto, Uwe Aranas / CC BY-SA 3.0" }]
   ]);
   const result = { addedArticles: 0, updatedArticles: 0, updatedCityImages: 0, updatedArticleImages: 0 };
   await mutateCmsContent((content) => {
@@ -296,8 +301,10 @@ export async function mergeTravelGuideArticles() {
     const additions = travelGuideArticles.filter((article) => !indexBySlug.has(article.slug));
     for (const city of content.cities) {
       const image = updatedImages.get(city.slug);
-      if (image && city.image !== image) {
-        city.image = image;
+      if (image && (city.image !== image.image || city.imageSource !== image.source || city.imageCredit !== image.credit)) {
+        city.image = image.image;
+        city.imageSource = image.source;
+        city.imageCredit = image.credit;
         result.updatedCityImages += 1;
       }
     }
@@ -391,7 +398,19 @@ export async function saveBusiness(business: DirectoryBusiness, originalSlug?: s
     if (!isBusinessCategory(business.category)) throw new CmsEditError("商家分類無效，請重新選擇分類。");
     if (!business.subcategory || !isBusinessSubcategory(business.category, business.subcategory)) throw new CmsEditError("細分類與商家分類不一致，請重新選擇。");
     validateLocation(content, business);
+    const current = content.businesses.find((item) => item.slug === (originalSlug || business.slug));
+    const changedDescription = !current || current.description.trim() !== business.description.trim();
+    const changedImage = !current || current.image !== business.image;
     upsert(content.businesses, business, originalSlug, expectedRevision);
+    if (changedDescription && Array.from(business.description.replace(/\s/g, "")).length < 500) {
+      throw new CmsEditError("商家介紹至少需要 500 字（不計空白），請補足內容後再儲存。");
+    }
+    if ((changedImage || !current) && (!business.imageSource?.trim() || !business.imageCredit?.trim())) {
+      throw new CmsEditError("商家照片必須填寫可核對的來源網址與攝影者／授權資訊；請使用店家提供或允許再利用的真實照片。");
+    }
+    if ((changedImage || !current) && business.image?.startsWith("/brand-assets/")) {
+      throw new CmsEditError("商家照片不可使用網站示意圖，請上傳該店真實照片並附上來源與授權資訊。");
+    }
     if (originalSlug && originalSlug !== business.slug) {
       content.articles.forEach((article) => {
         if (article.relatedBusinessSlug === originalSlug) article.relatedBusinessSlug = business.slug;

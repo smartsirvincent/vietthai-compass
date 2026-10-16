@@ -5,7 +5,8 @@ const vm = require('node:vm');
 const ts = require('typescript');
 
 const city = { slug: 'hcm', country: 'vietnam', name: 'HCM', nameEn: 'HCM', summary: 'City', bestSeason: '', recommendedDays: '', audience: [], businessAngle: '', image: '/city.jpg', districts: [{ slug: 'd1', name: 'D1', summary: 'District' }] };
-const business = { slug: 'cafe', name: 'Cafe', citySlug: 'hcm', districtSlug: 'd1', country: 'vietnam', category: '餐廳美食', subcategory: '咖啡廳', description: 'Original', review: 'First\nSecond', image: '/photo.jpg', badges: ['Coffee'], socials: { phone: '123', instagram: 'https://instagram.com/cafe' }, plan: 'free' };
+const business = { slug: 'cafe', name: 'Cafe', citySlug: 'hcm', districtSlug: 'd1', country: 'vietnam', category: '餐廳美食', subcategory: '咖啡廳', description: 'Original', review: 'First\nSecond', image: '/photo.jpg', imageSource: 'https://example.com/photo', imageCredit: 'Cafe / permission', badges: ['Coffee'], socials: { phone: '123', instagram: 'https://instagram.com/cafe' }, plan: 'free' };
+const longDescription = '店家介紹'.repeat(125);
 const article = { slug: 'guide', title: 'Guide', excerpt: 'Summary', content: '<h2>Heading</h2><p>Text</p>', country: 'vietnam', citySlug: 'hcm', districtSlug: 'd1', relatedBusinessSlug: 'cafe', category: '餐廳美食', intent: 'traffic', keywords: ['Coffee'], updatedAt: '2026-09-09', coverImage: '/cover.jpg', photoAlt: 'Cover' };
 const fixture = () => structuredClone({ settings: {}, cities: [city], businesses: [business], articles: [article] });
 
@@ -116,11 +117,11 @@ test('parallel edits to different collections survive and each previous document
   const { store, backend } = loadStore();
   const before = await store.readCmsContent();
   await Promise.all([
-    store.saveBusiness({ ...before.businesses[0], description: 'Updated business' }, 'cafe', store.contentRevision(before.businesses[0])),
+    store.saveBusiness({ ...before.businesses[0], description: longDescription }, 'cafe', store.contentRevision(before.businesses[0])),
     store.saveArticle({ ...before.articles[0], title: 'Updated article' }, 'guide', store.contentRevision(before.articles[0])),
     store.saveSiteSettings({ ...before.settings, siteName: 'Updated site' }, store.contentRevision(before.settings))
   ]);
-  assert.equal(backend.document.businesses[0].description, 'Updated business');
+  assert.equal(backend.document.businesses[0].description, longDescription);
   assert.equal(backend.document.articles[0].title, 'Updated article');
   assert.equal(backend.document.settings.siteName, 'Updated site');
   assert.equal(backend.revisions.length, 3);
@@ -159,7 +160,7 @@ test('write failure rolls back both content and backup', async () => {
   const { store, backend } = loadStore();
   const record = (await store.getBusinesses())[0];
   backend.failUpdate = true;
-  await assert.rejects(store.saveBusiness({ ...record, description: 'Lost' }, 'cafe', store.contentRevision(record)), /Write failed/);
+  await assert.rejects(store.saveBusiness({ ...record, description: longDescription }, 'cafe', store.contentRevision(record)), /Write failed/);
   assert.equal(backend.document.businesses[0].description, 'Original');
   assert.equal(backend.revisions.length, 0);
   assert.ok(backend.statements.includes('rollback'));
@@ -168,10 +169,20 @@ test('write failure rolls back both content and backup', async () => {
 test('new entries and renamed entries cannot overwrite an existing slug', async () => {
   const { store, backend } = loadStore();
   await assert.rejects(store.saveBusiness(business, undefined, 'new'), /已被使用/);
-  await store.saveBusiness({ ...business, slug: 'other' }, undefined, 'new');
+  await store.saveBusiness({ ...business, slug: 'other', description: longDescription }, undefined, 'new');
   const other = (await store.getBusinesses()).find((b) => b.slug === 'other');
   await assert.rejects(store.saveBusiness({ ...other, slug: 'cafe' }, 'other', store.contentRevision(other)), /已被使用/);
   assert.equal(backend.document.businesses.length, 2);
+});
+
+test('new businesses require a 500-character description and an attributed real photo', async () => {
+  const { store } = loadStore();
+  const short = { ...business, slug: 'short-copy', description: '太短', imageSource: 'https://example.com/photo' };
+  await assert.rejects(store.saveBusiness(short, undefined, 'new'), /至少需要 500 字/);
+  const missingAttribution = { ...business, slug: 'missing-credit', description: longDescription, imageSource: '', imageCredit: '' };
+  await assert.rejects(store.saveBusiness(missingAttribution, undefined, 'new'), /照片必須填寫/);
+  const placeholder = { ...business, slug: 'placeholder-photo', description: longDescription, image: '/brand-assets/home-business-local-life.png' };
+  await assert.rejects(store.saveBusiness(placeholder, undefined, 'new'), /不可使用網站示意圖/);
 });
 
 test('business rename keeps article links and city rename keeps location relationships', async () => {
@@ -198,7 +209,7 @@ test('location and deletion checks prevent invisible orphaned entries', async ()
 test('photos, contacts, tags, line breaks and HTML survive saving and reading again', async () => {
   const { store } = loadStore();
   const record = (await store.getBusinesses())[0];
-  const edited = { ...record, image: 'https://res.cloudinary.com/example/image.jpg', badges: ['New tag'], description: 'Line 1\nLine 2', socials: { ...record.socials, whatsapp: '+841234', facebook: 'https://facebook.com/example' } };
+  const edited = { ...record, image: 'https://res.cloudinary.com/example/image.jpg', imageSource: 'https://example.com/new-photo', imageCredit: 'Photographer / CC BY 4.0', badges: ['New tag'], description: longDescription, socials: { ...record.socials, whatsapp: '+841234', facebook: 'https://facebook.com/example' } };
   await store.saveBusiness(edited, 'cafe', store.contentRevision(record));
   assert.equal(JSON.stringify((await store.getBusinesses())[0]), JSON.stringify(edited));
   const currentArticle = (await store.getArticles())[0];
@@ -274,8 +285,10 @@ test('Hanoi and Phuket use their dedicated city photos even when CMS has stale c
   );
   const { store } = loadStore(data);
   const cities = await store.getCities();
-  assert.equal(cities.find((item) => item.slug === 'hanoi').image, '/cities/hanoi.webp');
-  assert.equal(cities.find((item) => item.slug === 'phuket').image, '/cities/phuket.webp');
+  assert.match(cities.find((item) => item.slug === 'hanoi').image, /Hoan_Kiem_Lake/);
+  assert.match(cities.find((item) => item.slug === 'phuket').image, /Patong_Beach_in_Phuket/);
+  assert.ok(cities.find((item) => item.slug === 'hanoi').imageSource);
+  assert.ok(cities.find((item) => item.slug === 'phuket').imageCredit);
 });
 
 test('revision hashes are independent of JSONB property order', () => {

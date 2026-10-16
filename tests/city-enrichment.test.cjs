@@ -27,8 +27,15 @@ test('new destination guides have complete weather, season, trip length, distric
     assert.ok(city.weather.trim(), `missing weather: ${city.slug}`);
     assert.ok(city.recommendedDays.trim(), `missing trip length: ${city.slug}`);
     assert.ok(city.districts.length >= 2, `missing district guide: ${city.slug}`);
-    assert.ok(fs.existsSync(path.join(root, 'public', city.image)), `missing city image: ${city.slug}`);
+    if (city.image.startsWith('https://')) {
+      assert.ok(city.imageSource?.startsWith('https://commons.wikimedia.org/wiki/File:'), `missing photo source: ${city.slug}`);
+      assert.ok(city.imageCredit?.includes('CC BY'), `missing license credit: ${city.slug}`);
+    } else {
+      assert.ok(fs.existsSync(path.join(root, 'public', city.image)), `missing city image: ${city.slug}`);
+    }
   }
+  const newCityImages = additionalCityGuides.filter((city) => ['hoi-an', 'hue', 'nha-trang', 'krabi', 'chiang-rai'].includes(city.slug)).map((city) => city.image);
+  assert.equal(new Set(newCityImages).size, 5, 'each new city needs its own image');
 });
 
 test('city climate backfill fills only empty climate fields and preserves editor content', () => {

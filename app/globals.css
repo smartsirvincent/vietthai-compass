@@ -2284,6 +2284,20 @@ p {
   height: auto;
 }
 
+.image-credit {
+  display: block;
+  color: var(--muted, #667085);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 8px 0 12px;
+}
+
+.image-credit a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* 手機與平板：文章頁改成單欄 */
 @media (max-width: 1080px) {
   .article-layout {

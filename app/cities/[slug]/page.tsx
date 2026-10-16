@@ -48,7 +48,8 @@ export default async function CityDetailPage({ params, searchParams }: { params:
         <h1>{city.name}指南</h1>
         <p>{city.summary}</p>
         <DestinationLinks city={city} />
-        <ContentImage className="city-page-cover" src={city.image} alt={`${city.name} AI 生成擬真風格城市示意圖`} priority sizes="(max-width: 900px) 100vw, 90vw" />
+        <ContentImage className="city-page-cover" src={city.image} alt={`${city.name}實景照片`} priority sizes="(max-width: 900px) 100vw, 90vw" />
+        {city.imageCredit && city.imageSource ? <p className="image-credit">照片：{city.imageCredit} · <a href={city.imageSource} target="_blank" rel="noreferrer">查看來源與授權</a></p> : null}
       </section>
       <section className="band light">
         <InfoStrip items={[["英文名稱", city.nameEn], ["推薦季節", city.bestSeason], ["季節與天氣", city.weather || "出發前查看近期天氣與交通公告。"], ["建議天數", city.recommendedDays], ["適合族群", city.audience.join(" / ")]]} />

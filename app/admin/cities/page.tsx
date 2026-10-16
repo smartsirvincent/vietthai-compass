@@ -49,6 +49,8 @@ async function saveCityAction(formData: FormData) {
       audience: listFromTextarea(formData.get("audience")),
       businessAngle: textValue(formData, "businessAngle"),
       image: textValue(formData, "image", "/brand-assets/home-hero-vietthai-commerce.png"),
+      imageSource: textValue(formData, "imageSource") || undefined,
+      imageCredit: textValue(formData, "imageCredit") || undefined,
       districts: districtsFromTextarea(formData.get("districts"))
     };
     await saveCity(city, originalSlug || undefined, textValue(formData, "revision"));
@@ -84,7 +86,10 @@ async function importCityGuidesAction() {
       }
 
       const updated = fillMissingCityClimate(existing, guide);
-      if (updated.bestSeason !== existing.bestSeason || updated.weather !== existing.weather || updated.recommendedDays !== existing.recommendedDays) {
+      if (updated.bestSeason !== existing.bestSeason || updated.weather !== existing.weather || updated.recommendedDays !== existing.recommendedDays || existing.image !== guide.image || (guide.imageSource && existing.imageSource !== guide.imageSource) || (guide.imageCredit && existing.imageCredit !== guide.imageCredit)) {
+        updated.image = guide.image;
+        updated.imageSource = guide.imageSource || existing.imageSource;
+        updated.imageCredit = guide.imageCredit || existing.imageCredit;
         await saveCity(updated, existing.slug, contentRevision(existing));
         enriched += 1;
       }
@@ -105,7 +110,7 @@ export default async function AdminCitiesPage({ searchParams }: { searchParams: 
       <p className="eyebrow">Places</p>
       <h1>城市管理</h1>
       {saved === "city" ? <div className="settings-saved">已完成</div> : null}
-      {added !== undefined ? <div className="settings-saved">城市資料完成：新增 {Number(added) || 0} 個城市，補上 {Number(enriched) || 0} 個既有城市的空白季節／天氣／建議天數欄位；原有文字與分區未覆蓋。</div> : null}
+      {added !== undefined ? <div className="settings-saved">城市資料完成：新增 {Number(added) || 0} 個城市，更新 {Number(enriched) || 0} 筆既有季節、天氣或照片資料；原有文字與分區未覆蓋。</div> : null}
       <p>城市可設定分區，讓餐廳美食、景點行程、在地生活與商家內容能依城市與大城市分區做 SEO。</p>
       <AdminEditorForm action={importCityGuidesAction} className="business-classification-action">
         <AdminSubmitButton idleLabel="補齊季節天氣並新增城市" pendingLabel="更新城市資料中" />
@@ -133,6 +138,10 @@ export default async function AdminCitiesPage({ searchParams }: { searchParams: 
             defaultValue={editing?.image || "/brand-assets/home-hero-vietthai-commerce.png"}
             folder="vietthai-compass/cities"
           />
+          <div className="grid two">
+            <label>照片來源網址<input name="imageSource" type="url" defaultValue={editing?.imageSource || ""} placeholder="授權來源頁或官方提供頁" /></label>
+            <label>攝影者與授權<input name="imageCredit" defaultValue={editing?.imageCredit || ""} placeholder="攝影者 / 授權方式" /></label>
+          </div>
           <label>
             分區清單
             <textarea name="districts" rows={6} defaultValue={districtsToTextarea(editing?.districts)} placeholder="sukhumvit | Sukhumvit | Sukhumvit | 商務、餐廳與外籍生活集中區" />

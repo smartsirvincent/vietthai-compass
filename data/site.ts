@@ -24,7 +24,9 @@ export const cities: City[] = [
     recommendedDays: "3-5 天",
     audience: ["自由行旅客", "台商與外派族", "長住與考察族群"],
     businessAngle: "胡志明市有大量台商、國際品牌與在地服務商，適合透過城市分區文章、商家介紹與 SEO 專題建立商務合作入口。",
-    image: "/cities/ho-chi-minh.webp",
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Ho_Chi_Minh_city_%2839514086172%29.jpg?width=1600",
+    imageSource: "https://commons.wikimedia.org/wiki/File:Ho_Chi_Minh_city_(39514086172).jpg",
+    imageCredit: "dronepicr / CC BY 2.0",
     districts: [
       { slug: "district-1", name: "第一郡", nameEn: "District 1", summary: "觀光、飯店、夜生活與商務會面最集中的核心區，適合第一次來胡志明市的讀者。" },
       { slug: "district-2", name: "第二郡", nameEn: "District 2", summary: "以 Thao Dien、An Khanh 生活圈為主，聚集國際餐廳、咖啡廳、親子空間、外派族與高消費商家。" },
@@ -45,7 +47,9 @@ export const cities: City[] = [
     recommendedDays: "4-6 天",
     audience: ["海島度假旅客", "親子家庭", "中部深度旅人"],
     businessAngle: "峴港適合發展飯店、餐廳、包車、婚禮與中高端旅遊服務合作。",
-    image: "/cities/da-nang.webp",
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/My_Khe_Beach%2C_Da_Nang%2C_Vietnam.jpg?width=1600",
+    imageSource: "https://commons.wikimedia.org/wiki/File:My_Khe_Beach,_Da_Nang,_Vietnam.jpg",
+    imageCredit: ". Ray in Manila / CC BY 2.0",
     districts: [
       { slug: "my-khe", name: "美溪海灘", nameEn: "My Khe Beach", summary: "飯店與海灘餐廳集中，是峴港最重要的度假生活圈。" },
       { slug: "hai-chau", name: "海洲區", nameEn: "Hai Chau", summary: "市中心行政與餐飲區，適合城市散步、咖啡與在地生活內容。" }
@@ -62,7 +66,9 @@ export const cities: City[] = [
     recommendedDays: "4-6 天",
     audience: ["自由行旅客", "購物族", "商務考察族"],
     businessAngle: "曼谷適合建立商圈型 SEO 內容，銜接餐廳、住宿、醫美、房產與台商服務。",
-    image: "/cities/bangkok.webp",
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Wat_Arun_Bangkok_1.jpg?width=1600",
+    imageSource: "https://commons.wikimedia.org/wiki/File:Wat_Arun_Bangkok_1.jpg",
+    imageCredit: "Philip Nalangan / CC BY 4.0",
     districts: [
       { slug: "sukhumvit", name: "Sukhumvit", nameEn: "Sukhumvit", summary: "餐廳、酒吧、飯店、公寓與國際生活圈密度高。" },
       { slug: "silom-sathorn", name: "Silom / Sathorn", nameEn: "Silom / Sathorn", summary: "商務辦公、飯店、高空酒吧與精緻餐飲集中。" }
@@ -79,7 +85,9 @@ export const cities: City[] = [
     recommendedDays: "4-7 天",
     audience: ["慢旅行旅客", "數位遊牧族", "長住族"],
     businessAngle: "清邁適合咖啡、住宿、課程、健康生活與長住服務內容合作。",
-    image: "/cities/chiang-mai.webp",
+    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Chiang-Mai_Thailand_Brick-wall-01.jpg?width=1600",
+    imageSource: "https://commons.wikimedia.org/wiki/File:Chiang-Mai_Thailand_Brick-wall-01.jpg",
+    imageCredit: "CEphoto, Uwe Aranas / CC BY-SA 3.0",
     districts: [
       { slug: "old-city", name: "古城區", nameEn: "Old City", summary: "寺廟、古城牆、市集與初次清邁旅行最集中的區域。" },
       { slug: "nimman", name: "尼曼區", nameEn: "Nimman", summary: "咖啡廳、設計小店、共作空間與年輕生活風格集中。" }
