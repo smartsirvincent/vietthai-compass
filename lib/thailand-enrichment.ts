@@ -11,6 +11,7 @@ export const THAILAND_BATCH_ID = "thailand-transit-2026-10-17";
 const sameText = (a: string, b: string) => a.replace(/\s/g, "") === b.replace(/\s/g, "");
 const imagePath = (s?: string) => (s || "").replace(/^https:\/\/vietthai-compass\.vercel\.app/, "");
 const districts: District[] = [
+  { slug: "siam-ratchaprasong", name: "暹羅／拉差巴頌", nameEn: "Siam / Ratchaprasong", summary: "暹羅、奇隆與奔集站之間的購物商圈及四面佛周邊。" },
   { slug: "samyan", name: "三養", nameEn: "Sam Yan", summary: "朱拉隆功大學周邊的商場、街區與 MRT 三養站生活圈。" },
   { slug: "lumphini", name: "倫披尼", nameEn: "Lumphini", summary: "倫披尼公園、One Bangkok 與市中心休閒商圈。" },
   { slug: "khlong-san", name: "空訕", nameEn: "Khlong San", summary: "昭披耶河西岸的 ICONSIAM 與金線沿線街區。" },

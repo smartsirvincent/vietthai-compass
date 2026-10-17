@@ -28,7 +28,7 @@ function loadTaxonomy() {
   return exports;
 }
 
-function loadStore(initial = fixture(), guideArticles = []) {
+function loadStore(initial = fixture(), guideArticles = [], thailandMutation) {
   const backend = { document: structuredClone(initial), revisions: [], failReads: false, failUpdate: false, statements: [] };
   let tail = Promise.resolve();
   class Pool {
@@ -60,7 +60,7 @@ function loadStore(initial = fixture(), guideArticles = []) {
             nextDocument = JSON.parse(values[1]);
           }
           if (sql === 'commit') {
-            backend.document = nextDocument;
+            if (nextDocument !== undefined) backend.document = nextDocument;
             if (revision) backend.revisions.push(revision);
             unlock?.();
             unlock = undefined;
@@ -87,16 +87,43 @@ function loadStore(initial = fixture(), guideArticles = []) {
       if (name === './types') return { ARTICLE_CATEGORIES: ['旅遊攻略', '旅遊須知', '餐廳美食', '景點行程', '在地生活', '台商專區', '節慶活動', '新聞快訊', '交通航線'] };
       if (name === './sanitize-article-html') return loadSanitizer();
       if (name === './business-taxonomy') return loadTaxonomy();
+      if (name === './thailand-enrichment') return { applyThailandEnrichment: thailandMutation };
       if (name === './bangkok-transit') return {
         suggestedBangkokTransitStations: ({ slug, country, citySlug }) => country === 'thailand' && citySlug === 'bangkok' && slug === 'once-upon-a-thai-spa-phrom-phong' ? ['bts-phrom-phong'] : []
       };
       return require(name);
     },
     process: { env: { DATABASE_URL: 'postgres://test' }, cwd: process.cwd },
-    console
+    console,
+    structuredClone
   }, { filename: 'cms-store.ts' });
   return { store: exports, backend };
 }
+
+test('Thailand transactional update bypasses normalization and stores the unmodified backup', async () => {
+  const initial=fixture();
+  initial.businesses.push({...business,slug:'thai-cafe',country:'thailand'});
+  const {store,backend}=loadStore(initial,[],content=>{
+    content.businesses.find(b=>b.country==='thailand').description=longDescription;
+    return {updated:1,added:0,images:0,conflicts:[]};
+  });
+  await store.enrichThailandBusinesses();
+  assert.deepEqual(backend.document.businesses[0],initial.businesses[0]);
+  assert.deepEqual(backend.document.cities,initial.cities);
+  assert.deepEqual(backend.document.settings,{});
+  assert.deepEqual(backend.revisions[0],initial);
+});
+
+test('Thailand validation failure rolls back every staged change', async () => {
+  const initial=fixture();
+  const {store,backend}=loadStore(initial,[],content=>{
+    content.businesses[0].description='staged';
+    throw new Error('Missing district');
+  });
+  await assert.rejects(store.enrichThailandBusinesses(),/Missing district/);
+  assert.deepEqual(backend.document,initial);
+  assert.equal(backend.revisions.length,0);
+});
 
 test('travel guide import adds missing articles without overwriting edited content', async () => {
   const guide = { ...article, slug: 'guide', title: 'Refreshed guide', excerpt: 'New summary', content: '<h2>New</h2>', coverImage: '/new-cover.webp', updatedAt: '2026-10-11' };

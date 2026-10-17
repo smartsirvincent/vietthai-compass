@@ -23,7 +23,7 @@ function fixture() {
   return {
     articles: [{ slug: 'original', country: 'vietnam', content: 'unchanged' }],
     settings: { logoImage: 'existing-logo', custom: 'keep' },
-    cities: [{ slug: 'bangkok', country: 'thailand', districts: ['sukhumvit', 'siam-ratchaprasong', 'yaowarat'].map(slug => ({ slug, name: slug, summary: 'original' })) }, { slug: 'hanoi', country: 'vietnam', image: 'custom-hanoi.jpg', districts: [] }],
+    cities: [{ slug: 'bangkok', country: 'thailand', districts: ['sukhumvit', 'silom-sathorn', 'talat-noi', 'yaowarat', 'nana-old-town'].map(slug => ({ slug, name: slug, summary: 'original' })) }, { slug: 'hanoi', country: 'vietnam', image: 'custom-hanoi.jpg', districts: [] }],
     businesses: [{ slug: 'viet-cafe', country: 'vietnam', description: 'do not normalize', unknown: true }, ...Object.entries(baseline).map(([slug,b]) => ({ slug, country: 'thailand', ...b, socials: { phone: 'keep' }, review: 'keep review', badges: ['keep tag'] }))]
   };
 }
