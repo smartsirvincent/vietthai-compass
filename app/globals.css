@@ -2298,6 +2298,12 @@ p {
   text-underline-offset: 2px;
 }
 
+/* Preserve the full composition of no-derivatives photographs. */
+.business-card.has-image img.business-photo-uncropped,
+.article-cover.business-photo-uncropped {
+  object-fit: contain;
+}
+
 /* 手機與平板：文章頁改成單欄 */
 @media (max-width: 1080px) {
   .article-layout {

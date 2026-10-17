@@ -106,7 +106,7 @@ export function BusinessCard({ business }: { business: DirectoryBusiness }) {
   return (
     <Link className={`card business-card ${realImage ? "has-image" : ""}`} href={`/directory/${business.slug}`} aria-label={`查看${business.name}`}>
       {realImage ? (
-        <ContentImage src={realImage} alt={`${business.name}商家照片`} />
+        <ContentImage src={realImage} alt={`${business.name}商家照片`} className={business.imageCredit?.includes("CC BY-ND") ? "business-photo-uncropped" : undefined} />
       ) : (
         <div className="card-icon">
           <BriefcaseBusiness size={20} />

@@ -40,7 +40,8 @@ test('65 introductions exceed 500 characters; all 20 additions have licensed loc
     assert.ok(fs.existsSync('public' + p.image));
     assert.match(p.imageCredit, /CC/);
     assert.ok(p.imageCredit.length < 150);
-    assert.match(p.imageSource, /^https:\/\/commons.wikimedia.org\/wiki\/File:/);
+    assert.match(p.imageSource, /^https:\/\/(commons.wikimedia.org\/wiki\/File:|www.flickr.com\/photos\/)/);
+    assert.match(p.licenseUrl, /^https?:\/\/creativecommons.org\//);
   }
 });
 test('Thailand import preserves Vietnam byte-for-byte, articles, settings, contacts, reviews and tags', () => {
@@ -49,7 +50,7 @@ test('Thailand import preserves Vietnam byte-for-byte, articles, settings, conta
   const result = apply(content);
   assert.equal(result.updated, 45);
   assert.equal(result.added, 20);
-  assert.equal(result.images, 36);
+  assert.equal(result.images, Object.keys(pictures).length);
   assert.equal(result.conflicts.length, 0);
   assert.equal(JSON.stringify(content.businesses[0]), JSON.stringify(before.businesses[0]));
   assert.equal(JSON.stringify(content.cities[1]), JSON.stringify(before.cities[1]));

@@ -250,5 +250,37 @@
     "imageCredit": "กสิณธร ราชโอรส / CC BY-SA 4.0；已縮圖及轉換 WebP",
     "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
     "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/ba/CHAMCHURI_SQUARE.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+  },
+  "cabbages-and-condoms-asok": {
+    "image": "/media/thailand/cabbages-and-condoms-asok.webp",
+    "imageSource": "https://www.flickr.com/photos/10307586@N03/6898025620",
+    "imageCredit": "OzMark17 / CC BY 2.0；2012 年實景；已轉換 WebP",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "originalUrl": "https://live.staticflickr.com/5198/6898025620_14948412ba_b.jpg",
+    "sourceTitle": "Cabbages & Condoms, Bangkok (February 2012)"
+  },
+  "nai-ek-roll-noodle-yaowarat": {
+    "image": "/media/thailand/nai-ek-roll-noodle-yaowarat.webp",
+    "imageSource": "https://www.flickr.com/photos/150596023@N08/51344036335",
+    "imageCredit": "streetsoffood / CC BY 2.0；2021 年發布；www.streetsoffood.com；已轉換 WebP",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "originalUrl": "https://live.staticflickr.com/65535/51344036335_59962c13bb_b.jpg",
+    "sourceTitle": "Bangkok street food - Nai Ek Roll Noodle Soup"
+  },
+  "roast-emquartier": {
+    "image": "/media/thailand/roast-emquartier.webp",
+    "imageSource": "https://www.flickr.com/photos/7831824@N04/53397907724",
+    "imageCredit": "Bex.Walton / CC BY 2.0；2023 年實景；已轉換 WebP",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "originalUrl": "https://live.staticflickr.com/65535/53397907724_1c7cd0717d_b.jpg",
+    "sourceTitle": "Roast, EmQuartier, Chiang Mai,"
+  },
+  "tk-seafood-yaowarat": {
+    "image": "/media/thailand/tk-seafood-yaowarat.jpg",
+    "imageSource": "https://www.flickr.com/photos/22245339@N05/4217743617",
+    "imageCredit": "lemonfilmblog / CC BY-ND 2.0；2009 年餐點實拍；原圖未修改",
+    "licenseUrl": "https://creativecommons.org/licenses/by-nd/2.0/",
+    "originalUrl": "https://live.staticflickr.com/4060/4217743617_9baaa702fc_b.jpg",
+    "sourceTitle": "Tom Yum Soup At Bangkok Chinatown T&K Restaurant"
   }
 }

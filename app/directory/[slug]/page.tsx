@@ -107,7 +107,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
       </section>
       <section className="content-layout">
         <article className="panel">
-          {business.image && !(business.country === "thailand" && business.image.includes("/brand-assets/")) ? <ContentImage className="article-cover" src={business.image} alt={`${business.name}商家照片`} priority sizes="(max-width: 900px) 100vw, 800px" /> : business.country === "thailand" ? <p className="muted-text">實景照片待補。</p> : null}
+          {business.image && !(business.country === "thailand" && business.image.includes("/brand-assets/")) ? <ContentImage className={`article-cover${business.imageCredit?.includes("CC BY-ND") ? " business-photo-uncropped" : ""}`} src={business.image} alt={`${business.name}商家照片`} priority sizes="(max-width: 900px) 100vw, 800px" /> : business.country === "thailand" ? <p className="muted-text">實景照片待補。</p> : null}
           {business.imageCredit && business.imageSource ? <p className="image-credit">照片：{business.imageCredit} · <a href={business.imageSource} target="_blank" rel="noreferrer">查看來源與授權</a></p> : null}
           <h2>商家介紹</h2>
           <p className="preserve-lines">{business.description}</p>
