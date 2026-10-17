@@ -3,6 +3,7 @@ import additions from "@/data/thailand-transit-additions.json";
 import baseline from "@/data/thailand-business-baseline.json";
 import pictures from "@/data/thailand-business-images.json";
 import creditCorrections from "@/data/thailand-credit-corrections.json";
+import photoRefinements from "@/data/thailand-photo-refinements.json";
 import type { CmsContent } from "./cms-store";
 import type { DirectoryBusiness, District } from "./types";
 import { isBangkokTransitStationId } from "./bangkok-transit";
@@ -27,6 +28,16 @@ export function applyThailandEnrichment(content: CmsContent) {
   const city = content.cities.find(c => c.slug === "bangkok" && c.country === "thailand");
   if (!city) throw new Error("找不到泰國曼谷城市資料，未寫入任何變更。");
   const imageRecords = pictures as Record<string, { image: string; imageSource: string; imageCredit: string }>;
+  for (const [slug, correction] of Object.entries(photoRefinements)) {
+    const business = content.businesses.find(b => b.slug === slug && b.country === "thailand");
+    if (business && business.image === correction.before.image && business.imageSource === correction.before.imageSource && business.imageCredit === correction.before.imageCredit) {
+      business.image = correction.after.image;
+      business.imageSource = correction.after.imageSource;
+      business.imageCredit = correction.after.imageCredit;
+      business.updatedAt = new Date().toISOString();
+      result.updated++; result.images++;
+    }
+  }
   for (const [slug, correction] of Object.entries(creditCorrections)) {
     const business = content.businesses.find(b => b.slug === slug && b.country === "thailand");
     if (business && business.image === imageRecords[slug]?.image && business.imageCredit === correction.before) {

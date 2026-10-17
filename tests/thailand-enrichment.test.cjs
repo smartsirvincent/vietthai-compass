@@ -80,7 +80,7 @@ test('concurrent photo and introduction changes are retained independently', () 
 test('credit cleanup is scoped to the exact imported photo and original attribution text', () => {
   const content=fixture(); apply(content);
   const corrections=require('../data/thailand-credit-corrections.json');
-  const b=content.businesses.find(b=>b.slug==='iconsiam-bangkok');
+  const b=content.businesses.find(b=>b.slug==='gaysorn-village-bangkok');
   b.imageCredit=corrections[b.slug].before;
   assert.equal(apply(content).updated,1);
   assert.equal(b.imageCredit,corrections[b.slug].after);
