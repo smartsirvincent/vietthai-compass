@@ -8,6 +8,7 @@ import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
 import { breadcrumbJsonLd, cityJsonLd } from "@/lib/seo";
 import { findByRouteSlug } from "@/lib/routes";
 import { BangkokTransitExplorer } from "@/components/BangkokTransitExplorer";
+import { ChiangMaiExplorer } from "@/components/ChiangMaiExplorer";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function CityDetailPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ station?: string | string[]; merchantType?: string | string[] }> }) {
+export default async function CityDetailPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ station?: string | string[]; merchantType?: string | string[]; area?: string | string[] }> }) {
   const [{ slug }, query, cities, articles, businesses] = await Promise.all([params, searchParams, getCities(), getArticles(), getBusinesses()]);
   const city = findByRouteSlug(cities, slug);
   if (!city) notFound();
@@ -48,6 +49,7 @@ export default async function CityDetailPage({ params, searchParams }: { params:
         <h1>{city.name}指南</h1>
         <p>{city.summary}</p>
         <DestinationLinks city={city} />
+        {city.slug === "chiang-mai" ? <p><a href="#chiang-mai-neighborhoods">清邁街區地圖與附近商家</a></p> : null}
         <ContentImage className="city-page-cover" src={city.image} alt={`${city.name}實景照片`} priority sizes="(max-width: 900px) 100vw, 90vw" />
         {city.imageCredit && city.imageSource ? <p className="image-credit">照片：{city.imageCredit} · <a href={city.imageSource} target="_blank" rel="noreferrer">查看來源與授權</a></p> : null}
       </section>
@@ -55,6 +57,7 @@ export default async function CityDetailPage({ params, searchParams }: { params:
         <InfoStrip items={[["英文名稱", city.nameEn], ["推薦季節", city.bestSeason], ["季節與天氣", city.weather || "出發前查看近期天氣與交通公告。"], ["建議天數", city.recommendedDays], ["適合族群", city.audience.join(" / ")]]} />
       </section>
       {city.slug === "bangkok" ? <BangkokTransitExplorer businesses={cityBusinesses} stationId={station} merchantType={merchantType} /> : null}
+      {city.slug === "chiang-mai" ? <ChiangMaiExplorer businesses={cityBusinesses} area={Array.isArray(query.area) ? query.area[0] : query.area} merchantType={merchantType} /> : null}
       <section className="band">
         <SectionHeader title={`${city.name}完整指南`} intro="從逐月天氣、行前準備到餐廳與景點，按城市整理實用資訊。" href={`/articles?country=${city.country}&city=${city.slug}`} />
         <div className="grid three">
@@ -76,7 +79,7 @@ export default async function CityDetailPage({ params, searchParams }: { params:
           </div>
         </section>
       ) : null}
-      {cityBusinesses.length && city.slug !== "bangkok" ? (
+      {cityBusinesses.length && city.slug !== "bangkok" && city.slug !== "chiang-mai" ? (
         <section className="band">
           <SectionHeader title="相關商家" href="/directory" />
           <div className="grid three">

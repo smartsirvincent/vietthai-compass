@@ -302,6 +302,16 @@ export async function enrichThailandBusinesses() {
   return result!;
 }
 
+export async function importChiangMaiBusinesses() {
+  const { applyChiangMaiImport } = await import("./chiang-mai-import");
+  let result: ReturnType<typeof applyChiangMaiImport> | undefined;
+  await mutateCmsContent(content => {
+    result = applyChiangMaiImport(content);
+    return Boolean(result.added.length || result.districts);
+  }, false, false);
+  return result!;
+}
+
 export async function mergeTravelGuideArticles() {
   const updatedImages = new Map([
     ["hanoi", { image: "https://commons.wikimedia.org/wiki/Special:FilePath/Hanoi%2C_Vietnam%2C_Sunset_at_Hoan_Kiem_Lake.jpg?width=1600", source: "https://commons.wikimedia.org/wiki/File:Hanoi,_Vietnam,_Sunset_at_Hoan_Kiem_Lake.jpg", credit: "Vyacheslav Argenberg / CC BY 4.0" }],
