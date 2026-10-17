@@ -10,6 +10,20 @@ const longDescription = '店家介紹'.repeat(125);
 const article = { slug: 'guide', title: 'Guide', excerpt: 'Summary', content: '<h2>Heading</h2><p>Text</p>', country: 'vietnam', citySlug: 'hcm', districtSlug: 'd1', relatedBusinessSlug: 'cafe', category: '餐廳美食', intent: 'traffic', keywords: ['Coffee'], updatedAt: '2026-09-09', coverImage: '/cover.jpg', photoAlt: 'Cover' };
 const fixture = () => structuredClone({ settings: {}, cities: [city], businesses: [business], articles: [article] });
 
+test('date backfill is repeat-safe, backed up and preserves existing dates and other content', async () => {
+  const initial = fixture();
+  initial.articles.push({ ...article, slug: 'dated', publishedAt: '2026-08-01' });
+  const { store, backend } = loadStore(initial);
+  assert.equal(await store.backfillArticleDates(), 1);
+  assert.equal(await store.backfillArticleDates(), 0);
+  assert.equal(backend.revisions.length, 1);
+  assert.deepEqual(backend.document.articles[1], initial.articles[1]);
+  assert.deepEqual(backend.document.businesses, initial.businesses);
+  assert.deepEqual(backend.document.cities, initial.cities);
+  assert.equal(backend.document.articles[0].content, initial.articles[0].content);
+  assert.match(backend.document.articles[0].publishedAt, /^\d{4}-\d{2}-\d{2}$/);
+});
+
 test('missing Thai photos can be disabled without deleting or altering Vietnam, and public reads exclude them', async () => {
   const initial = fixture();
   initial.businesses.push({ ...business, slug: 'thai-missing', country: 'thailand', image: '/brand-assets/placeholder.png' });

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { articleDates, taipeiToday } from "@/lib/article-dates";
+import { CmsEditError, backfillArticleDates } from "@/lib/cms-store";
 import { AdminSubmitButton } from "@/components/AdminSubmitButton";
 import { AdminEditorForm } from "@/components/AdminEditorForm";
 import { finishCmsEdit } from "@/lib/cms-actions";
@@ -7,11 +9,20 @@ import { ArticleEditor } from "@/components/ArticleEditor";
 import { CityDistrictFields } from "@/components/CityDistrictFields";
 import { ImageUploadField } from "@/components/ImageUploadField";
 import { TagInputField } from "@/components/TagInputField";
-import { requireAdminSession } from "@/lib/admin-auth";
+import { requireAdminSession, requireAdminRole } from "@/lib/admin-auth";
 import { deleteArticle, getArticles, getBusinesses, getCities, listFromTextarea, saveArticle, textValue } from "@/lib/cms-store";
 import { ARTICLE_CATEGORIES, Article, ArticleCategory } from "@/lib/types";
 
 const categories: ArticleCategory[] = [...ARTICLE_CATEGORIES];
+
+async function backfillDatesAction() {
+  "use server";
+  await requireAdminRole();
+  return finishCmsEdit(async () => {
+    const count = await backfillArticleDates();
+    return `/admin/articles?datesAdded=${count}`;
+  });
+}
 
 async function saveArticleAction(formData: FormData) {
   "use server";
@@ -22,6 +33,10 @@ async function saveArticleAction(formData: FormData) {
     const districtSlug = textValue(formData, "districtSlug");
     const cities = await getCities();
     const selectedCity = cities.find((city) => city.slug === citySlug);
+    let dates;
+    const requestedDate = textValue(formData, "publishedAt");
+    try { dates = articleDates(requestedDate === textValue(formData, "defaultPublishedAt") ? "" : requestedDate); }
+    catch (error) { throw new CmsEditError((error as Error).message); }
     const article: Article = {
       slug: textValue(formData, "slug"),
       title: textValue(formData, "title"),
@@ -36,8 +51,7 @@ async function saveArticleAction(formData: FormData) {
       businessFeatures: listFromTextarea(formData.get("businessFeatures")),
       intent: textValue(formData, "intent", "traffic") as Article["intent"],
       keywords: listFromTextarea(formData.get("keywords")),
-      updatedAt: textValue(formData, "updatedAt", new Date().toISOString().slice(0, 10)),
-      publishedAt: textValue(formData, "publishedAt") || undefined,
+      ...dates,
       sources: textValue(formData, "sources").split(/\r?\n/).map(value => value.trim()).filter(Boolean),
       coverImage: textValue(formData, "coverImage", "/brand-assets/home-hero-vietthai-commerce.png"),
       photoAlt: textValue(formData, "photoAlt")
@@ -57,9 +71,9 @@ async function deleteArticleAction(formData: FormData) {
   });
 }
 
-export default async function AdminArticlesPage({ searchParams }: { searchParams: Promise<{ edit?: string; saved?: string; savedAt?: string }> }) {
+export default async function AdminArticlesPage({ searchParams }: { searchParams: Promise<{ edit?: string; saved?: string; savedAt?: string; datesAdded?: string }> }) {
   await requireAdminSession();
-  const { edit, saved, savedAt } = await searchParams;
+  const { edit, saved, savedAt, datesAdded } = await searchParams;
   const [articles, cities, businesses] = await Promise.all([getArticles(), getCities(), getBusinesses(true)]);
   const editing = articles.find((item) => item.slug === edit);
 
@@ -69,6 +83,11 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
       <h1>文章管理</h1>
       <p>文章可用填表方式設定商家介紹、商家特色與關聯商家。只要選了關聯商家，前台會預設顯示 Google Map 預覽。</p>
       {saved === "article" ? <div className="settings-saved">已完成</div> : null}
+      {datesAdded !== undefined ? <p role="status">已補齊 {Number(datesAdded) || 0} 篇文章的發布日期。</p> : null}
+      {articles.some(article => !article.publishedAt) ? <AdminEditorForm action={backfillDatesAction}>
+        <p>尚有 {articles.filter(article => !article.publishedAt).length} 篇文章沒有發布日期。將以當日作為補登發布日期，保留已有日期及所有內文。</p>
+        <AdminSubmitButton idleLabel="補齊缺少的發布日期" />
+      </AdminEditorForm> : null}
 
       <section className="admin-editor-grid">
         <AdminEditorForm key={`${edit || "new"}:${savedAt || ""}`} action={saveArticleAction} className="panel admin-form">
@@ -113,8 +132,10 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
             folder="vietthai-compass/articles"
           />
           <label>封面圖片替代文字<input name="photoAlt" defaultValue={editing?.photoAlt || ""} /></label>
-          <label>首次發布日期（舊文不確定時請留空）<input type="date" name="publishedAt" defaultValue={editing ? editing.publishedAt?.slice(0, 10) || "" : new Date().toISOString().slice(0, 10)} /></label>
-          <label>最後更新日期<input type="date" name="updatedAt" defaultValue={editing?.updatedAt?.slice(0, 10) || new Date().toISOString().slice(0, 10)} /></label>
+          <label>發布日期<input type="date" name="publishedAt" max={taipeiToday()} defaultValue={taipeiToday()} /></label>
+          <input type="hidden" name="defaultPublishedAt" value={taipeiToday()} />
+          <p>新增或更新文章時，發布日期預設為當日（台灣時間），亦可自行指定過去日期。最後更新日期會在儲存時自動記錄。此日期不代表所有資訊皆已重新查核。</p>
+          {editing?.publishedAt ? <p>目前發布日期：{editing.publishedAt.slice(0, 10)}</p> : null}
           <label>資料來源網址（每行一個）<textarea name="sources" rows={4} defaultValue={(editing?.sources || []).join("\n")} placeholder="請填入支持內文事實的官方或第一手來源" /></label>
           <label>文章內容<ArticleEditor defaultValue={editing?.content || ""} /></label>
           <AdminSubmitButton idleLabel={editing ? "更新文章" : "新增文章"} />

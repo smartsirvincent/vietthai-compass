@@ -459,6 +459,21 @@ export async function saveArticle(article: Article, originalSlug?: string, expec
   });
 }
 
+export async function backfillArticleDates() {
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  let count = 0;
+  await mutateCmsContent(content => {
+    for (const article of content.articles) {
+      if (article.publishedAt) continue;
+      article.publishedAt = today;
+      article.updatedAt = today;
+      count++;
+    }
+    return count > 0;
+  }, false, false);
+  return count;
+}
+
 export async function saveCity(city: City, originalSlug?: string, expectedRevision?: string) {
   await mutateCmsContent((content) => {
     const key = originalSlug || city.slug;
