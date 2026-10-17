@@ -114,7 +114,8 @@ export function businessJsonLd(business: DirectoryBusiness) {
     areaServed: business.country === "vietnam" ? "Vietnam" : "Thailand",
     telephone: business.socials.phone,
     email: business.socials.email,
-    image: absoluteUrl(business.image || "/brand-assets/home-business-local-life.png")
+      image: business.country === "thailand" && (!business.image || business.image.includes("/brand-assets/"))
+        ? undefined : absoluteUrl(business.image || "/brand-assets/home-business-local-life.png")
   };
 }
 

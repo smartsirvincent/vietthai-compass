@@ -39,6 +39,7 @@ test('65 introductions exceed 500 characters; all 20 additions have licensed loc
   for (const p of Object.values(pictures)) {
     assert.ok(fs.existsSync('public' + p.image));
     assert.match(p.imageCredit, /CC/);
+    assert.ok(p.imageCredit.length < 150);
     assert.match(p.imageSource, /^https:\/\/commons.wikimedia.org\/wiki\/File:/);
   }
 });
@@ -74,4 +75,16 @@ test('concurrent photo and introduction changes are retained independently', () 
   const result=apply(content);
   assert.equal(b.image,'https://editor/new.jpg'); assert.equal(b.description,'New manual copy');
   assert.ok(result.conflicts.includes(b.slug+':image')); assert.ok(result.conflicts.includes(b.slug+':description'));
+});
+
+test('credit cleanup is scoped to the exact imported photo and original attribution text', () => {
+  const content=fixture(); apply(content);
+  const corrections=require('../data/thailand-credit-corrections.json');
+  const b=content.businesses.find(b=>b.slug==='iconsiam-bangkok');
+  b.imageCredit=corrections[b.slug].before;
+  assert.equal(apply(content).updated,1);
+  assert.equal(b.imageCredit,corrections[b.slug].after);
+  b.imageCredit='Manually updated credit';
+  assert.equal(apply(content).updated,0);
+  assert.equal(b.imageCredit,'Manually updated credit');
 });
