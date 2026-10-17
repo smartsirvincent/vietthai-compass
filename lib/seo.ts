@@ -1,6 +1,6 @@
 import { Article, City, DirectoryBusiness, SiteSettings } from "@/lib/types";
 
-export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://vietthai-compass.vercel.app").replace(/\/$/, "");
+export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://vietthaiguide.com").replace(/\/$/, "");
 export const siteName = "越泰指南";
 export const siteAlternateName = "VietThai Compass";
 

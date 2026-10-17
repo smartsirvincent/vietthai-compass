@@ -12,11 +12,11 @@ function seo(env = {}) {
   return exports;
 }
 test('canonical origin defaults to the live site and supports a custom domain', () => {
-  assert.equal(seo().absoluteUrl('/cities/bangkok'), 'https://vietthai-compass.vercel.app/cities/bangkok');
+  assert.equal(seo().absoluteUrl('/cities/bangkok'), 'https://vietthaiguide.com/cities/bangkok');
   assert.equal(seo({ NEXT_PUBLIC_SITE_URL: 'https://example.com/' }).absoluteUrl('/'), 'https://example.com/');
 });
 test('Vietnamese paths are encoded and external images remain absolute', () => {
-  assert.equal(seo().absoluteUrl('/directory/Lacàph Nam'), 'https://vietthai-compass.vercel.app/directory/Lac%C3%A0ph%20Nam');
+  assert.equal(seo().absoluteUrl('/directory/Lacàph Nam'), 'https://vietthaiguide.com/directory/Lac%C3%A0ph%20Nam');
   assert.equal(seo().absoluteUrl('https://res.cloudinary.com/photo.jpg'), 'https://res.cloudinary.com/photo.jpg');
 });
 test('article schema does not fabricate a publication date from the modification date', () => {
