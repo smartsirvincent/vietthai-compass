@@ -102,10 +102,11 @@ export function ArticleCard({ article }: { article: Article }) {
 }
 
 export function BusinessCard({ business }: { business: DirectoryBusiness }) {
+  const realImage = business.country === "thailand" && business.image?.includes("/brand-assets/") ? undefined : business.image;
   return (
-    <Link className={`card business-card ${business.image ? "has-image" : ""}`} href={`/directory/${business.slug}`} aria-label={`查看${business.name}`}>
-      {business.image ? (
-        <ContentImage src={business.image} alt={`${business.name}商家照片`} />
+    <Link className={`card business-card ${realImage ? "has-image" : ""}`} href={`/directory/${business.slug}`} aria-label={`查看${business.name}`}>
+      {realImage ? (
+        <ContentImage src={realImage} alt={`${business.name}商家照片`} />
       ) : (
         <div className="card-icon">
           <BriefcaseBusiness size={20} />

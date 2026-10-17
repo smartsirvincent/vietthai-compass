@@ -239,7 +239,7 @@ export const readCmsContent = cache(async (): Promise<CmsContent> => {
 
 let fileMutationQueue: Promise<void> = Promise.resolve();
 
-async function mutateCmsContent(mutate: (content: CmsContent) => boolean | void, suggestBusinessSubcategories = true) {
+async function mutateCmsContent(mutate: (content: CmsContent) => boolean | void, suggestBusinessSubcategories = true, normalize = true) {
   if (hasDatabase()) {
     await ensureDatabase();
     const client = await getPool()!.connect();
@@ -251,7 +251,7 @@ async function mutateCmsContent(mutate: (content: CmsContent) => boolean | void,
       );
       const previous = result.rows[0]?.value;
       if (!previous) throw new Error("CMS document is missing.");
-      const content = normalizeContent(previous, suggestBusinessSubcategories);
+      const content = normalize ? normalizeContent(previous, suggestBusinessSubcategories) : structuredClone(previous);
       if (mutate(content) === false) {
         await client.query("commit");
         return;
@@ -272,7 +272,7 @@ async function mutateCmsContent(mutate: (content: CmsContent) => boolean | void,
   }
   const operation = fileMutationQueue.then(async () => {
     const previous = await readFileContent();
-    const content = normalizeContent(previous, suggestBusinessSubcategories);
+    const content = normalize ? normalizeContent(previous, suggestBusinessSubcategories) : structuredClone(previous);
     if (mutate(content) === false) return;
     if (process.env.NODE_ENV === "production" || process.env.VERCEL) {
       throw new Error("Cloud database is required for production writes.");
@@ -284,6 +284,17 @@ async function mutateCmsContent(mutate: (content: CmsContent) => boolean | void,
   });
   fileMutationQueue = operation.catch(() => undefined);
   await operation;
+}
+
+export async function enrichThailandBusinesses() {
+  const { applyThailandEnrichment } = await import("./thailand-enrichment");
+  let result: ReturnType<typeof applyThailandEnrichment> | undefined;
+  // Preserve every field outside the explicit Thailand patch, including legacy Vietnam data.
+  await mutateCmsContent(content => {
+    result = applyThailandEnrichment(content);
+    return Boolean(result.updated || result.added);
+  }, false, false);
+  return result!;
 }
 
 export async function mergeTravelGuideArticles() {

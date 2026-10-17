@@ -1,0 +1,182 @@
+{
+  "hua-seng-hong-yaowarat": {
+    "description": "曼谷華人餐飲品牌在耀華力的代表分店，供應粵式與中式海鮮、點心及多人分享菜色，適合家庭或團體用餐。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "nai-ek-roll-noodle-yaowarat": {
+    "description": "Yaowarat 的老字號粿汁店，主打胡椒香氣明顯的捲粉湯與脆皮豬肉，適合安排成唐人街夜間小吃或宵夜停靠點。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "tk-seafood-yaowarat": {
+    "description": "耀華力 Soi Phadung Dao 的街邊海鮮餐廳，以烤海鮮與泰式調味料理聞名，適合多人點菜分享並順遊唐人街夜市。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "nai-mong-hoi-thod": {
+    "description": "耀華力街區的老字號蠔煎店，以蛋香、煎製口感與海鮮配料為主，是曼谷唐人街街頭料理的代表之一。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "patpong-night-market": {
+    "description": "Silom 與 Surawong 路之間的夜間市集街區，攤位以服飾、紀念品與小物為主，附近也有餐廳和夜生活場所。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "the-commons-saladaeng": {
+    "description": "Silom 小巷中的社區型餐飲與生活空間，集合餐飲、咖啡和健康生活服務，適合在商務區用餐或找一處較放鬆的休息點。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "al-saray-silom": {
+    "description": "Silom 的黎巴嫩與印度料理餐廳，提供香料飯、烤肉、咖哩及適合分享的菜色，可作為泰式料理之外的用餐選擇。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "silom-complex-bangkok": {
+    "description": "Silom 商業區的購物中心，餐飲、超市與日常服務集中，適合在附近辦事、住宿或下班後找餐廳的旅客。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "big-c-ratchadamri": {
+    "description": "Ratchadamri 一帶的大型超市與生活採買據點，食品、零食、日用品和伴手禮選擇多，適合旅客在市中心集中補貨。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "erawan-shrine-bangkok": {
+    "description": "位於 Ratchaprasong 路口的四面佛祠，是曼谷市中心重要的宗教參拜地點，周邊有大型購物中心與高架步道。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "gaysorn-village-bangkok": {
+    "description": "Ratchaprasong 商圈的精品與生活風格購物空間，餐飲、設計品牌與商務會面場所並存，適合與 Erawan Shrine、CentralWorld 排在同一趟。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "centralworld-bangkok": {
+    "description": "Ratchaprasong 商圈的大型購物與活動場地，餐廳、百貨、生活品牌和季節性展演集中，是曼谷市中心適合安排室內活動的據點。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "bangkok-art-and-culture-centre": {
+    "description": "曼谷市中心的公共藝術文化中心，展覽內容涵蓋當代藝術、設計、攝影與文化活動，館內亦有書店、咖啡和創意商店。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "jim-thompson-house-museum": {
+    "description": "以泰絲與傳統木屋建築聞名的博物館，透過導覽認識 Jim Thompson 的收藏、生活與泰國工藝，適合安排在 Siam 商圈購物前後。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "mbk-center-bangkok": {
+    "description": "大型複合購物中心，從電子產品、服飾、紀念品到餐飲都有，適合安排集中採買或尋找價格帶較多元的商品。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "siam-discovery-bangkok": {
+    "description": "Siam 商圈的生活風格購物中心，集合設計選品、潮流品牌、餐飲與體驗店鋪，適合想把購物和創意展售一起逛的旅客。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "siam-center-bangkok": {
+    "description": "Siam 商圈內以潮流品牌、泰國設計與餐飲為主的購物中心，規模適中，適合和 Siam Paragon、Siam Discovery 串成步行購物路線。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "siam-paragon-bangkok": {
+    "description": "曼谷市中心大型購物與娛樂商場，集合國際品牌、餐飲、水族館與活動展演，適合初訪者安排半日至一日的室內行程。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "j-avenue-thonglor": {
+    "description": "Thonglor 15 一帶的社區型商場，餐飲、生活店鋪與超市等選擇集中，適合探索 Thonglor 住宅生活圈時順道停留。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "roast-the-commons-thonglor": {
+    "description": "Roast 位於 theCOMMONS Thonglor 的分店，供應咖啡、早午餐與餐點，可和 Thong Lo 巷弄散步、社區型商場行程搭配。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "the-commons-thonglor": {
+    "description": "Thonglor 巷內的社區型生活空間，集合餐飲、咖啡與活動場域，適合想離開大型百貨、感受曼谷社區日常的旅客。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "luk-kai-thong-emquartier": {
+    "description": "設於 EmQuartier 的泰式料理分店，以較精緻的泰國菜與適合多人分享的菜色為主，可納入 EM District 購物後的用餐選擇。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "roast-emquartier": {
+    "description": "曼谷 Roast 的 EmQuartier 分店，提供早午餐、咖啡與甜鹹料理，地點適合接續 Phrom Phong 購物或會面行程。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "emsphere-bangkok": {
+    "description": "EM District 的大型生活與娛樂商場，集合餐飲、零售與活動空間，適合和 Phrom Phong 一帶的購物、咖啡行程一起安排。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "emquartier-bangkok": {
+    "description": "EM District 的大型購物中心，以餐飲樓層、品牌商店與室內中庭為主要特色；商場內有多家咖啡與餐廳，適合安排雨天備案。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "the-emporium-bangkok": {
+    "description": "Phrom Phong 站旁的百貨商場，精品、生活用品、餐飲與超市等選擇集中，和 EmQuartier、EmSphere 同屬 EM District 商圈。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "savoey-terminal-21-asok": {
+    "description": "位於 Terminal 21 Asok 的海鮮餐廳分店，方便與商場購物、Pier 21 美食街或周邊住宿行程搭配，適合多人一起點菜分享。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "health-land-asoke": {
+    "description": "Health Land 的 Asoke 分店提供泰式按摩與多種身體療程，適合安排在市中心購物或步行行程後；分店有官方預約與療程資訊。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "cabbages-and-condoms-asok": {
+    "description": "Sukhumvit Soi 12 的泰式餐廳，以庭院空間和公共健康倡議的主題布置聞名，菜色以泰國家常與分享餐為主，適合朋友或家庭聚餐。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "terminal-21-asok": {
+    "description": "以世界城市為主題的購物中心，各樓層用不同城市風格呈現，餐飲、超市與服飾店集中，適合把購物和用餐排在同一站完成。",
+    "image": "https://vietthai-compass.vercel.app/brand-assets/home-business-local-life.png"
+  },
+  "so-thai-spa-surawong-bang-rak": {
+    "description": "位於曼谷 Bang Rak 區 Surawong 路、靠近 Silom 的 So Thai Spa Surawong，官方資料顯示分店設於 Kokotel Bangkok Surawong，提供泰式按摩、芳香精油按摩與多時數 SPA 套裝。部分房型配置獨立淋浴空間，可依個人或雙人行程安排。封面照片來源：So Thai Spa 官方圖庫。療程、房型與分店資訊可能調整，預約前請向店家確認。",
+    "image": "https://static.wixstatic.com/media/950972_598eb01997e94c83bc7c35ab6adfec82~mv2.jpg/v1/fill/w_1214%2Ch_809%2Cq_85%2Cenc_auto/950972_598eb01997e94c83bc7c35ab6adfec82~mv2.jpg"
+  },
+  "once-upon-a-thai-spa-phrom-phong": {
+    "description": "Once Upon A Thai Spa Phrom Phong 位於曼谷 Sukhumvit 28 一帶，提供泰式按摩、芳香按摩及身體保養等療程，適合安排在市區購物或步行行程後。店家官方分店頁展示接待空間與療程環境，交通位置、可預約時段及方案可能異動，前往前請確認最新資訊。封面照片來源：Once Upon A Thai Spa 官方分店頁。",
+    "image": "https://images.squarespace-cdn.com/content/v1/5d7b7428ef827b30987e3a7a/1686152520432-3PIYZNBNSPZKGCAF90OT/IMG_5582.JPG"
+  },
+  "little-prince-cafe-sathon": {
+    "description": "位於曼谷 Sathorn 區 Suan Phlu 路的 The Little Prince Café，與 L’Envol Art Space 藝術空間相連。除了咖啡、甜點與烘焙品，也能在展區欣賞以《小王子》為靈感的雕塑與藝術裝置；庭院與錦鯉池則提供另一種較安靜的休息空間。適合喜歡咖啡、藝術展覽與拍照散步的旅客。封面照片來源：L’Envol Art Space 官方網站。價格、展區開放及營業安排以店家最新公告為準。",
+    "image": "https://images.squarespace-cdn.com/content/v1/64c4bfd1774661536abf3aa7/b86f38b1-728e-435d-9cbe-23c91ddf972e/IMG_5855.jpeg"
+  },
+  "treehouse-cafe-bar-sukhumvit-31": {
+    "description": "Treehouse Cafe & Bar 位於曼谷 Watthana 區 Sukhumvit 31，以被大型雨樹與熱帶綠植環繞的木造空間為特色，白天可安排咖啡、早餐或早午餐，晚間則是餐飲與社交聚會的選擇。適合想在市區找一處有庭院感、能坐下聊天的旅客。封面照片來源：BK Magazine 報導照片。營業時段、菜單及活動請以店家最新公告為準。",
+    "image": "https://www.bkmagazine.com/wp-content/uploads/2025/07/treecover-1024x684.jpg"
+  },
+  "the-island-bangkok-phra-nakhon": {
+    "description": "The Island Bangkok 位於曼谷 Phra Nakhon 老城區、Samsen Soi 4，鄰近考山路一帶，是結合泰式料理、素食選項與酒吧氛圍的多層餐廳。公開介紹提到室內外座位、色彩燈飾與較放鬆的樓層空間，適合安排在老城區散步、晚餐或朋友聚會前後。封面照片來源：TravelPal 店家頁（標示為 Google Maps 店家照片）。菜單、價格與營業時間請以店家最新資訊為準。",
+    "image": "https://travelpal.ai/_next/image?q=75&url=https%3A%2F%2Fcdn.travelpal.ai%2Fprod%2Fplaces%2FVbpn6naAe3DXlNT_jCNKYvoEl4w%2Fphotos%2Fgoogle%2Fwebp%2F19f97c8137c4c30c8aba3d5f.webp&w=1440"
+  },
+  "wallflowers-cafe-nana": {
+    "description": "Wallflowers Cafe 位於曼谷舊城區 Soi Nana 的 31–33 號，和耀華力唐人街步行距離不遠。店內以花藝、古董家具與老宅空間為特色，白天可以安排咖啡、茶飲和甜點，傍晚後則轉為酒吧氛圍；想同時走訪 Nana 巷弄與唐人街，可把它當作下午休息或晚間續攤的一站。泰國觀光局列有電話 +66 94 671 4433，店家社群可查最新活動與營業安排；咖啡與酒吧時段可能重疊或調整，出發前先確認。照片來源：泰國觀光局店家頁（https://www.thailandtravel.or.jp/wallflowers-cafe/）。",
+    "image": "https://www.thailandtravel.or.jp/wp-content/uploads/2026/03/2602859b19677ddc9a7ca7ed51947e54.jpg"
+  },
+  "chata-specialty-coffee-yaowarat": {
+    "description": "CHATA Specialty Coffee 位於 Baan 2459 旅宿內，地址為曼谷 Phat Sai Road 98 號，從耀華力與 Wat Mangkon 一帶步行可到。咖啡空間把老宅磚牆、玻璃屋與庭院綠意結合，氛圍與街區外的熱鬧形成對比；適合安排在唐人街白天散步途中，坐下喝咖啡或吃甜點。公開資料列有電話 084-625-2324，品牌社群使用 @chata_bkk；營業時段可能隨旅宿或店家安排調整，建議先查官方頁面。照片來源：Baan 2459 官方店家頁（https://www.baan2459hotel.com/chata-specialty-coffee）。",
+    "image": "https://static.wixstatic.com/media/65b843_1c3f3d975d904eabad1d615720a9d615~mv2_d_5472_3648_s_4_2.jpg/v1/fit/w_960,h_640,q_90,enc_avif,quality_auto/65b843_1c3f3d975d904eabad1d615720a9d615~mv2_d_5472_3648_s_4_2.jpg"
+  },
+  "hong-sieng-kong-talat-noi": {
+    "description": "Hong Sieng Kong 位於 Talat Noi 的 Soi Wanit 2 河岸老街，地址為 734、736 號一帶。這處由多棟老建築串連而成的咖啡空間，保留木構、老家具與收藏物件，也安排室內、庭院及面向昭披耶河的座位；不只喝咖啡，也能當成認識舊商埠街區與老宅的停留點。店家公開資料列出電話 095-998-9895、信箱 hongsiengkong@gmail.com，通常週二至週日營業、週一休息；巷弄較窄，建議步行進入並先確認最新公告。 照片來源：Trip.com 曼谷旅客照片（https://sa.trip.com/moments/detail/bangkok-191-147271581?locale=en-SA）。",
+    "image": "https://ak-d.tripcdn.com/images/1mi1r12000swtmfaz6ACD_Q90.jpg?proc=source%2Ftrip"
+  },
+  "la-cabra-talat-noi": {
+    "description": "La Cabra Talad Noi 位於曼谷 Charoen Krung Road 813 號，是丹麥品牌在泰國的首間店，也是品牌第一個丹麥以外據點。店家官方介紹提到保留原建築細節，以自然採光、綠色磁磚吧台與簡潔設計呈現咖啡空間；適合把精品咖啡、烘焙點心與 Talat Noi 老街散步排在同一段行程。官方營業資訊列為每日 08:00–17:00，並提供 thailand@lacabra.com 聯絡信箱；店家表示不接受訂位，臨行前可先查看官方頁面。照片來源：Trip.com 曼谷旅客照片（https://th.trip.com/moments/detail/bangkok-191-120382117/）。",
+    "image": "https://ak-d.tripcdn.com/images/1mi1u224x8u8hm0kj5FB1_R_600_400_R5_Q90.jpg?proc=source%2Ftrip"
+  },
+  "mother-roaster-talat-noi": {
+    "description": "Mother Roaster 藏在曼谷 Talat Noi 的老街巷弄裡，入口周邊仍保留汽機車零件店的日常景象，沿樓梯上樓後才會進入咖啡空間；這種街區反差正是它最鮮明的特色。店家以咖啡為主，供應義式與手沖等選擇，也有甜點；地點適合與 Talat Noi 街頭藝術、老宅和河岸散步一起安排。泰國觀光局資料列出地址 1172 San Chao Rong Kueak、電話 061-216-2277，營業時間常見為 10:00–18:00，出發前請以官方社群確認。照片來源：泰國觀光局店家頁（https://www.thailandtravel.or.jp/mother-roaster/）。",
+    "image": "https://www.thailandtravel.or.jp/wp-content/uploads/2024/03/S_Mother-Roaster_IMG_9784.jpg"
+  },
+  "coolmuang-coffee-chiang-mai": {
+    "description": "CoolMuang Coffee 位於清邁古城東側 Mun Mueang 路 81 號附近，步行可串接塔佩門與東側護城河。店家空間有室內與戶外座位，公開介紹提及泰國阿拉比卡咖啡與較放鬆的停留環境；適合走完古城城牆或塔佩門周邊後坐下補充咖啡與輕食。地址與電話參考公開旅遊店家資料，營業時間在不同平台有差異，建議出發前先查看 Google 地圖的當日狀態。照片來源：Nomadic Notes 清邁咖啡指南（https://www.nomadicnotes.com/chiang-mai-cafes/）。",
+    "image": "https://photos.smugmug.com/Asia/Thailand/Chiang-Mai-2020s/i-wvVR2kN/0/NdkVQPXnHz6JMCdjtPFLgbDLc2wS42BwJ6wzxtD9f/L/20240704_164810-cool-muang-coffee-L.jpg"
+  },
+  "coffee-telling-chiang-mai": {
+    "description": "Coffee Telling 位在清邁古城 Ratchapakhinai 路 135 號一帶，適合穿梭寺廟與老街時找個地方休息。店內以輕鬆的小店氛圍為主，公開評論常提及咖啡、親切服務與簡單甜點；若看到香蕉麵包或季節飲品，也可先詢問當日是否供應。店面與座位規模較親切，建議多人同行或需要插座、久坐工作時先查看近期照片與評論。照片來源：Old Town 咖啡館照片整理（https://www.pinterest.com/pin/7-unmissable-cafs-in-old-town-chiang-mai--549439223307984032/）。",
+    "image": "https://i.pinimg.com/736x/2e/fb/2e/2efb2e3657cdfec9ca9f7b81b154635d.jpg"
+  },
+  "akha-ama-phrasingh-chiang-mai": {
+    "description": "Akha Ama Phrasingh 位於清邁古城 Ratchadamnoen 路、帕邢寺附近，是認識泰北咖啡的一個好起點。品牌從阿卡族村落的咖啡產地出發，串起栽種、處理、烘焙與店內沖煮；到店可詢問當日手沖豆款、烘焙風味與咖啡豆選購。泰國觀光局店家資料列出的地址為 175/1 Rachdhamnoen Road，並載有每日 08:00–18:00 的營業資訊；假日或營運調整仍請先查官方公告。照片來源：泰國觀光局店家頁（https://www.thailandtravel.or.jp/akha-ama-phrasingh/）。",
+    "image": "https://www.thailandtravel.or.jp/wp-content/uploads/2017/08/DSCF2118-808x539.jpg"
+  },
+  "gallery-drip-coffee-chiang-mai": {
+    "description": "Gallery Drip Coffee 位於清邁古城中心、三王紀念碑後方的清邁城市藝術文化中心一帶，適合把看展、逛寺廟與咖啡行程排在一起。店名直接點出主打：以手沖為核心，吧台可看到濾杯、磨豆與沖煮器具，旅人可詢問當日豆單與風味差異。公開店家資料常列週二至週日營業、週一休息，但不同分店與資料來源的時段可能不同，導航前請核對是否前往古城分店。照片來源：Trip.com 旅客照片（https://th.trip.com/moments/detail/chiang-mai-209-119802029/）。",
+    "image": "https://ak-d.tripcdn.com/images/1mi6o2234d6ip0k4w4EAC.jpg"
+  },
+  "twenty-mar-chiang-mai": {
+    "description": "TWENTY MAR 位於清邁古城三王紀念碑旁的 Phra Pok Klao 路 Soi 1，適合把它排進古城步行日。店內以木質吧台、藝術裝飾和較沉靜的氛圍呈現「Culture · Art · Coffee」的品牌個性；公開店家資料列有 Dirty、手沖與義式咖啡等選擇，營業資訊常見為每日 08:00–18:00，出發前仍建議查看店家最新公告。空間不大，尖峰時段可能較難找到座位。照片來源：Trip.com 旅客照片（https://sg.trip.com/moments/detail/chiang-mai-209-126223239/）。",
+    "image": "https://ak-d.tripcdn.com/images/1me5z12000qmnasjz05C0.jpg"
+  }
+}

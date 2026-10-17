@@ -5,7 +5,7 @@ export const BANGKOK_TRANSIT_LINES = [
     label: "BTS 素坤逸線",
     color: "#398341",
     mapUrl: "https://www.bts.co.th/eng/routemap.html?lang=en",
-    stations: ["bts-asok", "bts-phrom-phong", "bts-thong-lo", "bts-siam", "bts-chit-lom"]
+    stations: ["bts-ha-yaek-lat-phrao", "bts-mo-chit", "bts-phaya-thai", "bts-siam", "bts-chit-lom", "bts-phloen-chit", "bts-asok", "bts-phrom-phong", "bts-thong-lo", "bts-ekkamai"]
   },
   {
     id: "bts-silom",
@@ -13,7 +13,7 @@ export const BANGKOK_TRANSIT_LINES = [
     label: "BTS 是隆線",
     color: "#167b75",
     mapUrl: "https://www.bts.co.th/eng/routemap.html?lang=en",
-    stations: ["bts-national-stadium", "bts-sala-daeng"]
+    stations: ["bts-national-stadium", "bts-sala-daeng", "bts-chong-nonsi"]
   },
   {
     id: "mrt-blue",
@@ -21,11 +21,28 @@ export const BANGKOK_TRANSIT_LINES = [
     label: "MRT 藍線",
     color: "#2875c7",
     mapUrl: "https://metro.bemplc.co.th/MRT-System-Map?lang=en",
-    stations: ["mrt-sukhumvit", "mrt-sam-yot", "mrt-wat-mangkon", "mrt-hua-lamphong", "mrt-silom", "mrt-lumphini"]
+    stations: ["mrt-phahon-yothin", "mrt-kamphaeng-phet", "mrt-sukhumvit", "mrt-qsncc", "mrt-lumphini", "mrt-silom", "mrt-sam-yan", "mrt-hua-lamphong", "mrt-wat-mangkon", "mrt-sam-yot", "mrt-sanam-chai"]
+  },
+  {
+    id: "gold-line", name: "Gold Line", label: "金線", color: "#9b7617",
+    mapUrl: "https://www.bts.co.th/eng/routemap.html?lang=en",
+    stations: ["gold-charoen-nakhon"]
   }
 ] as const;
 
 export const BANGKOK_TRANSIT_STATIONS = [
+  { id: "bts-ha-yaek-lat-phrao", lineId: "bts-sukhumvit", name: "Ha Yaek Lat Phrao", nameZh: "叻拋五岔路口", area: "Union Mall／Lat Phrao" },
+  { id: "bts-mo-chit", lineId: "bts-sukhumvit", name: "Mo Chit", nameZh: "蒙奇", area: "Chatuchak" },
+  { id: "bts-phaya-thai", lineId: "bts-sukhumvit", name: "Phaya Thai", nameZh: "披耶泰", area: "Suan Pakkad／機場快線" },
+  { id: "bts-phloen-chit", lineId: "bts-sukhumvit", name: "Phloen Chit", nameZh: "奔集", area: "Central Embassy" },
+  { id: "bts-ekkamai", lineId: "bts-sukhumvit", name: "Ekkamai", nameZh: "伊卡邁", area: "Gateway／Sukhumvit 42" },
+  { id: "bts-chong-nonsi", lineId: "bts-silom", name: "Chong Nonsi", nameZh: "鐘那席", area: "Mahanakhon／Sathorn" },
+  { id: "mrt-phahon-yothin", lineId: "mrt-blue", name: "Phahon Yothin", nameZh: "拍鳳裕庭", area: "Union Mall／Lat Phrao" },
+  { id: "mrt-kamphaeng-phet", lineId: "mrt-blue", name: "Kamphaeng Phet", nameZh: "甘烹碧", area: "Chatuchak／Or Tor Kor" },
+  { id: "mrt-sanam-chai", lineId: "mrt-blue", name: "Sanam Chai", nameZh: "沙南猜", area: "Museum Siam／Wat Pho" },
+  { id: "mrt-sam-yan", lineId: "mrt-blue", name: "Sam Yan", nameZh: "三養", area: "Samyan Mitrtown／Chamchuri Square" },
+  { id: "mrt-qsncc", lineId: "mrt-blue", name: "Queen Sirikit National Convention Centre", nameZh: "詩麗吉王后會議中心", area: "QSNCC／Benjakitti" },
+  { id: "gold-charoen-nakhon", lineId: "gold-line", name: "Charoen Nakhon", nameZh: "恰倫那空", area: "ICONSIAM" },
   { id: "bts-asok", lineId: "bts-sukhumvit", name: "Asok", nameZh: "阿索克", area: "Sukhumvit／Asok" },
   { id: "bts-phrom-phong", lineId: "bts-sukhumvit", name: "Phrom Phong", nameZh: "澎蓬", area: "Sukhumvit 24–31" },
   { id: "bts-thong-lo", lineId: "bts-sukhumvit", name: "Thong Lo", nameZh: "通羅", area: "Thong Lo／Sukhumvit 55" },

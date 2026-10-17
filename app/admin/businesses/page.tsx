@@ -151,6 +151,7 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
       <AdminEditorForm action={importBangkokBusinessesAction} className="business-classification-action">
         <AdminSubmitButton idleLabel="新增曼谷捷運沿線 30 家" pendingLabel="新增商家中" />
       </AdminEditorForm>
+        <p><Link href="/admin/thailand-update">泰國介紹、實景照片與 20 個沿線地點更新</Link></p>
       {error === "database" ? (
         <div className="admin-error">
           商家資料無法儲存：目前雲端資料庫連線異常，請先修正 Vercel 的 DATABASE_URL 後再新增或更新商家。
