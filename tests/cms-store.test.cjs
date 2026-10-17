@@ -111,6 +111,7 @@ function loadStore(initial = fixture(), guideArticles = [], thailandMutation) {
       return {
         async query(sql, values) {
           backend.statements.push(sql);
+          if (sql.startsWith('select count(*)::text as total')) return { rows: [backend.inquiryCounts || { total: '0', recent: '0' }] };
           if (sql.includes('for update')) {
             const previous = tail;
             tail = new Promise((resolve) => { unlock = resolve; });
@@ -176,6 +177,18 @@ test('article provenance survives saves and rejects invalid dates or unsafe sour
   await assert.rejects(store.saveArticle({ ...saved, publishedAt: '2027-01-01' }, saved.slug, store.contentRevision(saved)), /發布日期/);
   await assert.rejects(store.saveArticle({ ...saved, sources: ['javascript:alert(1)'] }, saved.slug, store.contentRevision(saved)), /來源/);
   assert.deepEqual(backend.document, before);
+});
+
+test('inquiry limiter enforces per-IP and global limits without storing visitor content', async () => {
+  const { store, backend } = loadStore();
+  assert.equal(await store.reserveInquiryAttempt('hashed-ip'), true);
+  backend.inquiryCounts = { total: '5', recent: '5' };
+  assert.equal(await store.reserveInquiryAttempt('hashed-ip'), false);
+  backend.inquiryCounts = { total: '100', recent: '0' };
+  assert.equal(await store.reserveInquiryAttempt('another-hash'), false);
+  assert.equal(backend.statements.filter(sql => sql.startsWith('insert into inquiry_attempts')).length, 1);
+  assert.ok(backend.statements.includes('select pg_advisory_xact_lock(62831, 1)'));
+  assert.deepEqual(backend.document, fixture());
 });
 
 test('Thailand transactional update bypasses normalization and stores the unmodified backup', async () => {

@@ -13,6 +13,7 @@
     "html-react-parser": "^6.1.8",
     "lucide-react": "^0.468.0",
     "next": "^15.5.27",
+    "nodemailer": "^10.1.2",
     "pg": "^8.22.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
+    "@types/nodemailer": "^8.0.2",
     "@types/pg": "^8.21.0",
     "@types/react": "^19.0.4",
     "@types/react-dom": "^19.0.2",

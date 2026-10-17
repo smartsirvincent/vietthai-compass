@@ -1,4 +1,5 @@
 import { AdminEditorForm } from "@/components/AdminEditorForm";
+import { inquiryMailConfigured } from "@/lib/inquiry-mail";
 import { AdminSubmitButton } from "@/components/AdminSubmitButton";
 import { finishCmsEdit } from "@/lib/cms-actions";
 import { contentRevision } from "@/lib/cms-store";
@@ -56,6 +57,9 @@ export default async function AdminSettingsPage({
     <>
       <p className="eyebrow">Tracking</p>
       <h1>網站設定</h1>
+      <h2>合作詢問通知</h2>
+      <p>收件信箱：goodviet.service@gmail.com。寄信設定：{inquiryMailConfigured() ? "已填入，仍需實際寄信驗證" : "尚未設定"}。</p>
+      <p>在 Vercel 的 Production 環境變數填入 GMAIL_SMTP_USER 與 GMAIL_APP_PASSWORD 後重新部署。請使用 Gmail 應用程式密碼，不要填入 Google 帳號登入密碼。</p>
       <p>填入 GA4 或 GTM 代碼後，前台會自動完成埋設。若同時使用 GTM 與 GA4，請確認 GTM 內沒有重複安裝同一組 GA4。</p>
 
       <section className="admin-editor-grid">

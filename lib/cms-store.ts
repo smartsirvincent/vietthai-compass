@@ -474,6 +474,30 @@ export async function backfillArticleDates() {
   return count;
 }
 
+// Shared across serverless instances; store only hashed IPs, not form contents.
+export async function reserveInquiryAttempt(ipHash: string) {
+  const pool = getPool();
+  if (!pool) throw new Error("Cloud database required for inquiry rate limiting");
+  const client = await pool.connect();
+  try {
+    await client.query("begin");
+    await client.query("select pg_advisory_xact_lock(62831, 1)");
+    await client.query("create table if not exists inquiry_attempts (id uuid primary key, ip_hash text not null, created_at timestamptz not null default now())");
+    await client.query("alter table inquiry_attempts enable row level security");
+    await client.query("delete from inquiry_attempts where created_at < now() - interval '1 day'");
+    const result = await client.query<{ total: string; recent: string }>(
+      "select count(*)::text as total, count(*) filter (where ip_hash = $1 and created_at > now() - interval '15 minutes')::text as recent from inquiry_attempts", [ipHash]
+    );
+    const allowed = Number(result.rows[0].total) < 100 && Number(result.rows[0].recent) < 5;
+    if (allowed) await client.query("insert into inquiry_attempts (id, ip_hash) values ($1, $2)", [randomUUID(), ipHash]);
+    await client.query("commit");
+    return allowed;
+  } catch (error) {
+    await client.query("rollback");
+    throw error;
+  } finally { client.release(); }
+}
+
 export async function saveCity(city: City, originalSlug?: string, expectedRevision?: string) {
   await mutateCmsContent((content) => {
     const key = originalSlug || city.slug;

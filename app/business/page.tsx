@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { InquiryForm } from "@/components/InquiryForm";
+import { inquiryMailConfigured } from "@/lib/inquiry-mail";
 import { ArrowRight } from "lucide-react";
 import { SectionHeader } from "@/components/Cards";
 import { SiteShell } from "@/components/SiteShell";
@@ -41,31 +42,31 @@ export default function BusinessPage() {
 
       <section className="band light">
         <SectionHeader title="合作詢問表單" intro="請留下必要資料，方便初步判斷你的市場、服務與曝光需求。" />
-        <form className="panel inquiry-form">
+        <InquiryForm enabled={inquiryMailConfigured()}>
           <div className="grid two">
             <label>
               <span>姓名 <b>必填</b></span>
-              <input required name="name" placeholder="請輸入聯絡人姓名" />
+              <input required maxLength={100} name="name" autoComplete="name" placeholder="請輸入聯絡人姓名" />
             </label>
             <label>
               <span>公司 / 商家名稱 <b>必填</b></span>
-              <input required name="company" placeholder="例如：曼谷餐廳、胡志明市服務商" />
+              <input required maxLength={200} name="company" placeholder="例如：曼谷餐廳、胡志明市服務商" />
             </label>
             <label>
               <span>所在國家或城市 <b>必填</b></span>
-              <input required name="location" placeholder="例如：曼谷、胡志明市、峴港" />
+              <input required maxLength={100} name="location" placeholder="例如：曼谷、胡志明市、峴港" />
             </label>
             <label>
               <span>Email <b>必填</b></span>
-              <input required type="email" name="email" placeholder="name@example.com" />
+              <input required maxLength={254} type="email" name="email" autoComplete="email" placeholder="name@example.com" />
             </label>
             <label>
               <span>LINE ID <em>選填</em></span>
-              <input name="line" placeholder="方便快速聯絡" />
+              <input maxLength={100} name="line" placeholder="方便快速聯絡" />
             </label>
             <label>
               <span>產業類型 <em>選填</em></span>
-              <input name="industry" placeholder="餐廳、旅宿、行銷服務、生活服務" />
+              <input maxLength={100} name="industry" placeholder="餐廳、旅宿、行銷服務、生活服務" />
             </label>
           </div>
           <label>
@@ -81,11 +82,9 @@ export default function BusinessPage() {
           </label>
           <label>
             <span>補充說明 <em>選填</em></span>
-            <textarea name="message" placeholder="可以描述你的商家、目標客群、希望曝光的城市或預算範圍" rows={5} />
+            <textarea name="message" maxLength={5000} placeholder="可以描述你的商家、目標客群、希望曝光的城市或預算範圍" rows={5} />
           </label>
-          <p className="form-note">送出前可先用 LINE 或 Email 聯繫；正式部署後可串接資料庫與通知信。</p>
-          <Link className="primary-button" href={`mailto:${siteSocials.email}`}>使用 Email 聯絡</Link>
-        </form>
+        </InquiryForm>
       </section>
     </SiteShell>
   );
