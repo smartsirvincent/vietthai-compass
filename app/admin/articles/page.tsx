@@ -58,7 +58,7 @@ async function deleteArticleAction(formData: FormData) {
 export default async function AdminArticlesPage({ searchParams }: { searchParams: Promise<{ edit?: string; saved?: string; savedAt?: string }> }) {
   await requireAdminSession();
   const { edit, saved, savedAt } = await searchParams;
-  const [articles, cities, businesses] = await Promise.all([getArticles(), getCities(), getBusinesses()]);
+  const [articles, cities, businesses] = await Promise.all([getArticles(), getCities(), getBusinesses(true)]);
   const editing = articles.find((item) => item.slug === edit);
 
   return (

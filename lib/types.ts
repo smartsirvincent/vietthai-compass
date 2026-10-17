@@ -76,6 +76,7 @@ export type Article = {
 };
 
 export type DirectoryBusiness = {
+  isActive?: boolean;
   slug: string;
   name: string;
   category: string;

@@ -15,7 +15,7 @@ function formatDate(value?: string) {
 
 export default async function AdminDashboardPage() {
   await requireAdminRole();
-  const [articles, businesses, cities] = await Promise.all([getArticles(), getBusinesses(), getCities()]);
+  const [articles, businesses, cities] = await Promise.all([getArticles(), getBusinesses(true), getCities()]);
   const storageMode = getCmsStorageMode();
   const isCloudStorage = storageMode === "cloud-database";
   const storageLabel =

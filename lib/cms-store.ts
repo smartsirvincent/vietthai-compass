@@ -334,8 +334,65 @@ export async function getCities() {
   return (await readCmsContent()).cities;
 }
 
-export async function getBusinesses() {
-  return (await readCmsContent()).businesses;
+export async function getBusinesses(includeInactive = false) {
+  const businesses = (await readCmsContent()).businesses;
+  return includeInactive ? businesses : businesses.filter(business => business.isActive !== false);
+}
+
+function hasBusinessPhoto(business: DirectoryBusiness) {
+  return Boolean(business.image?.trim() && !business.image.includes("/brand-assets/"));
+}
+
+export async function disableThailandBusinessesWithoutPhotos() {
+  let count = 0;
+  await mutateCmsContent(content => {
+    for (const business of content.businesses) {
+      if (business.country === "thailand" && business.isActive !== false && !hasBusinessPhoto(business)) {
+        business.isActive = false;
+        business.updatedAt = new Date().toISOString();
+        count++;
+      }
+    }
+    return count > 0;
+  }, false, false);
+  return count;
+}
+
+export async function setBusinessActive(slug: string, isActive: boolean, expectedRevision: string) {
+  await mutateCmsContent(content => {
+    const business = content.businesses.find(item => item.slug === slug);
+    if (!business) throw new CmsEditError("找不到商家，請重新整理列表。");
+    assertRevision(normalizeContent(content).businesses.find(item => item.slug === slug), expectedRevision);
+    if (isActive && (!hasBusinessPhoto(business) || !business.imageSource?.trim() || !business.imageCredit?.trim())) {
+      throw new CmsEditError("請先補齊真實照片、來源及攝影者／授權資訊，再啟用商家。");
+    }
+    if (business.isActive === isActive) return false;
+    business.isActive = isActive;
+    business.updatedAt = new Date().toISOString();
+  }, false, false);
+}
+
+export async function repairCityPhotos() {
+  const fixes = [
+    { slug: "chiang-rai", country: "thailand", before: "/cities/chiang-mai.webp", file: "Chiang_Rai_Thailand_Wat-Rong-Khun-01.jpg", credit: "Photo by CEphoto, Uwe Aranas / CC BY-SA 4.0" },
+    { slug: "krabi", country: "thailand", before: "/cities/phuket.webp", file: "West_Railay_Beach_01.jpg", credit: "Krzysztof Golik / CC BY-SA 4.0" },
+    { slug: "nha-trang", country: "vietnam", before: "/cities/da-nang.webp", file: "View_from_Nha_Trang_Center.jpg", credit: "Christophe95 / CC BY-SA 4.0" },
+    { slug: "hue", country: "vietnam", before: "/cities/da-nang.webp", file: "Citadel_Gate,_Imperial_City,_Hue,_Vietnam_(7073491925).jpg", credit: "David McKelvey / CC BY 2.0" },
+    { slug: "hoi-an", country: "vietnam", before: "/cities/da-nang.webp", file: "Thu_Bon_River_in_Hoi_An_1.jpg", credit: "Christophe95 / CC BY-SA 4.0" }
+  ];
+  let count = 0;
+  await mutateCmsContent(content => {
+    for (const fix of fixes) {
+      const city = content.cities.find(c => c.slug === fix.slug && c.country === fix.country);
+      if (!city || city.image !== fix.before) continue;
+      city.image = `/cities/${fix.slug}.webp`;
+      city.imageSource = `https://commons.wikimedia.org/wiki/File:${fix.file}`;
+      city.imageCredit = `${fix.credit}；已縮圖及轉換 WebP`;
+      count++;
+    }
+    return count > 0;
+  }, false, false);
+  return count;
 }
 
 export async function backfillBusinessSubcategories() {

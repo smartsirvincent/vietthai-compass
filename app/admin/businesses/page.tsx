@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AdminSubmitButton } from "@/components/AdminSubmitButton";
 import { AdminEditorForm } from "@/components/AdminEditorForm";
 import { finishCmsEdit } from "@/lib/cms-actions";
-import { contentRevision } from "@/lib/cms-store";
+import { contentRevision, setBusinessActive } from "@/lib/cms-store";
 import { CityDistrictFields } from "@/components/CityDistrictFields";
 import { BusinessCategoryFields } from "@/components/BusinessCategoryFields";
 import { BangkokTransitStationFields } from "@/components/BangkokTransitStationFields";
@@ -34,10 +34,11 @@ async function saveBusinessAction(formData: FormData) {
     const country = textValue(formData, "country", "vietnam") as DirectoryBusiness["country"];
     const citySlug = textValue(formData, "citySlug");
     const districtSlug = textValue(formData, "districtSlug");
-    const [cities, businesses] = await Promise.all([getCities(), getBusinesses()]);
+    const [cities, businesses] = await Promise.all([getCities(), getBusinesses(true)]);
     const existingBusiness = businesses.find((business) => business.slug === (originalSlug || textValue(formData, "slug")));
     const selectedCity = cities.find((city) => city.slug === citySlug && city.country === country);
     const business: DirectoryBusiness = {
+      isActive: existingBusiness?.isActive ?? true,
       slug: textValue(formData, "slug"),
       name: textValue(formData, "name"),
       category: textValue(formData, "category"),
@@ -87,6 +88,15 @@ async function deleteBusinessAction(formData: FormData) {
   });
 }
 
+async function toggleBusinessAction(formData: FormData) {
+  "use server";
+  await requireAdminRole();
+  return finishCmsEdit(async () => {
+    await setBusinessActive(textValue(formData, "slug"), textValue(formData, "active") === "true", textValue(formData, "revision"));
+    return "/admin/businesses?saved=business";
+  });
+}
+
 async function backfillBusinessSubcategoriesAction() {
   "use server";
   await requireAdminRole();
@@ -100,7 +110,7 @@ async function importBangkokBusinessesAction() {
   "use server";
   await requireAdminRole();
   return finishCmsEdit(async () => {
-    const existing = new Set((await getBusinesses()).map((business) => business.slug));
+    const existing = new Set((await getBusinesses(true)).map((business) => business.slug));
     let added = 0;
     let skipped = 0;
     for (const business of bangkokBusinessAdditions) {
@@ -119,7 +129,7 @@ async function importBangkokBusinessesAction() {
 export default async function AdminBusinessesPage({ searchParams }: { searchParams: Promise<{ edit?: string; error?: string; country?: string; city?: string; category?: string; subcategory?: string; saved?: string; savedAt?: string; classified?: string; imported?: string; skipped?: string }> }) {
   await requireAdminRole();
   const { edit, error, country, city, category, subcategory, saved, savedAt, classified, imported, skipped } = await searchParams;
-  const [businesses, cities, articles] = await Promise.all([getBusinesses(), getCities(), getArticles()]);
+  const [businesses, cities, articles] = await Promise.all([getBusinesses(true), getCities(), getArticles()]);
   const editing = businesses.find((item) => item.slug === edit);
   const relatedArticles = editing ? articles.filter((article) => article.relatedBusinessSlug === editing.slug) : [];
   const selectedFilterCountry = country === "vietnam" || country === "thailand" ? country : "";
@@ -164,6 +174,7 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
         <AdminEditorForm key={`${edit || "new"}:${savedAt || ""}`} action={saveBusinessAction} className="panel admin-form">
           <input type="hidden" name="revision" value={contentRevision(editing)} />
           <h2>{editing ? "編輯商家" : "新增商家"}</h2>
+          {editing ? <p role="status">目前狀態：{editing.isActive === false ? "停用（前台不顯示，資料保留）" : "啟用"}</p> : null}
           <input type="hidden" name="originalSlug" defaultValue={editing?.slug || ""} />
           <div className="grid two">
             <label>商家名稱<input name="name" required defaultValue={editing?.name || ""} /></label>
@@ -274,11 +285,18 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
             {filteredBusinesses.map((business) => (
               <div key={business.slug}>
                 <strong>{business.name}</strong>
+                <span>{business.isActive === false ? "停用（前台不顯示）" : "啟用"}</span>
                 <span>
                   {business.category}・{business.subcategory}{business.isTaiwanBusiness ? " + 台商專區" : ""} / {business.country === "vietnam" ? "越南" : "泰國"} / {business.citySlug} / {business.districtSlug || "不限分區"}
                 </span>
                 <span>最近編輯：{formatBusinessDate(business.updatedAt)}</span>
                 <div className="admin-row-actions">
+                  <AdminEditorForm action={toggleBusinessAction}>
+                    <input type="hidden" name="slug" value={business.slug} />
+                    <input type="hidden" name="revision" value={contentRevision(business)} />
+                    <input type="hidden" name="active" value={String(business.isActive === false)} />
+                    <AdminSubmitButton idleLabel={business.isActive === false ? "重新啟用" : "暫時停用"} pendingLabel="更新狀態中" />
+                  </AdminEditorForm>
                   <Link href={`/admin/businesses?edit=${business.slug}`}>編輯</Link>
                   <AdminEditorForm action={deleteBusinessAction}><input type="hidden" name="slug" value={business.slug} /><input type="hidden" name="revision" value={contentRevision(business)} /><AdminSubmitButton idleLabel="刪除" /></AdminEditorForm>
                 </div>

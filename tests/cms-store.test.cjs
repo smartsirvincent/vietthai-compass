@@ -10,6 +10,56 @@ const longDescription = '店家介紹'.repeat(125);
 const article = { slug: 'guide', title: 'Guide', excerpt: 'Summary', content: '<h2>Heading</h2><p>Text</p>', country: 'vietnam', citySlug: 'hcm', districtSlug: 'd1', relatedBusinessSlug: 'cafe', category: '餐廳美食', intent: 'traffic', keywords: ['Coffee'], updatedAt: '2026-09-09', coverImage: '/cover.jpg', photoAlt: 'Cover' };
 const fixture = () => structuredClone({ settings: {}, cities: [city], businesses: [business], articles: [article] });
 
+test('missing Thai photos can be disabled without deleting or altering Vietnam, and public reads exclude them', async () => {
+  const initial = fixture();
+  initial.businesses.push({ ...business, slug: 'thai-missing', country: 'thailand', image: '/brand-assets/placeholder.png' });
+  initial.businesses.push({ ...business, slug: 'thai-photo', country: 'thailand' });
+  const { store, backend } = loadStore(initial);
+  assert.equal(await store.disableThailandBusinessesWithoutPhotos(), 1);
+  assert.equal(backend.document.businesses.length, 3);
+  assert.deepEqual(backend.document.businesses[0], initial.businesses[0]);
+  assert.deepEqual(backend.document.businesses[2], initial.businesses[2]);
+  assert.equal((await store.getBusinesses()).length, 2);
+  assert.equal((await store.getBusinesses(true)).length, 3);
+  assert.equal(await store.disableThailandBusinessesWithoutPhotos(), 0);
+  assert.equal(backend.revisions.length, 1);
+  const hidden = (await store.getBusinesses(true)).find(b => b.slug === 'thai-missing');
+  await assert.rejects(store.setBusinessActive(hidden.slug, true, store.contentRevision(hidden)), /照片/);
+});
+
+test('business activation is reversible, revision checked, and does not mutate other records', async () => {
+  const { store, backend } = loadStore();
+  const original = structuredClone(backend.document);
+  const current = (await store.getBusinesses())[0];
+  await store.setBusinessActive(current.slug, false, store.contentRevision(current));
+  assert.equal((await store.getBusinesses()).length, 0);
+  await assert.rejects(store.setBusinessActive(current.slug, true, store.contentRevision(current)));
+  const disabled = (await store.getBusinesses(true))[0];
+  await store.setBusinessActive(disabled.slug, true, store.contentRevision(disabled));
+  assert.equal((await store.getBusinesses()).length, 1);
+  assert.deepEqual(backend.document.articles, original.articles);
+  assert.deepEqual(backend.document.cities, original.cities);
+  assert.deepEqual(backend.document.businesses[0].socials, original.businesses[0].socials);
+});
+
+test('city photo repair only touches the five approved borrowed images and is repeat-safe', async () => {
+  const initial = fixture();
+  for (const [slug, country, image] of [['chiang-rai', 'thailand', '/cities/chiang-mai.webp'], ['krabi', 'thailand', '/cities/phuket.webp'], ['nha-trang', 'vietnam', '/cities/da-nang.webp'], ['hue', 'vietnam', '/cities/da-nang.webp'], ['hoi-an', 'vietnam', '/cities/da-nang.webp']]) {
+    initial.cities.push({ ...city, slug, country, image });
+  }
+  const { store, backend } = loadStore(initial);
+  assert.equal(await store.repairCityPhotos(), 5);
+  assert.equal(await store.repairCityPhotos(), 0);
+  assert.deepEqual(backend.document.businesses, initial.businesses);
+  assert.deepEqual(backend.document.articles, initial.articles);
+  assert.deepEqual(backend.document.cities[0], initial.cities[0]);
+  const manuallyChanged = fixture();
+  manuallyChanged.cities.push({ ...city, slug: 'hue', image: '/custom.jpg' });
+  const second = loadStore(manuallyChanged);
+  assert.equal(await second.store.repairCityPhotos(), 0);
+  assert.deepEqual(second.backend.document, manuallyChanged);
+});
+
 function loadSanitizer() {
   const source = ts.transpileModule(fs.readFileSync('lib/sanitize-article-html.ts', 'utf8'), {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, esModuleInterop: true }
