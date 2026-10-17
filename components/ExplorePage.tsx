@@ -8,6 +8,7 @@ import { cleanExploreQuery, inDestination, resolveDestination, type ExploreQuery
 import { sectionCategoryAssets } from "@/data/category-assets";
 import { locationTerms, matchesSearch, resultPage } from "@/lib/search";
 import { isBusinessCategory } from "@/lib/business-taxonomy";
+import { absoluteUrl, breadcrumbJsonLd, jsonLd } from "@/lib/seo";
 export async function ExplorePage({ title, intro, path, category, searchParams, directory = false }: { title: string; intro: string; path: string; category?: string; searchParams: Promise<ExploreQuery>; directory?: boolean }) {
   const [rawQuery, cities, articles, businesses] = await Promise.all([searchParams, getCities(), getArticles(), getBusinesses()]);
   const query = cleanExploreQuery(rawQuery);
@@ -26,6 +27,8 @@ export async function ExplorePage({ title, intro, path, category, searchParams, 
   }
   const asset = sectionCategoryAssets.find(item => item.href === path);
   return <SiteShell>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd({ "@context": "https://schema.org", "@type": "CollectionPage", name: title, description: intro, url: absoluteUrl(path), isPartOf: { "@id": absoluteUrl("/#website") } }) }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbJsonLd([{ name: "首頁", url: "/" }, { name: title, url: path }])) }} />
     <section className="explore-heading"><div><p className="eyebrow">越南・泰國</p><h1>{title}</h1><p>{intro}</p></div>{asset ? <ContentImage src={asset.image} alt={asset.alt} width={560} height={360} sizes="(max-width: 720px) 100vw, 320px" priority /> : null}</section>
     <section className="band explore-results">
       <DestinationFilters key={`${destination.country}:${destination.city?.slug}:${destination.district?.slug}:${keyword}:${query.category}:${query.subcategory}`} action={path} cities={cities.map(({ slug, name, country, districts }) => ({ slug, name, country, districts }))} country={destination.country} city={destination.city?.slug} district={destination.district?.slug} query={query.q} directory={directory} merchantCategory={Boolean(merchantCategory)} category={directory ? query.category : category} subcategory={query.subcategory} />

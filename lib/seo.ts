@@ -4,6 +4,16 @@ export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://vietthaigui
 export const siteName = "越泰指南";
 export const siteAlternateName = "VietThai Compass";
 
+export function jsonLd(value: unknown) {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
+export function officialProfiles(settings: SiteSettings) {
+  return [...new Set((settings.officialProfiles ?? ["https://www.facebook.com/profile.php?id=61595401979057"]).filter((value) => {
+    try { return new URL(value).protocol === "https:"; } catch { return false; }
+  }))];
+}
+
 export function absoluteUrl(path = "") {
   return new URL(path || "/", `${siteUrl}/`).href;
 }
@@ -14,24 +24,19 @@ export function organizationJsonLd(settings: SiteSettings = {}) {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": absoluteUrl("/#organization"),
     name: currentSiteName,
     alternateName: currentAlternateName,
     url: siteUrl,
     logo: absoluteUrl(settings.logoImage || "/brand-assets/logo-02/vietthai-logo-symbol.png"),
-    sameAs: [
-      "https://facebook.com/vietthaicompass",
-      "https://instagram.com/vietthaicompass",
-      "https://www.threads.net/@vietthaicompass",
-      "https://www.tiktok.com/@vietthaicompass",
-      "https://t.me/vietthaicompass",
-      "https://line.me/R/ti/p/@vietthaicompass"
-    ],
-    contactPoint: {
+    description: settings.siteDescription || "為繁體中文讀者整理越南與泰國的旅遊、餐廳、景點、交通與在地生活資訊。",
+    sameAs: officialProfiles(settings),
+    contactPoint: (settings.contactEmail ?? "goodviet.service@gmail.com") ? {
       "@type": "ContactPoint",
       contactType: "business inquiries",
-      email: "hello@vietthaicompass.com",
+      email: settings.contactEmail ?? "goodviet.service@gmail.com",
       availableLanguage: ["zh-Hant", "en"]
-    }
+    } : undefined
   };
 }
 
@@ -41,6 +46,7 @@ export function websiteJsonLd(settings: SiteSettings = {}) {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": absoluteUrl("/#website"),
     name: currentSiteName,
     alternateName: currentAlternateName,
     url: siteUrl,
@@ -54,7 +60,7 @@ export function websiteJsonLd(settings: SiteSettings = {}) {
   };
 }
 
-export function articleJsonLd(article: Article) {
+export function articleJsonLd(article: Article, settings: SiteSettings = {}) {
   return {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -63,12 +69,16 @@ export function articleJsonLd(article: Article) {
     description: article.excerpt,
     image: absoluteUrl(article.coverImage),
     dateModified: article.updatedAt,
+    datePublished: article.publishedAt || undefined,
+    citation: article.sources?.length ? article.sources : undefined,
     author: {
       "@type": "Organization",
-      name: `${siteName}編輯部`,
-      url: siteUrl
+      "@id": absoluteUrl("/about#editorial"),
+      name: `${settings.siteName || siteName}編輯部`,
+      url: absoluteUrl("/about"),
+      description: "整理越南與泰國旅遊及在地生活資訊，內容來源與更新日期見各篇文章。"
     },
-    publisher: organizationJsonLd(),
+    publisher: organizationJsonLd(settings),
     keywords: article.keywords.join(", "),
     inLanguage: "zh-Hant-TW"
   };

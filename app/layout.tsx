@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+import { PublicTracking } from "@/components/PublicTracking";
 import { siteUrl } from "@/lib/seo";
 import { defaultSiteSettings, getSiteSettings } from "@/lib/cms-store";
 import "./globals.css";
@@ -39,8 +39,10 @@ export async function generateMetadata(): Promise<Metadata> {
       "泰國 SEO"
     ],
     alternates: {
-      canonical: "/"
+      canonical: "/",
+      types: { "application/rss+xml": "/feed.xml" }
     },
+    verification: { google: settings.googleSiteVerification || undefined },
     openGraph: {
       type: "website",
       locale: "zh_TW",
@@ -94,42 +96,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="zh-Hant-TW">
       <body>
-        {gtmId ? (
-          <noscript>
-            <iframe
-              src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
-              height="0"
-              width="0"
-              style={{ display: "none", visibility: "hidden" }}
-              title="Google Tag Manager"
-            />
-          </noscript>
-        ) : null}
         {children}
-        {ga4Id ? (
-          <>
-            <Script src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`} strategy="afterInteractive" />
-            <Script id="ga4-tracking" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${ga4Id}');
-              `}
-            </Script>
-          </>
-        ) : null}
-        {gtmId ? (
-          <Script id="gtm-tracking" strategy="afterInteractive">
-            {`
-              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-              })(window,document,'script','dataLayer','${gtmId}');
-            `}
-          </Script>
-        ) : null}
+        <PublicTracking ga4Id={ga4Id} gtmId={gtmId} />
       </body>
     </html>
   );

@@ -4,12 +4,12 @@ import { bangkokBusinessAdditions } from "@/data/bangkok-businesses";
 
 export const siteSocials = {
   line: "https://line.me/R/ti/p/@vietthaicompass",
-  facebook: "https://facebook.com/vietthaicompass",
+  facebook: "https://www.facebook.com/profile.php?id=61595401979057",
   instagram: "https://instagram.com/vietthaicompass",
   threads: "https://www.threads.net/@vietthaicompass",
   tiktok: "https://www.tiktok.com/@vietthaicompass",
   telegram: "https://t.me/vietthaicompass",
-  email: "hello@vietthaicompass.com"
+  email: "goodviet.service@gmail.com"
 };
 
 export const cities: City[] = [

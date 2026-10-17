@@ -94,6 +94,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
       <section className="page-hero">
         <p className="eyebrow">{business.category}・{business.subcategory}</p>
         <h1>{business.name}</h1>
+        {business.updatedAt ? <p>內容更新：<time dateTime={business.updatedAt}>{business.updatedAt.slice(0, 10)}</time></p> : null}
         <p>{business.country === "thailand" ? business.description.split(/\n\s*\n/)[0] : business.description}</p>
         <div className="detail-actions">
           {business.googleMapUrl ? <a className="primary-button" href={business.googleMapUrl} target="_blank" rel="noopener noreferrer"><MapPin size={18} />在 Google 地圖查看</a> : null}

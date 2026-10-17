@@ -71,6 +71,8 @@ export type Article = {
   intent: "traffic" | "commercial" | "authority";
   keywords: string[];
   updatedAt: string;
+  publishedAt?: string;
+  sources?: string[];
   coverImage: string;
   photoAlt: string;
 };
@@ -99,6 +101,9 @@ export type DirectoryBusiness = {
 };
 
 export type SiteSettings = {
+  officialProfiles?: string[];
+  contactEmail?: string;
+  googleSiteVerification?: string;
   siteName?: string;
   siteNameEn?: string;
   siteDescription?: string;

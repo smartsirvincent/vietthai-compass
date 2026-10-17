@@ -145,10 +145,24 @@ function loadStore(initial = fixture(), guideArticles = [], thailandMutation) {
     },
     process: { env: { DATABASE_URL: 'postgres://test' }, cwd: process.cwd },
     console,
+    URL,
     structuredClone
   }, { filename: 'cms-store.ts' });
   return { store: exports, backend };
 }
+
+test('article provenance survives saves and rejects invalid dates or unsafe sources', async () => {
+  const { store, backend } = loadStore();
+  const current = (await store.getArticles())[0];
+  await store.saveArticle({ ...current, publishedAt: '2026-09-01', sources: ['https://example.com/official'] }, current.slug, store.contentRevision(current));
+  const saved = (await store.getArticles())[0];
+  assert.equal(saved.publishedAt, '2026-09-01');
+  assert.equal(saved.sources[0], 'https://example.com/official');
+  const before = structuredClone(backend.document);
+  await assert.rejects(store.saveArticle({ ...saved, publishedAt: '2027-01-01' }, saved.slug, store.contentRevision(saved)), /發布日期/);
+  await assert.rejects(store.saveArticle({ ...saved, sources: ['javascript:alert(1)'] }, saved.slug, store.contentRevision(saved)), /來源/);
+  assert.deepEqual(backend.document, before);
+});
 
 test('Thailand transactional update bypasses normalization and stores the unmodified backup', async () => {
   const initial=fixture();

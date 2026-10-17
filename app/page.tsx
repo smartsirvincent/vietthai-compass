@@ -5,14 +5,11 @@ import { ArticleCard, BusinessCard, CityCard, SectionHeader } from "@/components
 import { ContentImage } from "@/components/ContentImage";
 import { SiteShell } from "@/components/SiteShell";
 import { getArticles, getBusinesses, getCities, getSiteSettings } from "@/lib/cms-store";
-import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 export default async function HomePage() {
   const [articles, businesses, cities, settings] = await Promise.all([getArticles(), getBusinesses(), getCities(), getSiteSettings()]);
   const newest = [...articles].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 6);
   return <SiteShell>
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd(settings)).replace(/</g, "\\u003c") }} />
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd(settings)).replace(/</g, "\\u003c") }} />
     <section className="home-hero traveler-hero">
       <div className="home-hero-media"><ContentImage src={settings.heroImage || "/brand-assets/home-hero-vietthai-commerce.png"} alt="" fill priority sizes="100vw" /></div>
       <div className="home-hero-content">

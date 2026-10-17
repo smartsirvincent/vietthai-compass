@@ -24,3 +24,23 @@ test('article schema does not fabricate a publication date from the modification
   assert.equal(value.datePublished, undefined);
   assert.equal(value.dateModified, '2026-10-10');
 });
+
+test('publisher uses only confirmed identity and safely encodes script content', () => {
+  const identity = seo().organizationJsonLd({ siteName: 'Custom', officialProfiles: ['https://facebook.com/real', 'javascript:alert(1)'], contactEmail: 'owner@example.com' });
+  assert.equal(identity.name, 'Custom');
+  assert.equal(identity['@id'], 'https://vietthaiguide.com/#organization');
+  assert.equal(identity.sameAs.length, 1);
+  assert.ok(identity.description);
+  assert.equal(identity.contactPoint.email, 'owner@example.com');
+  assert.ok(!seo().jsonLd({ title: '</script><script>alert(1)</script>' }).includes('<'));
+  assert.equal(seo().organizationJsonLd({ officialProfiles: [] }).sameAs.length, 0);
+});
+
+test('article schema includes only provided dates, sources and the configured publisher', () => {
+  const value = seo().articleJsonLd({ slug: 'sample', title: 'Sample', excerpt: 'Summary', coverImage: '/sample.jpg', updatedAt: '2026-10-17', publishedAt: '2026-10-01', sources: ['https://example.com/source'], keywords: [] }, { siteName: 'Brand' });
+  assert.equal(value.datePublished, '2026-10-01');
+  assert.equal(value.publisher.name, 'Brand');
+  assert.equal(value.author['@type'], 'Organization');
+  assert.equal(value.author.url, 'https://vietthaiguide.com/about');
+  assert.equal(value.citation[0], 'https://example.com/source');
+});

@@ -8,8 +8,8 @@ import { ShareButton } from "@/components/ShareButton";
 import { articleOutline } from "@/lib/article-outline";
 import { MapPin } from "lucide-react";
 import { SiteShell } from "@/components/SiteShell";
-import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
-import { articleJsonLd, breadcrumbJsonLd } from "@/lib/seo";
+import { getArticles, getBusinesses, getCities, getSiteSettings } from "@/lib/cms-store";
+import { articleJsonLd, breadcrumbJsonLd, jsonLd } from "@/lib/seo";
 import { findByRouteSlug } from "@/lib/routes";
 
 function renderInlineLinks(text: string) {
@@ -59,6 +59,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       type: "article",
       url: `/articles/${encodeURIComponent(article.slug)}`,
       modifiedTime: article.updatedAt,
+      publishedTime: article.publishedAt || undefined,
       title: article.title,
       description: article.excerpt,
       images: [article.coverImage]
@@ -74,7 +75,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [articles, cities, businesses] = await Promise.all([getArticles(), getCities(), getBusinesses()]);
+  const [articles, cities, businesses, settings] = await Promise.all([getArticles(), getCities(), getBusinesses(), getSiteSettings()]);
   const article = findByRouteSlug(articles, slug);
   if (!article) notFound();
 
@@ -99,13 +100,15 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   return (
     <SiteShell>
       <Breadcrumbs items={[{ label: "完整指南", href: "/articles" }, ...(city ? [{ label: city.name, href: `/cities/${city.slug}` }] : []), { label: article.category }]} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd(article)) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(articleJsonLd(article, settings)) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd([{ name: "首頁", url: "/" }, { name: "文章", url: "/articles" }, { name: article.title, url: `/articles/${article.slug}` }])) }} />
       <section className="page-hero">
         <p className="eyebrow">{article.category}</p>
         <h1>{article.title}</h1>
         <p>{article.excerpt}</p>
         <div className="detail-actions">
+          <Link href="/about">{settings.siteName || "越泰指南"}編輯部</Link>
+          {article.publishedAt ? <span>發布日期 <time dateTime={article.publishedAt}>{article.publishedAt.slice(0, 10)}</time></span> : null}
           <span className="article-date">更新日期 <time dateTime={article.updatedAt}>{article.updatedAt.slice(0, 10)}</time></span>
           {mapBusiness?.googleMapUrl ? <a className="primary-button" href={mapBusiness.googleMapUrl} target="_blank" rel="noopener noreferrer"><MapPin size={18} />在 Google 地圖查看</a> : null}
           <ShareButton title={article.title} />
@@ -116,6 +119,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           <ContentImage className="article-cover" src={article.coverImage} alt={article.photoAlt || article.title} priority sizes="(max-width: 900px) 100vw, 800px" />
           {outline.length > 1 ? <details className="article-toc" open><summary>文章目錄</summary><nav aria-label="文章目錄"><ol>{outline.map(item => <li key={item.id} className={item.level === 3 ? "toc-subheading" : ""}><a href={`#${item.id}`}>{item.text}</a></li>)}</ol></nav></details> : null}
           <div className="article-body">{renderArticleContent(article.content)}</div>
+          {article.sources?.length ? <section aria-label="資料來源"><h2>資料來源</h2><ul>{article.sources.map(url => <li key={url}><a href={url} target="_blank" rel="noopener noreferrer">{url}</a></li>)}</ul></section> : null}
 
           {businessIntro || businessFeatures.length || mapBusiness ? (
             <section className="business-summary-block">

@@ -37,6 +37,8 @@ async function saveArticleAction(formData: FormData) {
       intent: textValue(formData, "intent", "traffic") as Article["intent"],
       keywords: listFromTextarea(formData.get("keywords")),
       updatedAt: textValue(formData, "updatedAt", new Date().toISOString().slice(0, 10)),
+      publishedAt: textValue(formData, "publishedAt") || undefined,
+      sources: textValue(formData, "sources").split(/\r?\n/).map(value => value.trim()).filter(Boolean),
       coverImage: textValue(formData, "coverImage", "/brand-assets/home-hero-vietthai-commerce.png"),
       photoAlt: textValue(formData, "photoAlt")
     };
@@ -111,7 +113,9 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
             folder="vietthai-compass/articles"
           />
           <label>封面圖片替代文字<input name="photoAlt" defaultValue={editing?.photoAlt || ""} /></label>
-          <label>最後更新日期<input type="date" name="updatedAt" defaultValue={editing?.updatedAt || new Date().toISOString().slice(0, 10)} /></label>
+          <label>首次發布日期（舊文不確定時請留空）<input type="date" name="publishedAt" defaultValue={editing ? editing.publishedAt?.slice(0, 10) || "" : new Date().toISOString().slice(0, 10)} /></label>
+          <label>最後更新日期<input type="date" name="updatedAt" defaultValue={editing?.updatedAt?.slice(0, 10) || new Date().toISOString().slice(0, 10)} /></label>
+          <label>資料來源網址（每行一個）<textarea name="sources" rows={4} defaultValue={(editing?.sources || []).join("\n")} placeholder="請填入支持內文事實的官方或第一手來源" /></label>
           <label>文章內容<ArticleEditor defaultValue={editing?.content || ""} /></label>
           <AdminSubmitButton idleLabel={editing ? "更新文章" : "新增文章"} />
         </AdminEditorForm>

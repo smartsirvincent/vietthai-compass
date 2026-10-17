@@ -12,6 +12,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/thailand", priority: 0.9, changeFrequency: "weekly" },
     { path: "/cities", priority: 0.85, changeFrequency: "weekly" },
     { path: "/articles", priority: 0.85, changeFrequency: "daily" },
+    { path: "/travel-info", priority: 0.85, changeFrequency: "weekly" },
+    { path: "/about", priority: 0.5, changeFrequency: "monthly" },
     { path: "/restaurants", priority: 0.8, changeFrequency: "weekly" },
     { path: "/attractions", priority: 0.8, changeFrequency: "weekly" },
     { path: "/local-life", priority: 0.8, changeFrequency: "weekly" },

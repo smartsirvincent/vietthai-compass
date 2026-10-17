@@ -23,6 +23,9 @@ const contentPath = path.join(process.cwd(), "data", "cms-content.json");
 const documentKey = "default";
 
 export const defaultSiteSettings: Required<SiteSettings> = {
+  officialProfiles: ["https://www.facebook.com/profile.php?id=61595401979057"],
+  contactEmail: "goodviet.service@gmail.com",
+  googleSiteVerification: "",
   siteName: "越泰指南",
   siteNameEn: "VietThai Compass",
   siteDescription:
@@ -167,6 +170,8 @@ function normalizeContent(content: CmsContent, suggestBusinessSubcategories = tr
     ...content,
     settings: {
       ...content.settings,
+      contactEmail: content.settings?.contactEmail ?? defaultSiteSettings.contactEmail,
+      officialProfiles: content.settings?.officialProfiles ?? defaultSiteSettings.officialProfiles,
       siteName: content.settings?.siteName || defaultSiteSettings.siteName,
       siteNameEn: content.settings?.siteNameEn || defaultSiteSettings.siteNameEn,
       siteDescription: content.settings?.siteDescription || defaultSiteSettings.siteDescription,
@@ -442,6 +447,11 @@ function validateLocation(content: CmsContent, value: { country?: string; citySl
 
 export async function saveArticle(article: Article, originalSlug?: string, expectedRevision?: string) {
   await mutateCmsContent((content) => {
+    for (const value of [article.publishedAt, article.updatedAt].filter(Boolean)) {
+      if (!/^\d{4}-\d{2}-\d{2}(T.*)?$/.test(value!) || !Number.isFinite(Date.parse(value!))) throw new CmsEditError("請填寫有效的文章日期。");
+    }
+    if (article.publishedAt && Date.parse(article.publishedAt) > Date.parse(article.updatedAt)) throw new CmsEditError("發布日期不可晚於更新日期。");
+    if (article.sources?.some((url) => { try { return !["https:", "http:"].includes(new URL(url).protocol); } catch { return true; } })) throw new CmsEditError("資料來源請填寫完整的 HTTP 或 HTTPS 網址。");
     if (!ARTICLE_CATEGORIES.includes(article.category)) throw new CmsEditError("文章分類無效，請重新選擇分類。");
     validateLocation(content, article);
     if (article.relatedBusinessSlug && !content.businesses.some((item) => item.slug === article.relatedBusinessSlug)) throw new CmsEditError("關聯商家已變更，請重新選擇。");

@@ -34,6 +34,9 @@ async function saveSettingsAction(formData: FormData) {
       homeSecondaryCtaLabel: textValue(formData, "homeSecondaryCtaLabel"),
       ga4Id,
       gtmId,
+      officialProfiles: textValue(formData, "officialProfiles").split(/\r?\n/).map(value => value.trim()).filter(Boolean).filter(value => { try { return new URL(value).protocol === "https:"; } catch { return false; } }),
+      contactEmail: textValue(formData, "contactEmail"),
+      googleSiteVerification: textValue(formData, "googleSiteVerification"),
       heroImage: textValue(formData, "heroImage", "/brand-assets/home-hero-vietthai-commerce.png"),
       logoImage: textValue(formData, "logoImage")
     }, textValue(formData, "revision"));
@@ -74,6 +77,8 @@ export default async function AdminSettingsPage({
           </div>
 
           <h2>流量追蹤設定</h2>
+          <label>官方社群連結（每行一個，僅填屬於本站的帳號）<textarea name="officialProfiles" rows={4} defaultValue={(settings.officialProfiles || []).join("\n")} /></label>
+          <label>公開聯絡 Email<input type="email" name="contactEmail" defaultValue={settings.contactEmail || ""} /></label>
           <label>
             GA4 Measurement ID
             <input name="ga4Id" defaultValue={settings.ga4Id || ""} placeholder="G-XXXXXXXXXX，或貼上 GA4 官方安裝碼" />
@@ -82,6 +87,10 @@ export default async function AdminSettingsPage({
             Google Tag Manager ID
             <input name="gtmId" defaultValue={settings.gtmId || ""} placeholder="GTM-XXXXXXX，或貼上 GTM 官方安裝碼" />
           </label>
+          <label>Google Search Console HTML 驗證碼<input name="googleSiteVerification" defaultValue={settings.googleSiteVerification || ""} placeholder="只貼上 google-site-verification 的 content 值" /></label>
+          <p>GA4 請在 Google Analytics 建立本站的網站資料串流後，填入 G- 開頭的評估 ID。Search Console 的網域資源請用 Cloudflare DNS TXT 驗證；這個欄位僅用於網址前置字元資源的 HTML 標記驗證。</p>
+          <a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer">開啟 Google Analytics</a>
+          <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer">開啟 Google Search Console</a>
           <ImageUploadField
             label="首頁大 Banner"
             name="heroImage"

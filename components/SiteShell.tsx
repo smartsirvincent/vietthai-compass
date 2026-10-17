@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ContentImage } from "@/components/ContentImage";
 import { Facebook, Hash, Instagram, Mail, Menu, MessageCircle, Search } from "lucide-react";
-import { siteSocials } from "@/data/site";
+import { jsonLd, organizationJsonLd, websiteJsonLd, officialProfiles } from "@/lib/seo";
 import { getSiteSettings } from "@/lib/cms-store";
 
 const navItems = [
@@ -16,6 +16,7 @@ const navItems = [
 
 export async function SiteHeader() {
   const settings = await getSiteSettings();
+  const profiles = officialProfiles(settings);
 
   return (
     <header className="site-header">
@@ -47,24 +48,25 @@ export async function SiteHeader() {
         <Link href="/search" aria-label="搜尋">
           <Search size={18} />
         </Link>
-        <a href={siteSocials.line} aria-label="LINE">
+        {profiles.filter(url => /line\.me\//.test(url)).map(url => <a key={url} href={url} aria-label="LINE">
           <MessageCircle size={18} />
-        </a>
-        <a href={siteSocials.facebook} aria-label="Facebook">
+        </a>)}
+        {profiles.filter(url => /facebook\.com\//.test(url)).map(url => <a key={url} href={url} aria-label="Facebook">
           <Facebook size={18} />
-        </a>
-        <a href={siteSocials.instagram} aria-label="Instagram">
+        </a>)}
+        {profiles.filter(url => /instagram\.com\//.test(url)).map(url => <a key={url} href={url} aria-label="Instagram">
           <Instagram size={18} />
-        </a>
-        <a href={siteSocials.threads} aria-label="Threads">
+        </a>)}
+        {profiles.filter(url => /threads\.(net|com)\//.test(url)).map(url => <a key={url} href={url} aria-label="Threads">
           <Hash size={18} />
-        </a>
+        </a>)}
       </div>
     </header>
   );
 }
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const settings = await getSiteSettings();
   return (
     <footer className="site-footer">
       <div>
@@ -80,25 +82,25 @@ export function SiteFooter() {
         <Link href="/taiwan-business">台商專區</Link>
         <Link href="/directory">商家名錄</Link>
         <Link href="/business">商務合作</Link>
+        <Link href="/about">關於與編輯原則</Link>
+        <a href="/feed.xml">RSS 訂閱</a>
       </div>
       <div className="social-row">
-        <a href={siteSocials.line}>LINE</a>
-        <a href={siteSocials.facebook}>Facebook</a>
-        <a href={siteSocials.instagram}>Instagram</a>
-        <a href={siteSocials.threads}>Threads</a>
-        <a href={siteSocials.tiktok}>TikTok</a>
-        <a href={siteSocials.telegram}>Telegram</a>
-        <a href={`mailto:${siteSocials.email}`}>
+        {officialProfiles(settings).map(url => <a key={url} href={url} target="_blank" rel="noopener noreferrer">{new URL(url).hostname.replace(/^www\./, "")}</a>)}
+        {settings.contactEmail ? <a href={`mailto:${settings.contactEmail}`}>
           <Mail size={16} /> Email
-        </a>
+        </a> : null}
       </div>
     </footer>
   );
 }
 
 export async function SiteShell({ children }: { children: React.ReactNode }) {
+  const settings = await getSiteSettings();
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(organizationJsonLd(settings)) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteJsonLd(settings)) }} />
       <SiteHeader />
       <main>{children}</main>
       <SiteFooter />
