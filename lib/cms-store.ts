@@ -96,7 +96,7 @@ function hasDatabase() {
   return Boolean(databaseUrl);
 }
 
-function getPool() {
+export function getPool() {
   if (!databaseUrl) return null;
   if (!globalThis.vietThaiCmsPool) {
     globalThis.vietThaiCmsPool = new Pool({

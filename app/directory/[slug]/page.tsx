@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { ContentEngagement } from "@/components/ContentEngagement";
 import { ContentImage } from "@/components/ContentImage";
 import { ArticleCard, InfoStrip, SectionHeader } from "@/components/Cards";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -149,6 +150,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
           </div>
         </aside>
       </section>
+      <ContentEngagement kind="business" slug={business.slug} />
       {relatedArticles.length ? <section className="band light"><SectionHeader title="關於這間店的文章" /><div className="grid three">{relatedArticles.map(article => <ArticleCard key={article.slug} article={article} />)}</div></section> : null}
     </SiteShell>
   );

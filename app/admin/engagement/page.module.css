@@ -1,0 +1,12 @@
+.controls { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+.controls label { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.controls input:not([type=checkbox]), .controls select { font: inherit; padding: 10px; border: 1px solid var(--line); border-radius: 6px; max-width: 100%; }
+.controls input[type=checkbox] { width: 20px; height: 20px; }
+.comment { padding: 20px 0; border-bottom: 1px solid var(--line); }
+.body { white-space: pre-wrap; overflow-wrap: anywhere; }
+.tableWrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; text-align: left; }
+.table td, .table th { padding: 14px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.table td:first-child { min-width: 180px; max-width: 460px; overflow-wrap: anywhere; }
+.table td:last-child { min-width: 200px; }
+.table small { color: var(--muted); }

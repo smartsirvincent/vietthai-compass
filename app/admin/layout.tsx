@@ -35,6 +35,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         {session.role === "admin" ? <Link href="/admin/content-engine">SEO 內容引擎</Link> : null}
         {session.role === "admin" ? <Link href="/admin/travel-guides">旅遊須知指南</Link> : null}
         {session.role === "admin" ? <Link href="/admin/settings">網站設定</Link> : null}
+        {session.role === "admin" ? <Link href="/admin/engagement">瀏覽數與留言</Link> : null}
         {session.role === "admin" ? <Link href="/admin/brand-assets">品牌素材</Link> : null}
         <Link href="/">返回前台</Link>
         <form action={logoutAction} className="admin-logout-form">

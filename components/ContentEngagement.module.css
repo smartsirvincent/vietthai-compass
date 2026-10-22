@@ -1,0 +1,19 @@
+.section { margin: 36px auto; padding: 24px 0; max-width: 1100px; border-top: 1px solid var(--line); width: calc(100% - 40px); }
+.heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.heading h2, .views { display: flex; align-items: center; gap: 8px; }
+.heading h2 { font-size: 24px; margin: 0 0 12px; }
+.views { color: var(--muted); font-size: 15px; min-height: 32px; }
+.comment { padding: 20px 0; border-bottom: 1px solid var(--line); }
+.comment header { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.comment time, .note { color: var(--muted); font-size: 14px; line-height: 1.7; }
+.comment p { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }
+.form { display: grid; gap: 16px; max-width: 720px; margin-top: 24px; }
+.form label { display: grid; gap: 8px; }
+.form input, .form textarea { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 12px; font: inherit; background: white; color: var(--ink); }
+.form textarea { resize: vertical; }
+.form button { justify-self: start; min-height: 44px; }
+.form button:disabled { opacity: .55; cursor: not-allowed; }
+.form p { margin: 0; }
+.trap { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.error { color: #a22020; }
+.notice { color: #186443; }

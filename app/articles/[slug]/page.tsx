@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ContentEngagement } from "@/components/ContentEngagement";
 import { notFound } from "next/navigation";
 import { ArticleCard, SectionHeader } from "@/components/Cards";
 import { ContentImage } from "@/components/ContentImage";
@@ -167,6 +168,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           </div>
         </aside>
       </section>
+      <ContentEngagement kind="article" slug={article.slug} />
       <section className="band light">
         <SectionHeader title="延伸閱讀" intro="繼續查看城市指南、分區內容、餐廳名單與在地生活文章，從單篇介紹延伸到完整行程與生活決策。" />
         <div className="grid three">{relatedArticles.map((item) => <ArticleCard article={item} key={item.slug} />)}</div>
