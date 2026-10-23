@@ -10,6 +10,7 @@ import { getArticles, getBusinesses, getCities } from "@/lib/cms-store";
 import { breadcrumbJsonLd, businessJsonLd } from "@/lib/seo";
 import { findByRouteSlug } from "@/lib/routes";
 import thailandAdditions from "@/data/thailand-transit-additions.json";
+import { thailandTwentyResearchSources } from "@/data/thailand-20-businesses";
 import { BANGKOK_TRANSIT_STATIONS } from "@/lib/bangkok-transit";
 import Link from "next/link";
 
@@ -83,7 +84,8 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
   const city = cities.find((item) => item.slug === business.citySlug);
   const district = city?.districts.find((item) => item.slug === business.districtSlug);
   const contacts = contactRows(business);
-  const informationSource = business.country === "thailand" ? thailandAdditions.find(item => item.slug === business.slug)?.source : undefined;
+  const legacyInformationSource = business.country === "thailand" ? thailandAdditions.find(item => item.slug === business.slug)?.source : undefined;
+  const informationSource = legacyInformationSource || thailandTwentyResearchSources[business.slug];
   const stations = business.country === "thailand" && business.citySlug === "bangkok" ? BANGKOK_TRANSIT_STATIONS.filter(s => business.transitStationIds?.includes(s.id)) : [];
   const relatedArticles = articles.filter(article => article.relatedBusinessSlug === business.slug);
 
@@ -113,7 +115,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
           {business.imageCredit && business.imageSource ? <p className="image-credit">照片：{business.imageCredit} · <a href={business.imageSource} target="_blank" rel="noreferrer">查看來源與授權</a></p> : null}
           <h2>商家介紹</h2>
           <p className="preserve-lines">{business.description}</p>
-          {informationSource ? <p className="muted-text">資料查核：2026 年 10 月 17 日 · <a href={informationSource} target="_blank" rel="noreferrer">查看官方／觀光機構資料來源</a></p> : null}
+          {informationSource ? <p className="muted-text">{legacyInformationSource ? "資料查核：2026 年 10 月 17 日 · " : "資料來源 · "}<a href={informationSource} target="_blank" rel="noreferrer">查看店家與地點資料</a></p> : null}
           <h2>商家評價</h2>
           <p className="preserve-lines">{business.review || "目前尚未整理完整評價。建議出發前先查看 Google Map 最新評論、營業時間與實際交通狀況，再依自己的用餐或拜訪情境安排。"}</p>
           {business.googleMapUrl ? (

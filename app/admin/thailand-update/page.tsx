@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireAdminRole } from "@/lib/admin-auth";
-import { enrichThailandBusinesses, getBusinesses, disableThailandBusinessesWithoutPhotos, repairCityPhotos, importChiangMaiBusinesses } from "@/lib/cms-store";
+import { enrichThailandBusinesses, getBusinesses, disableThailandBusinessesWithoutPhotos, repairCityPhotos, importChiangMaiBusinesses, importThailandTwentyBusinesses } from "@/lib/cms-store";
 import { finishCmsEdit } from "@/lib/cms-actions";
 import { AdminEditorForm } from "@/components/AdminEditorForm";
 import { AdminSubmitButton } from "@/components/AdminSubmitButton";
@@ -21,6 +21,15 @@ async function addChiangMai() {
   return finishCmsEdit(async () => {
     const result = await importChiangMaiBusinesses();
     return `/admin/thailand-update?chiangMaiAdded=${result.added.length}&chiangMaiSkipped=${result.skipped.length}&districts=${result.districts}`;
+  });
+}
+
+async function addThailandTwenty() {
+  "use server";
+  await requireAdminRole();
+  return finishCmsEdit(async () => {
+    const result = await importThailandTwentyBusinesses();
+    return `/admin/thailand-update?newAdded=${result.added.length}&newSkipped=${result.skipped.length}&newDistricts=${result.districts}`;
   });
 }
 
@@ -45,6 +54,10 @@ export default async function ThailandUpdate({ searchParams }: { searchParams: P
   const pendingPhotos = (await getBusinesses(true)).filter(business => business.country === "thailand" && (!business.image || business.image.includes("/brand-assets/")));
   return <section className="panel">
     <h1>泰國商家內容更新</h1>
+    <h2>新增 20 個泰國餐飲與市場地點</h2>
+    <p>涵蓋曼谷與清邁的 15 家餐飲店及 5 個市場。每筆介紹至少 500 個中文字，附店家實景、攝影者及授權來源；曼谷可搭捷運抵達的地點已標示站名。</p>
+    {result.newAdded !== undefined ? <p role="status">新增 {result.newAdded} 筆，略過既有 {result.newSkipped} 筆，補入 {result.newDistricts} 個分區。</p> : null}
+    <AdminEditorForm action={addThailandTwenty}><AdminSubmitButton idleLabel="匯入泰國 20 個新地點" pendingLabel="備份並匯入泰國地點中" /></AdminEditorForm>
     <h2>清邁街區地圖與 30 家餐飲店</h2>
     <p>新增 25 家餐廳與小吃、5 家咖啡廳，介紹均至少 500 個中文字，附真實圖片來源與 Google Maps。只補清邁分區與新商家；保留既有商家、停用狀態及所有越南資料。</p>
     {result.chiangMaiAdded !== undefined ? <p role="status">清邁匯入完成：新增 {result.chiangMaiAdded} 家，已存在略過 {result.chiangMaiSkipped} 家，新增 {result.districts} 個分區。</p> : null}

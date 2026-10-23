@@ -21,7 +21,7 @@ export const BANGKOK_TRANSIT_LINES = [
     label: "MRT 藍線",
     color: "#2875c7",
     mapUrl: "https://metro.bemplc.co.th/MRT-System-Map?lang=en",
-    stations: ["mrt-phahon-yothin", "mrt-kamphaeng-phet", "mrt-sukhumvit", "mrt-qsncc", "mrt-lumphini", "mrt-silom", "mrt-sam-yan", "mrt-hua-lamphong", "mrt-wat-mangkon", "mrt-sam-yot", "mrt-sanam-chai"]
+    stations: ["mrt-phahon-yothin", "mrt-kamphaeng-phet", "mrt-sukhumvit", "mrt-qsncc", "mrt-khlong-toei", "mrt-lumphini", "mrt-silom", "mrt-sam-yan", "mrt-hua-lamphong", "mrt-wat-mangkon", "mrt-sam-yot", "mrt-sanam-chai"]
   },
   {
     id: "gold-line", name: "Gold Line", label: "金線", color: "#9b7617",
@@ -42,6 +42,7 @@ export const BANGKOK_TRANSIT_STATIONS = [
   { id: "mrt-sanam-chai", lineId: "mrt-blue", name: "Sanam Chai", nameZh: "沙南猜", area: "Museum Siam／Wat Pho" },
   { id: "mrt-sam-yan", lineId: "mrt-blue", name: "Sam Yan", nameZh: "三養", area: "Samyan Mitrtown／Chamchuri Square" },
   { id: "mrt-qsncc", lineId: "mrt-blue", name: "Queen Sirikit National Convention Centre", nameZh: "詩麗吉王后會議中心", area: "QSNCC／Benjakitti" },
+  { id: "mrt-khlong-toei", lineId: "mrt-blue", name: "Khlong Toei", nameZh: "孔堤", area: "孔堤市場／Rama IV" },
   { id: "gold-charoen-nakhon", lineId: "gold-line", name: "Charoen Nakhon", nameZh: "恰倫那空", area: "ICONSIAM" },
   { id: "bts-asok", lineId: "bts-sukhumvit", name: "Asok", nameZh: "阿索克", area: "Sukhumvit／Asok" },
   { id: "bts-phrom-phong", lineId: "bts-sukhumvit", name: "Phrom Phong", nameZh: "澎蓬", area: "Sukhumvit 24–31" },
