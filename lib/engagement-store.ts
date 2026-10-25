@@ -69,6 +69,21 @@ export function turnstileConfigured() {
   return Boolean(process.env.TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY && process.env.AUTH_SECRET);
 }
 
+export async function articleViewCounts(): Promise<Map<string, number>> {
+  const pool = getPool();
+  if (!pool) return new Map();
+  try {
+    const result = await pool.query<{ slug: string; views: string }>(
+      "select slug, views::text from vt_engagement.pages where kind = $1 and views > 0",
+      ["article"]
+    );
+    return new Map(result.rows.map(row => [row.slug, Number(row.views)]));
+  } catch (error) {
+    console.error("Article view counts unavailable", error instanceof Error ? error.name : "Unknown error");
+    return new Map();
+  }
+}
+
 export async function publicEngagement(ref: ResourceRef, offset = 0) {
   const pool = await engagementDatabase();
   const state = await pool.query(`select s.enabled, coalesce(p.views,0)::text as views,

@@ -59,6 +59,7 @@ export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
 export type Article = {
   slug: string;
   title: string;
+  editorPick?: boolean;
   excerpt: string;
   content: string;
   category: ArticleCategory;

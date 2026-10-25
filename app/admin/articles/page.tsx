@@ -40,6 +40,7 @@ async function saveArticleAction(formData: FormData) {
     const article: Article = {
       slug: textValue(formData, "slug"),
       title: textValue(formData, "title"),
+      editorPick: formData.get("editorPick") === "on",
       excerpt: textValue(formData, "excerpt"),
       content: textValue(formData, "content"),
       category: textValue(formData, "category") as ArticleCategory,
@@ -97,6 +98,7 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
           <label>標題<input name="title" required defaultValue={editing?.title || ""} /></label>
           <label>網址 Slug<input name="slug" required defaultValue={editing?.slug || ""} /></label>
           <label>摘要<textarea name="excerpt" required rows={3} defaultValue={editing?.excerpt || ""} /></label>
+          <label className="checkbox-field"><input type="checkbox" name="editorPick" defaultChecked={editing?.editorPick === true} /><span>加入首頁編輯精選</span></label>
 
           <div className="grid two">
             <label>分類<select name="category" defaultValue={editing?.category || "旅遊攻略"}>{categories.map((item) => <option key={item}>{item}</option>)}</select></label>
@@ -147,7 +149,7 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
             {articles.map((article) => (
               <div key={article.slug}>
                 <strong>{article.title}</strong>
-                <span>{article.category} / {article.citySlug || "不限城市"} / {article.districtSlug || "不限分區"} / {article.relatedBusinessSlug || "未關聯商家"}</span>
+                <span>{article.editorPick ? "編輯精選 / " : ""}{article.category} / {article.citySlug || "不限城市"} / {article.districtSlug || "不限分區"} / {article.relatedBusinessSlug || "未關聯商家"}</span>
                 <div className="admin-row-actions">
                   <Link href={`/admin/articles?edit=${article.slug}`}>編輯</Link>
                   <AdminEditorForm action={deleteArticleAction}><input type="hidden" name="slug" value={article.slug} /><input type="hidden" name="revision" value={contentRevision(article)} /><AdminSubmitButton idleLabel="刪除" /></AdminEditorForm>

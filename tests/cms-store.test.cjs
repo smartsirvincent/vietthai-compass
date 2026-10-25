@@ -179,6 +179,20 @@ test('article provenance survives saves and rejects invalid dates or unsafe sour
   assert.deepEqual(backend.document, before);
 });
 
+test('editor pick survives article saves and can be turned off without touching other content', async () => {
+  const { store, backend } = loadStore();
+  const current = (await store.getArticles())[0];
+  await store.saveArticle({ ...current, editorPick: true }, current.slug, store.contentRevision(current));
+  const selected = (await store.getArticles())[0];
+  assert.equal(selected.editorPick, true);
+  assert.equal(backend.document.articles[0].editorPick, true);
+  const otherContent = structuredClone({ cities: backend.document.cities, businesses: backend.document.businesses });
+  await store.saveArticle({ ...selected, editorPick: false }, selected.slug, store.contentRevision(selected));
+  assert.equal((await store.getArticles())[0].editorPick, false);
+  assert.deepEqual(backend.document.cities, otherContent.cities);
+  assert.deepEqual(backend.document.businesses, otherContent.businesses);
+});
+
 test('inquiry limiter enforces per-IP and global limits without storing visitor content', async () => {
   const { store, backend } = loadStore();
   assert.equal(await store.reserveInquiryAttempt('hashed-ip'), true);
