@@ -137,6 +137,7 @@ export default async function AdminCitiesPage({ searchParams }: { searchParams: 
             name="image"
             defaultValue={editing?.image || "/brand-assets/home-hero-vietthai-commerce.png"}
             folder="vietthai-compass/cities"
+            recommendedWidth={2000}
           />
           <div className="grid two">
             <label>照片來源網址<input name="imageSource" type="url" defaultValue={editing?.imageSource || ""} placeholder="授權來源頁或官方提供頁" /></label>

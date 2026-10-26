@@ -132,6 +132,7 @@ export default async function AdminArticlesPage({ searchParams }: { searchParams
             name="coverImage"
             defaultValue={editing?.coverImage || "/brand-assets/home-hero-vietthai-commerce.png"}
             folder="vietthai-compass/articles"
+            recommendedWidth={1600}
           />
           <label>封面圖片替代文字<input name="photoAlt" defaultValue={editing?.photoAlt || ""} /></label>
           <label>發布日期<input type="date" name="publishedAt" max={taipeiToday()} defaultValue={taipeiToday()} /></label>

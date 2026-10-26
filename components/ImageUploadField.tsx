@@ -9,6 +9,7 @@ type ImageUploadFieldProps = {
   folder?: string;
   placeholder?: string;
   note?: string;
+  recommendedWidth?: number;
 };
 
 export function ImageUploadField({
@@ -17,7 +18,8 @@ export function ImageUploadField({
   defaultValue = "",
   folder = "vietthai-compass",
   placeholder = "圖片網址，或直接上傳照片",
-  note
+  note,
+  recommendedWidth = 0
 }: ImageUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [url, setUrl] = useState(defaultValue);
@@ -44,11 +46,13 @@ export function ImageUploadField({
 
     try {
       const response = await fetch("/admin/api/upload", { method: "POST", body });
-      const result = (await response.json()) as { url?: string; error?: string };
+      const result = (await response.json()) as { url?: string; width?: number; error?: string };
       if (!response.ok || !result.url) throw new Error(result.error || "圖片上傳失敗。");
       setUrl(result.url);
       if (inputRef.current) inputRef.current.value = "";
-      setStatus("圖片已上傳，請儲存表單以套用到前台。");
+      setStatus(result.width && result.width < recommendedWidth
+        ? `原圖寬度只有 ${result.width} px，建議至少 ${recommendedWidth} px；放大後可能模糊。可重新上傳較大的原圖，或儲存目前圖片。`
+        : "圖片已上傳，請儲存表單以套用到前台。");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "圖片上傳失敗。");
     } finally {

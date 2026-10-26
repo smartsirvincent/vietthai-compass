@@ -100,7 +100,8 @@ export default async function AdminSettingsPage({
             name="heroImage"
             defaultValue={settings.heroImage || "/brand-assets/home-hero-vietthai-commerce.png"}
             folder="vietthai-compass/site"
-            note="建議使用橫式照片，比例約 16:9 或更寬。"
+            note="建議使用寬度至少 2400 px 的橫式照片，比例約 16:9 或更寬。"
+            recommendedWidth={2400}
           />
           <ImageUploadField
             label="網站 Logo"

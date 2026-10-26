@@ -202,6 +202,7 @@ export default async function AdminBusinessesPage({ searchParams }: { searchPara
             name="image"
             defaultValue={editing?.image || "/brand-assets/home-business-local-life.png"}
             folder="vietthai-compass/businesses"
+            recommendedWidth={1200}
           />
           <div className="grid two">
             <label>照片來源網址<input name="imageSource" type="url" required={!editing} defaultValue={editing?.imageSource || ""} placeholder="官方提供頁、授權圖庫或原始照片頁" /></label>
