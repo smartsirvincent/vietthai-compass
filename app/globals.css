@@ -2298,6 +2298,29 @@ p {
   text-underline-offset: 2px;
 }
 
+.article-body table {
+  display: block;
+  width: 100%;
+  margin: 20px 0;
+  border-collapse: collapse;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.article-body th,
+.article-body td {
+  min-width: 140px;
+  padding: 10px 12px;
+  border: 1px solid #c9d4cf;
+  text-align: left;
+  vertical-align: top;
+}
+
+.article-body th {
+  background: #edf3ef;
+  color: var(--ink);
+}
+
 /* Preserve the full composition of no-derivatives photographs. */
 .business-card.has-image img.business-photo-uncropped,
 .article-cover.business-photo-uncropped {
